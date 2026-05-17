@@ -352,3 +352,9 @@ test(auth): add unit test for LoginUseCase
 - Implement feature chưa có trong `TASKS.md`
 - Merge code chưa có người review (dù là nhóm nhỏ)
 - Bỏ qua linter errors — fix trước khi commit (`flutter analyze`)
+
+## PostgREST Silent UPDATE Rule
+After any .update() call where correctness matters,
+chain .select() and check if result is empty.
+Empty = 0 rows affected = likely RLS block.
+Supabase Dart does NOT throw on 0 rows affected.
