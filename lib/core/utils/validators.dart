@@ -53,4 +53,19 @@ class Validators {
     if (value.trim().length > 100) return 'Địa điểm không được quá 100 ký tự';
     return null;
   }
+
+  // T-11 validators
+  static String? fromDate(DateTime? value) {
+    if (value == null) return 'Vui lòng chọn ngày bắt đầu';
+    return null;
+  }
+
+  static String? url(String? value) {
+    if (value == null || value.trim().isEmpty) return null;
+    final uri = Uri.tryParse(value.trim());
+    if (uri == null || !uri.hasScheme || !uri.scheme.startsWith('http')) {
+      return 'URL không hợp lệ (cần bắt đầu bằng http/https)';
+    }
+    return null;
+  }
 }

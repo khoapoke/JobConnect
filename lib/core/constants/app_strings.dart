@@ -27,4 +27,26 @@ class AppStrings {
   static const headlineLabel = 'Tiêu đề';
   static const bioLabel = 'Giới thiệu';
   static const locationLabel = 'Địa điểm';
+
+  // T-11: Work Experience, Education, Certificate
+  static const workExperience = 'Kinh nghiệm làm việc';
+  static const education = 'Học vấn';
+  static const certificate = 'Chứng chỉ';
+  static const noData = 'Chưa có thông tin';
+  static const currentlyWorking = 'Đang làm việc tại đây';
+  static const currently = 'Hiện tại';
+  static const toDateError = 'Ngày kết thúc phải sau ngày bắt đầu';
+  static const confirmDelete = 'Xác nhận xóa';
+  static const confirmDeleteMessage = 'Bạn có chắc muốn xóa mục này?';
+  static const delete = 'Xóa';
+  static const cancel = 'Hủy';
+
+  // T-12: Skills
+  static const skills = 'Kỹ năng';
+  static const selectLevel = 'Chọn trình độ';
+  static const levelBeginner = 'Cơ bản';
+  static const levelIntermediate = 'Trung bình';
+  static const levelAdvanced = 'Nâng cao';
+  static const searchSkill = 'Tìm kỹ năng...';
+  static const deleteSkillMessage = 'Bạn có chắc muốn xóa kỹ năng này?';
 }
