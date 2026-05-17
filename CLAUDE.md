@@ -291,6 +291,28 @@ Bottom sheets: always set `backgroundColor: AppColors.surfaceVariant`. Never use
 
 ---
 
+## Usecase Exception Rule
+Usecases are REQUIRED when a business action involves:
+- Multiple steps / orchestration (UploadAvatarUseCase)
+- Cross-cutting concerns (auth state changes)
+- Non-trivial business rules or validations
+- Side effects beyond a single repository call
+
+Usecases MAY BE SKIPPED when the action is pure CRUD:
+- Single repository call, no transformation
+- No business rules (validation is in Validators, not domain)
+- Example: addWorkExperience, deleteEducation, updateCertificate
+In these cases, providers call profileRepositoryProvider directly.
+
+---
+
+## Dialog Styling
+Dialogs: always wrap AlertDialog in Theme override with
+`backgroundColor: AppColors.surface` and `cardBorderRadius` for shape.
+Never use default dialog styling.
+
+---
+
 ## Provider Ownership
 
 - `auth_provider` → authentication state only (session, role, onboarding status)
