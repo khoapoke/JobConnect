@@ -4,14 +4,17 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/app_strings.dart';
+import '../../../../core/router/user_role.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/storage_utils.dart';
 import '../../../../shared/domain/entities/user_profile.dart';
 import '../../../../shared/widgets/section_header.dart';
+import '../../../auth/domain/entities/auth_state.dart';
 import '../../../auth/domain/usecases/logout_usecase.dart';
 import '../../../auth/data/datasources/auth_datasource.dart';
 import '../../../auth/data/repositories/auth_repository_impl.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../domain/entities/user_skill.dart';
@@ -216,6 +219,10 @@ class _ProfileContent extends ConsumerWidget {
           ),
 
           const SizedBox(height: 24),
+
+          // ─── T-13: Company Link (role-gated) ────────────────────
+          _CompanyLinkSection(),
+
           const Divider(color: AppColors.divider),
           const SizedBox(height: 16),
 
@@ -264,6 +271,62 @@ class _ProfileContent extends ConsumerWidget {
     );
     await logoutUseCase.call();
     // Do NOT navigate — router guard handles redirect to /login
+  }
+}
+
+// ─── T-13: Company Link (role-gated) ──────────────────────────────────
+
+class _CompanyLinkSection extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final auth = ref.watch(authProvider);
+    if (auth is! AuthAuthenticated) return const SizedBox.shrink();
+    if (auth.role != UserRole.recruiter) return const SizedBox.shrink();
+
+    return Column(
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: () => context.push('/recruiter/company'),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.business,
+                    size: 20,
+                    color: AppColors.primary,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      AppStrings.companyProfile,
+                      style: AppTextStyles.body.copyWith(
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  ),
+                  const Icon(
+                    Icons.chevron_right,
+                    size: 20,
+                    color: AppColors.textSecondary,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+      ],
+    );
   }
 }
 
