@@ -68,4 +68,31 @@ class Validators {
     }
     return null;
   }
+
+  /// Generic text field: required, min/max length.
+  /// Reusable for any named text field.
+  static String? text(String? value, String fieldName,
+      {int min = 2, int max = 100}) {
+    final req = required(value, fieldName);
+    if (req != null) return req;
+    final trimmed = value!.trim();
+    if (trimmed.length < min) {
+      return '$fieldName phải có ít nhất $min ký tự';
+    }
+    if (trimmed.length > max) {
+      return '$fieldName không được quá $max ký tự';
+    }
+    return null;
+  }
+
+  /// Optional long text field: validates max length only when provided.
+  /// Reusable for descriptions, bios, etc.
+  static String? longText(String? value, String fieldName,
+      {int max = 1000}) {
+    if (value == null || value.trim().isEmpty) return null;
+    if (value.trim().length > max) {
+      return '$fieldName không được quá $max ký tự';
+    }
+    return null;
+  }
 }

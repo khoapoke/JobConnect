@@ -49,4 +49,25 @@ class AppStrings {
   static const levelAdvanced = 'Nâng cao';
   static const searchSkill = 'Tìm kỹ năng...';
   static const deleteSkillMessage = 'Bạn có chắc muốn xóa kỹ năng này?';
+
+  // T-13: Company
+  static const companyEmptyTitle = 'Thiết lập hồ sơ công ty';
+  static const companyEmptySubtitle =
+      'Tạo hồ sơ công ty để bắt đầu đăng tin tuyển dụng';
+  static const createCompany = 'Tạo hồ sơ công ty';
+  static const editCompany = 'Chỉnh sửa hồ sơ công ty';
+  static const companyName = 'Tên công ty';
+  static const companyDescription = 'Mô tả công ty';
+  static const companyWebsite = 'Website';
+  static const companySize = 'Quy mô công ty';
+  static const companyProvince = 'Tỉnh / Thành phố';
+  static const companyCreated = 'Tạo hồ sơ công ty thành công';
+  static const companyUpdated = 'Cập nhật hồ sơ công ty thành công';
+  static const changeLogo = 'Thay đổi logo công ty';
+  static const companyLogoPlaceholder = 'Logo công ty';
+  static const companyProfile = 'Hồ sơ công ty';
+
+  // T-13: Recruiter shell tabs
+  static const recruiterHome = 'Trang chủ';
+  static const myPosts = 'Tin của tôi';
 }
