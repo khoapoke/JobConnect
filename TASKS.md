@@ -33,16 +33,16 @@
 
 > Dependency: Phase 0 hoàn thành. Mọi feature sau đều cần auth.
 
-- [ ] **T-06: Auth — Email register + role selection**
+- [X] **T-06: Auth — Email register + role selection**
   Đăng ký tài khoản (email/password), chọn role Seeker hoặc Recruiter. Tạo row trong `profiles` sau khi register. Bao gồm: datasource → model → entity → repository → usecase → provider → `RegisterPage`.
 
-- [ ] **T-07: Auth — Email login + session persistence**
+- [X] **T-07: Auth — Email login + session persistence**
   Đăng nhập email/password. Persist session qua Supabase Auth. Redirect theo role (Seeker → Home, Recruiter → Dashboard). Bao gồm: `LoginPage`, auth state provider, router guard thật.
 
-- [ ] **T-08: Auth — Google OAuth login**
+- [X] **T-08: Auth — Google OAuth login**
   Đăng nhập Google qua Supabase Auth. Xử lý: user mới → chọn role → tạo profile; user cũ → redirect theo role.
 
-- [ ] **T-09: Auth — Forgot password + Logout**
+- [X] **T-09: Auth — Forgot password + Logout**
   Quên mật khẩu (gửi email reset qua Supabase). Đăng xuất (clear session, redirect login). `ForgotPasswordPage`.
 
 ---
@@ -51,13 +51,13 @@
 
 > Dependency: Auth hoàn thành. Profile là nền tảng cho Apply, AI Suggestion, Skill Gap.
 
-- [ ] **T-10: Profile — CRUD hồ sơ cá nhân**
+- [X] **T-10: Profile — CRUD hồ sơ cá nhân**
   Tạo & chỉnh sửa profile (full_name, avatar, headline, bio, location). Upload avatar lên Supabase Storage `avatars/{userId}/`. `ProfilePage` + `EditProfilePage`.
 
-- [ ] **T-11: Profile — Work Experiences + Educations + Certificates**
+- [X] **T-11: Profile — Work Experiences + Educations + Certificates**
   CRUD cho 3 bảng phụ: `work_experiences`, `educations`, `certificates`. Hiển thị dạng list trong `ProfilePage`. Thêm/sửa/xóa qua bottom sheet hoặc dialog.
 
-- [ ] **T-12: Profile — User Skills management**
+- [X] **T-12: Profile — User Skills management**
   Seeker thêm/xóa skills từ bảng `skills` lookup. Chọn level (beginner/intermediate/advanced). Hiển thị skill tags trong profile. Bảng: `user_skills`.
 
 ---
@@ -66,7 +66,7 @@
 
 > Dependency: Auth hoàn thành. Company + Job Post cần có trước khi Seeker tìm việc.
 
-- [ ] **T-13: Company — CRUD hồ sơ công ty**
+- [X] **T-13: Company — CRUD hồ sơ công ty**
   Recruiter tạo & chỉnh sửa company (name, logo, description, website, size, province). Upload logo lên Storage. `CompanyProfilePage` + `EditCompanyPage`. Bảng: `companies`.
 
 - [ ] **T-14: Job Post — Đăng tin tuyển dụng**
