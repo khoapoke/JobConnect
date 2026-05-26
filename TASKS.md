@@ -128,6 +128,7 @@
 
 - [ ] **T-27: Skill Gap — Phân tích kỹ năng còn thiếu**
   Trong `JobDetailPage`: so sánh `job_required_skills` vs `user_skills`. Hiển thị ✅ có / ❌ thiếu. Gợi ý hướng học (Gemini Flash prompt). `SkillGapWidget`.
+  > Dependency: `docs/adr/0002-required-skills-deferred-toggle.md` — all rows currently `is_required=true`. At T-27 grill, revisit whether to introduce the required/preferred toggle in T-15 EditJobPostPage.
 
 ---
 
