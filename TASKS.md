@@ -69,7 +69,7 @@
 - [X] **T-13: Company — CRUD hồ sơ công ty**
   Recruiter tạo & chỉnh sửa company (name, logo, description, website, size, province). Upload logo lên Storage. `CompanyProfilePage` + `EditCompanyPage`. Bảng: `companies`.
 
-- [ ] **T-14: Job Post — Đăng tin tuyển dụng**
+- [x] **T-14: Job Post — Đăng tin tuyển dụng**
   Recruiter tạo Job Post mới (title, description, requirements, salary range, type, category, required skills). Status mặc định = `draft`. `CreateJobPostPage`. Bảng: `job_posts`, `job_locations`, `job_required_skills`.
 
 - [ ] **T-15: Job Post — Chỉnh sửa + đóng tin + danh sách tin đã đăng**

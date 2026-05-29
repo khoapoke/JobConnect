@@ -36,56 +36,60 @@ class LogoPicker extends StatelessWidget {
   void _showImageSourceSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.surfaceVariant,
+      backgroundColor: Colors.transparent,
       builder: (_) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 8),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.divider,
-                borderRadius: BorderRadius.circular(2),
+        child: Material(
+          color: AppColors.surfaceVariant,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 8),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.divider,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              AppStrings.changeLogo,
-              style: AppTextStyles.title.copyWith(
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            ListTile(
-              leading: const Icon(Icons.photo_library, color: AppColors.primary),
-              title: Text(
-                AppStrings.chooseFromGallery,
-                style: AppTextStyles.body.copyWith(
+              const SizedBox(height: 16),
+              Text(
+                AppStrings.changeLogo,
+                style: AppTextStyles.title.copyWith(
                   color: AppColors.textPrimary,
                 ),
               ),
-              onTap: () {
-                Navigator.pop(context);
-                _pickImage(context, ImageSource.gallery);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.camera_alt, color: AppColors.primary),
-              title: Text(
-                AppStrings.takePhoto,
-                style: AppTextStyles.body.copyWith(
-                  color: AppColors.textPrimary,
+              const SizedBox(height: 8),
+              ListTile(
+                leading: const Icon(Icons.photo_library, color: AppColors.primary),
+                title: Text(
+                  AppStrings.chooseFromGallery,
+                  style: AppTextStyles.body.copyWith(
+                    color: AppColors.textPrimary,
+                  ),
                 ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(context, ImageSource.gallery);
+                },
               ),
-              onTap: () {
-                Navigator.pop(context);
-                _pickImage(context, ImageSource.camera);
-              },
-            ),
-            const SizedBox(height: 8),
-          ],
+              ListTile(
+                leading: const Icon(Icons.camera_alt, color: AppColors.primary),
+                title: Text(
+                  AppStrings.takePhoto,
+                  style: AppTextStyles.body.copyWith(
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(context, ImageSource.camera);
+                },
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
         ),
       ),
     );

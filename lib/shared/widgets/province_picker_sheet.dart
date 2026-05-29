@@ -55,11 +55,9 @@ class _ProvincePickerSheetState extends State<ProvincePickerSheet> {
       maxChildSize: 0.9,
       expand: false,
       builder: (context, scrollController) {
-        return Container(
-          decoration: const BoxDecoration(
-            color: AppColors.surfaceVariant,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-          ),
+        return Material(
+          color: AppColors.surfaceVariant,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
           child: Column(
             children: [
               const SizedBox(height: 8),

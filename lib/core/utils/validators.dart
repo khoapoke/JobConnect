@@ -95,4 +95,70 @@ class Validators {
     }
     return null;
   }
+
+  // T-14: Job Post validators
+  static String? jobTitle(String? value) {
+    return text(value, 'Tên tin tuyển dụng', min: 3, max: 100);
+  }
+
+  static String? jobDescription(String? value, {required bool forPublish}) {
+    if (value == null || value.trim().isEmpty) {
+      return forPublish ? 'Mô tả công việc không được để trống' : null;
+    }
+    final trimmed = value.trim();
+    if (trimmed.length > 5000) {
+      return 'Mô tả công việc không được quá 5000 ký tự';
+    }
+    if (forPublish && trimmed.length < 50) {
+      return 'Mô tả công việc phải có ít nhất 50 ký tự';
+    }
+    return null;
+  }
+
+  static String? jobRequirements(String? value, {required bool forPublish}) {
+    if (value == null || value.trim().isEmpty) {
+      return forPublish ? 'Yêu cầu ứng viên không được để trống' : null;
+    }
+    final trimmed = value.trim();
+    if (trimmed.length > 3000) {
+      return 'Yêu cầu ứng viên không được quá 3000 ký tự';
+    }
+    if (forPublish && trimmed.length < 30) {
+      return 'Yêu cầu ứng viên phải có ít nhất 30 ký tự';
+    }
+    return null;
+  }
+
+  static String? salaryRange(int? min, int? max) {
+    if (min == null || max == null) {
+      return 'Vui lòng nhập đầy đủ mức lương';
+    }
+    if (min < 0 || max < 0) {
+      return 'Mức lương không được âm';
+    }
+    if (min > max) {
+      return 'Mức lương tối đa phải lớn hơn hoặc bằng tối thiểu';
+    }
+    return null;
+  }
+
+  static String? province(String? value) {
+    return required(value, 'Tỉnh / Thành phố');
+  }
+
+  static String? expiresAtForPublish(DateTime? value) {
+    if (value == null) {
+      return 'Vui lòng chọn hạn nộp hồ sơ';
+    }
+    final now = DateTime.now();
+    final minDate = now.add(const Duration(days: 1));
+    final maxDate = now.add(const Duration(days: 90));
+    if (value.isBefore(minDate)) {
+      return 'Hạn nộp hồ sơ phải ít nhất 1 ngày kể từ hôm nay';
+    }
+    if (value.isAfter(maxDate)) {
+      return 'Hạn nộp hồ sơ không được quá 90 ngày kể từ hôm nay';
+    }
+    return null;
+  }
 }

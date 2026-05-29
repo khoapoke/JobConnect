@@ -16,6 +16,8 @@ import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/profile/presentation/pages/edit_profile_page.dart';
 import '../../features/recruiter/presentation/pages/company_profile_page.dart';
 import '../../features/recruiter/presentation/pages/edit_company_page.dart';
+import '../../features/recruiter/presentation/pages/create_job_post_page.dart';
+import '../../features/recruiter/presentation/providers/company_provider.dart';
 import 'user_role.dart';
 
 part 'app_router.g.dart';
@@ -54,6 +56,15 @@ GoRouter appRouter(Ref ref) {
           return authState.role == UserRole.recruiter
               ? '/recruiter/home'
               : '/';
+        }
+        // Company guard for job post creation
+        if (state.matchedLocation == '/recruiter/posts/new') {
+          final companyAsync = ref.read(currentCompanyProvider);
+          // Only redirect if we have confirmed data that company is null
+          // Don't redirect while loading (valueOrNull is null during loading)
+          if (companyAsync.hasValue && companyAsync.valueOrNull == null) {
+            return '/recruiter/company/edit?onboarding=true';
+          }
         }
         return null;
       }
@@ -176,8 +187,18 @@ GoRouter appRouter(Ref ref) {
             routes: [
               GoRoute(
                 path: '/recruiter/posts',
-                builder: (context, state) =>
-                    const PlaceholderPage(title: AppStrings.myPosts),
+                builder: (context, state) => Scaffold(
+                  body: const PlaceholderPage(title: AppStrings.myPosts),
+                  floatingActionButton: FloatingActionButton(
+                    onPressed: () => context.push('/recruiter/posts/new'),
+                    backgroundColor: AppColors.primary,
+                    child: const Icon(Icons.add, color: AppColors.onPrimary),
+                  ),
+                ),
+              ),
+              GoRoute(
+                path: '/recruiter/posts/new',
+                builder: (context, state) => const CreateJobPostPage(),
               ),
             ],
           ),

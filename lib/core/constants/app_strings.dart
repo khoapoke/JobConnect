@@ -70,4 +70,40 @@ class AppStrings {
   // T-13: Recruiter shell tabs
   static const recruiterHome = 'Trang chủ';
   static const myPosts = 'Tin của tôi';
+
+  // T-14: Job Post Creation
+  static const createJobPost = 'Đăng tin tuyển dụng';
+  static const saveDraft = 'Lưu nháp';
+  static const draftSaved = 'Đã lưu nháp';
+  static const jobTitle = 'Tên tin tuyển dụng';
+  static const jobDescription = 'Mô tả công việc';
+  static const jobDescriptionHint = 'Mô tả chi tiết công việc, quyền lợi...';
+  static const jobRequirements = 'Yêu cầu ứng viên';
+  static const jobRequirementsHint = 'Kỹ năng, kinh nghiệm, học vấn...';
+  static const salaryRange = 'Mức lương';
+  static const salaryFrom = 'Từ';
+  static const salaryTo = 'Đến';
+  static const salaryMillionPerMonth = 'triệu/tháng';
+  static const showSalary = 'Hiển thị mức lương cho ứng viên';
+  static const salaryHidden = 'Bạn sẽ thích nó!';
+  static const jobType = 'Loại hình';
+  static const jobCategory = 'Ngành nghề';
+  static const selectCategory = 'Chọn ngành nghề';
+  static const requiredSkills = 'Kỹ năng yêu cầu';
+  static const addSkill = 'Thêm kỹ năng';
+  static const skillCount = '/ 15';
+  static const jobLocation = 'Địa điểm làm việc';
+  static const remoteWork = 'Làm việc từ xa';
+  static const province = 'Tỉnh / Thành phố';
+  static const district = 'Quận / Huyện';
+  static const address = 'Địa chỉ cụ thể';
+  static const addressHint = 'Số nhà, đường... (không bắt buộc)';
+  static const expiresAt = 'Hạn nộp hồ sơ';
+  static const selectExpiryDate = 'Chọn hạn nộp hồ sơ';
+  static const unsavedChangesTitle = 'Thay đổi chưa lưu';
+  static const unsavedChangesMessage = 'Bạn có chắc muốn rời khỏi trang? Thay đổi sẽ bị mất.';
+  static const stay = 'Ở lại';
+  static const leave = 'Rời khỏi';
+  static const noCompanyGuardMessage = 'Vui lòng tạo hồ sơ công ty trước khi đăng tin.';
+  static const selectSkill = 'Chọn kỹ năng';
 }
