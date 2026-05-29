@@ -50,3 +50,10 @@ app.*.map.json
 GoogleService-Info.plist
 google-services.json
 *.sh
+run_app.bat
+
+# Local/generated artifacts
+nul
+process.exit(0)
+supabase/.temp/
+**/flutter/ephemeral/
