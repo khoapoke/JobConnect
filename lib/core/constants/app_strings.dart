@@ -139,4 +139,19 @@ class AppStrings {
   static const leave = 'Rời khỏi';
   static const noCompanyGuardMessage = 'Vui lòng tạo hồ sơ công ty trước khi đăng tin.';
   static const selectSkill = 'Chọn kỹ năng';
+
+  // T-16: Job Search
+  static const searchHint = 'Tìm theo tên tin, mô tả, công ty...';
+  static const filters = 'Bộ lọc';
+  static const applyFilters = 'Áp dụng bộ lọc';
+  static const clearAll = 'Xóa tất cả';
+  static const noResults = 'Không tìm thấy việc làm phù hợp';
+  static const clearFilters = 'Xóa bộ lọc';
+  static const jobResultsCount = 'việc làm';
+  static const loadMoreError = 'Có lỗi xảy ra. Thử lại';
+  static const seekerSalaryHidden = 'You will love it <3';
+  static const postedJustNow = 'Vừa đăng';
+  static const hoursAgo = 'giờ trước';
+  static const daysAgo = 'ngày trước';
+  static const weeksAgo = 'tuần trước';
 }

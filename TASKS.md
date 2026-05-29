@@ -81,7 +81,7 @@
 
 > Dependency: Có Job Post data (Phase 3). Seeker bắt đầu tìm việc.
 
-- [ ] **T-16: Job Search — Danh sách + tìm kiếm + lọc**
+- [X] **T-16: Job Search — Danh sách + tìm kiếm + lọc**
   Seeker xem danh sách Job Posts (`status = active`). Tìm kiếm theo từ khóa. Lọc theo: category, salary range, location, type (full-time/part-time/remote). `JobSearchPage` + `JobCard` widget + `FilterBottomSheet`.
 
 - [ ] **T-17: Job Detail — Xem chi tiết tin tuyển dụng**
