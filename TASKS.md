@@ -72,8 +72,8 @@
 - [x] **T-14: Job Post — Đăng tin tuyển dụng**
   Recruiter tạo Job Post mới (title, description, requirements, salary range, type, category, required skills). Status mặc định = `draft`. `CreateJobPostPage`. Bảng: `job_posts`, `job_locations`, `job_required_skills`.
 
-- [ ] **T-15: Job Post — Chỉnh sửa + đóng tin + danh sách tin đã đăng**
-  Recruiter xem danh sách Job Posts của mình, chỉnh sửa, thay đổi status (draft → pending_review, active → closed). `MyJobPostsPage` + `EditJobPostPage`.
+- [X] **T-15: Job Post — Chỉnh sửa + đóng tin + danh sách tin đã đăng**
+  Recruiter xem danh sách Job Posts của mình, chỉnh sửa, thay đổi status (draft → active, active → closed). `MyJobPostsPage` + `EditJobPostPage`. Auto-publish (skip `pending_review`).
 
 ---
 

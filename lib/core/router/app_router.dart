@@ -17,6 +17,8 @@ import '../../features/profile/presentation/pages/edit_profile_page.dart';
 import '../../features/recruiter/presentation/pages/company_profile_page.dart';
 import '../../features/recruiter/presentation/pages/edit_company_page.dart';
 import '../../features/recruiter/presentation/pages/create_job_post_page.dart';
+import '../../features/recruiter/presentation/pages/my_job_posts_page.dart';
+import '../../features/recruiter/presentation/pages/edit_job_post_page.dart';
 import '../../features/recruiter/presentation/providers/company_provider.dart';
 import 'user_role.dart';
 
@@ -187,18 +189,20 @@ GoRouter appRouter(Ref ref) {
             routes: [
               GoRoute(
                 path: '/recruiter/posts',
-                builder: (context, state) => Scaffold(
-                  body: const PlaceholderPage(title: AppStrings.myPosts),
-                  floatingActionButton: FloatingActionButton(
-                    onPressed: () => context.push('/recruiter/posts/new'),
-                    backgroundColor: AppColors.primary,
-                    child: const Icon(Icons.add, color: AppColors.onPrimary),
+                builder: (context, state) => const MyJobPostsPage(),
+                routes: [
+                  GoRoute(
+                    path: 'new',
+                    builder: (context, state) => const CreateJobPostPage(),
                   ),
-                ),
-              ),
-              GoRoute(
-                path: '/recruiter/posts/new',
-                builder: (context, state) => const CreateJobPostPage(),
+                  GoRoute(
+                    path: ':id/edit',
+                    builder: (context, state) {
+                      final id = state.pathParameters['id']!;
+                      return EditJobPostPage(jobId: id);
+                    },
+                  ),
+                ],
               ),
             ],
           ),

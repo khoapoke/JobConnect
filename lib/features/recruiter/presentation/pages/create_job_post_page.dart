@@ -761,6 +761,7 @@ class _CreateJobPostPageState extends ConsumerState<CreateJobPostPage> {
           }
         },
         (jobId) {
+          ref.invalidate(myJobPostsProvider);
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text(AppStrings.draftSaved)),
