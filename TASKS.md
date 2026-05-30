@@ -113,9 +113,35 @@
 
 ---
 
+## Phase 5.5 — UI/UX System Reset 🎨
+
+> Run before Phase 6 AI UI work. Full direction lives in `docs/design/JOB_CONNECT_UI_SYSTEM.md` and roadmap in `docs/design/UI_UX_IMPLEMENTATION_ROADMAP.md`.
+> Principle: CRUD should feel invisible. Core features should feel memorable.
+
+- [ ] **UI-01: Design foundation tokens + font assets**
+  Replace global theme foundation with Modern Social Productivity Design: Blue × Violet Hybrid, dark default + refreshing light mode, Inter UI/body + Space Grotesk display. Add `AppSpacing`, `AppRadii`, `AppDurations`, `AppGradients`, `AppShadows`. Bundle fonts under `assets/fonts/` and register in `pubspec.yaml`.
+
+- [ ] **UI-02: Shared feed-ready primitives + scroll-aware nav foundation**
+  Create reusable widgets in `lib/shared/presentation/widgets/`: `AppGradientBackground`, `GlassSurface`, `PremiumButton`, `StatusChip`, `SpotlightSearchBar`, `AnimatedPressable`, `AppSkeleton`, `ConnectionLoopLogo`, `ScrollAwareBottomNavScaffold` (or integrate equivalent behavior into app shell). No hardcoded gradients/shadows/colors scattered in feature widgets.
+
+- [ ] **UI-03: Global theme replacement pass**
+  Apply new theme to Material `ThemeData`: app bars, navigation, buttons, inputs, chips, cards, dialogs, bottom sheets, snackbars. Keep CRUD/basic pages minimal, not over-animated.
+
+- [ ] **UI-04: Job Seeker Home / Feed flagship redesign**
+  Redesign job discovery as feed-first + Spotlight search: mixed feed cards, featured cinematic job card, normal social cards, AI insight placeholder card, clean bookmark/apply actions.
+
+- [ ] **UI-05: Job Detail + Apply flow polish**
+  Apply premium hierarchy to job detail and clean minimal apply flow. Add polished loading/success states. Use shared primitives only.
+
+- [ ] **UI-06: Connection-loop splash integration**
+  After foundation/feed are stable, wire `ConnectionLoopLogo` into splash/onboarding. Animated loop draw + node pulse + wordmark reveal; reduced motion fallback required.
+
+---
+
 ## Phase 6 — AI Features ⭐ (features: `ai_suggestion`, `skill_gap`)
 
 > Dependency: Profile + Skills (Phase 2) + Job Posts (Phase 3). Embedding cần data từ cả 2.
+> UI dependency: Phase 5.5 should provide reusable AI/visual primitives before building AI-facing screens.
 
 - [ ] **T-24: AI — Embedding pipeline (profile + job)**
   Khi Seeker cập nhật profile/skills → gọi Gemini `text-embedding-004` → lưu vào `profile_embeddings`. Khi Job Post status = `active` → tương tự → `job_embeddings`. Edge Function hoặc datasource level. `core/constants/prompt_templates.dart` cho prompt format.
@@ -132,6 +158,15 @@
 
 ---
 
+## Phase 6.5 — AI UI Experience 🎨⭐
+
+> Dependency: Phase 6 AI logic is working. Use the Phase 5.5 primitives and the rules in `docs/design/JOB_CONNECT_UI_SYSTEM.md`.
+
+- [ ] **UI-07: AI match + skill gap delightful UI**
+  Polish AI-facing screens as product-defining experiences: animated match score, violet AI insight cards, match explanation reveal, skill gap owned/missing states, learning suggestion card, premium loading skeletons. Keep Gemini/result errors clear and recoverable.
+
+---
+
 ## Phase 7 — Chat Realtime (feature: `chat`)
 
 > Dependency: Auth + có Seeker + Recruiter accounts. Chat cần cả 2 roles.
@@ -141,6 +176,15 @@
 
 - [ ] **T-29: Chat — Realtime messaging**
   Gửi/nhận tin nhắn realtime qua Supabase Realtime. Hiển thị messages, đánh dấu read. Auto-scroll. `ChatPage`. Bảng: `messages`. Provider subscribe → `ref.onDispose` cancel.
+
+---
+
+## Phase 7.5 — Chat UI Experience 🎨
+
+> Dependency: Phase 7 chat logic is working.
+
+- [ ] **UI-08: Chat interface polish**
+  Apply Modern Social Productivity styling to conversations and chat: clean message bubbles, recruiter/seeker identity clarity, attachment/CV preview states, realtime sending/read feedback, empty states, and keyboard-safe layout. Keep motion subtle and functional.
 
 ---
 
@@ -159,6 +203,15 @@
 
 ---
 
+## Phase 8.5 — Notification UI Experience 🎨
+
+> Dependency: Phase 8 notification logic is working.
+
+- [ ] **UI-09: Notification center polish**
+  Style in-app notifications with clear priority, read/unread states, target navigation previews, application-status visuals, foreground notification consistency, empty/error states. Keep it minimal and scannable.
+
+---
+
 ## Phase 9 — Admin (feature: `admin`)
 
 > Dependency: Toàn bộ Phase 1–5. Admin quản lý data do các role khác tạo.
@@ -174,6 +227,15 @@
 
 ---
 
+## Phase 9.5 — Admin + Recruiter Utility UI 🎨
+
+> Dependency: Phase 9 admin logic is working. Utility screens stay restrained, not cinematic.
+
+- [ ] **UI-10: Admin/recruiter utility polish**
+  Polish admin dashboards, user management, job review, reports, and recruiter management screens with clean tables/cards, restrained charts, clear destructive actions, accessible status colors, and consistent spacing. Avoid heavy glow and decorative motion.
+
+---
+
 ## Phase 10 — Job Alert + Social (features: `job_alert`)
 
 > Dependency: Job Search (Phase 4) + Notification (Phase 8).
@@ -183,6 +245,15 @@
 
 - [ ] **T-37: Job Alert — Edge Function schedule**
   Supabase Edge Function chạy hàng ngày: so khớp Job Posts mới (`created_at > last_check`) với `saved_searches.filter_json`. Gửi push notification khi có match.
+
+---
+
+## Phase 10.5 — Job Alert UI Experience 🎨
+
+> Dependency: Phase 10 saved search + alert logic is working.
+
+- [ ] **UI-11: Saved search + alert experience polish**
+  Polish saved search creation/list/detail states, alert match preview, notification opt-in state, and empty states. Use feed/search primitives where possible. Keep the flow lightweight and productivity-focused.
 
 ---
 
@@ -206,10 +277,16 @@
 | 3 — Recruiter Setup | T-13 → T-15 | Company, post job, manage posts |
 | 4 — Job Discovery | T-16 → T-18 | Search, detail, bookmark |
 | 5 — Application | T-19 → T-23 | Resume, apply, tracking, recruiter manage |
+| 5.5 — UI/UX 🎨 | UI-01 → UI-06 | Design system reset, shared primitives, feed polish, splash |
 | 6 — AI ⭐ | T-24 → T-27 | Embedding, suggestions, skill gap |
+| 6.5 — AI UI 🎨⭐ | UI-07 | AI match + skill gap delightful UI |
 | 7 — Chat | T-28 → T-29 | Conversation, realtime messaging |
+| 7.5 — Chat UI 🎨 | UI-08 | Chat interface polish |
 | 8 — Notification | T-30 → T-32 | FCM, in-app, triggers |
+| 8.5 — Notification UI 🎨 | UI-09 | Notification center polish |
 | 9 — Admin | T-33 → T-35 | Dashboard, user management, reports |
+| 9.5 — Utility UI 🎨 | UI-10 | Admin/recruiter utility polish |
 | 10 — Job Alert | T-36 → T-37 | Saved search, scheduled Edge Function |
+| 10.5 — Job Alert UI 🎨 | UI-11 | Saved search + alert experience polish |
 | 11 — Polish | T-38 → T-39 | UI polish, final review |
-| **Total** | **40 tasks** | |
+| **Total** | **51 tasks** | 40 logic tasks + 11 UI/UX tasks |
