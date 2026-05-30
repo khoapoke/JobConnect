@@ -180,6 +180,8 @@ Cách tích hợp:
 
 `DESIGN.md` đặt trong `docs/` cùng cấp với `BRIEF.md` và `PRODUCT.md`.
 
+> Current UI/UX source of truth: `docs/DESIGN.md` redirects to the locked Modern Social Productivity system in `docs/design/JOB_CONNECT_UI_SYSTEM.md`. The implementation roadmap is `docs/design/UI_UX_IMPLEMENTATION_ROADMAP.md`, and Phase 5.5 UI tasks are tracked in `TASKS.md`.
+
 ---
 
 ## 5. Kiến trúc ứng dụng
