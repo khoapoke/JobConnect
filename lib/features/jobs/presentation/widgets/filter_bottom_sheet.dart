@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
-
-import '../../../../core/constants/vietnam_provinces.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_styles.dart';
-import '../../../recruiter/presentation/providers/job_categories_provider.dart';
-import '../../domain/entities/job_filter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Bottom sheet for filtering job search results.
+import '../../../../core/constants/vietnam_provinces.dart';
+import '../../../../core/theme/app_radii.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../../../shared/presentation/widgets/app_skeleton.dart';
+import '../../../../shared/presentation/widgets/premium_button.dart';
+import '../../../recruiter/presentation/providers/job_categories_provider.dart';
+import '../../domain/entities/job_filter.dart';
+
 class FilterBottomSheet extends ConsumerStatefulWidget {
   const FilterBottomSheet({
     super.key,
@@ -17,8 +19,7 @@ class FilterBottomSheet extends ConsumerStatefulWidget {
   final JobFilter initialFilter;
 
   @override
-  ConsumerState<FilterBottomSheet> createState() =>
-      _FilterBottomSheetState();
+  ConsumerState<FilterBottomSheet> createState() => _FilterBottomSheetState();
 }
 
 class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
@@ -44,141 +45,95 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
   Widget build(BuildContext context) {
     final categoriesAsync = ref.watch(jobCategoriesProvider);
 
-    return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.surfaceVariant,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Bộ lọc',
-                style: AppTextStyles.headline.copyWith(
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              TextButton(
-                onPressed: _clearAll,
-                child: Text(
-                  'Xóa tất cả',
-                  style: AppTextStyles.label.copyWith(
-                    color: AppColors.primary,
+    return Material(
+      color: Theme.of(context).bottomSheetTheme.backgroundColor,
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(AppRadii.radiusXl)),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.space4,
+          AppSpacing.space3,
+          AppSpacing.space4,
+          AppSpacing.space6,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Bộ lọc',
+                  style: AppTextStyles.sectionTitle.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
+                TextButton(onPressed: _clearAll, child: const Text('Xóa tất cả')),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.space4),
+            const _SectionTitle(title: 'Ngành nghề'),
+            categoriesAsync.when(
+              data: (categories) => _MultiSelectChips(
+                options: categories
+                    .map((c) => _Option(label: c.name, value: c.id))
+                    .toList(),
+                selectedValues: _selectedCategoryIds,
+                onToggle: _toggleCategory,
               ),
-            ],
-          ),
-          const Divider(color: AppColors.divider),
-          const SizedBox(height: 12),
-
-          // Filter content (scrollable via outer DraggableScrollableSheet)
-          // Category (multi-select)
-          _sectionTitle('Ngành nghề'),
-          categoriesAsync.when(
-            data: (categories) => _MultiSelectChips(
-              options: categories
-                  .map((c) => _Option(label: c.name, value: c.id))
+              loading: () => const _LoadingChips(count: 5),
+              error: (_, __) => const SizedBox.shrink(),
+            ),
+            const SizedBox(height: AppSpacing.space4),
+            const _SectionTitle(title: 'Tỉnh / Thành phố'),
+            _MultiSelectChips(
+              options: VietnamProvinces.all
+                  .map((p) => _Option(label: p, value: p))
                   .toList(),
-              selectedValues: _selectedCategoryIds,
-              onToggle: _toggleCategory,
+              selectedValues: _selectedProvinces,
+              onToggle: _toggleProvince,
             ),
-            loading: () => const _LoadingChips(count: 5),
-            error: (_, __) => const SizedBox.shrink(),
-          ),
-          const SizedBox(height: 16),
-
-          // Location / Province (multi-select)
-          _sectionTitle('Tỉnh / Thành phố'),
-          _MultiSelectChips(
-            options: VietnamProvinces.all
-                .map((p) => _Option(label: p, value: p))
-                .toList(),
-            selectedValues: _selectedProvinces,
-            onToggle: _toggleProvince,
-          ),
-          const SizedBox(height: 16),
-
-          // Job Type (multi-select)
-          _sectionTitle('Loại hình'),
-          _MultiSelectChips(
-            options: kJobTypeLabels.entries
-                .map((e) => _Option(label: e.value, value: e.key))
-                .toList(),
-            selectedValues: _selectedJobTypes,
-            onToggle: _toggleJobType,
-          ),
-          const SizedBox(height: 16),
-
-          // Salary Range (single-select)
-          _sectionTitle('Mức lương'),
-          _SingleSelectChips(
-            options: kSalaryRanges
-                .map((r) => _Option(label: r.label, value: r.label))
-                .toList(),
-            selectedValue: _selectedSalaryRange?.label,
-            onTap: _toggleSalaryRange,
-          ),
-          const SizedBox(height: 16),
-
-          // Remote toggle
-          _sectionTitle('Làm việc từ xa'),
-          SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(
-                      _isRemote ? 'Chỉ tìm việc từ xa' : 'Tất cả địa điểm',
-                      style: AppTextStyles.body.copyWith(
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    value: _isRemote,
-                    onChanged: (value) {
-                      setState(() {
-                        _isRemote = value;
-                        _remoteToggled = true;
-                      });
-                    },
-                    activeThumbColor: AppColors.primary,
-                  ),
-          const SizedBox(height: 16),
-
-          // Apply button
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton(
-              onPressed: _applyFilters,
-              style: FilledButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.onPrimary,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+            const SizedBox(height: AppSpacing.space4),
+            const _SectionTitle(title: 'Loại hình'),
+            _MultiSelectChips(
+              options: kJobTypeLabels.entries
+                  .map((e) => _Option(label: e.value, value: e.key))
+                  .toList(),
+              selectedValues: _selectedJobTypes,
+              onToggle: _toggleJobType,
+            ),
+            const SizedBox(height: AppSpacing.space4),
+            const _SectionTitle(title: 'Mức lương'),
+            _SingleSelectChips(
+              options: kSalaryRanges
+                  .map((r) => _Option(label: r.label, value: r.label))
+                  .toList(),
+              selectedValue: _selectedSalaryRange?.label,
+              onTap: _toggleSalaryRange,
+            ),
+            const SizedBox(height: AppSpacing.space4),
+            const _SectionTitle(title: 'Làm việc từ xa'),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(
+                _isRemote ? 'Chỉ tìm việc từ xa' : 'Tất cả địa điểm',
+                style: AppTextStyles.body.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
-              child: Text(
-                'Áp dụng bộ lọc',
-                style: AppTextStyles.title.copyWith(color: AppColors.onPrimary),
-              ),
+              value: _isRemote,
+              onChanged: (value) {
+                setState(() {
+                  _isRemote = value;
+                  _remoteToggled = true;
+                });
+              },
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _sectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Text(
-        title,
-        style: AppTextStyles.title.copyWith(
-          color: AppColors.textPrimary,
+            const SizedBox(height: AppSpacing.space5),
+            PremiumButton(
+              label: 'Áp dụng bộ lọc',
+              onPressed: _applyFilters,
+            ),
+          ],
         ),
       ),
     );
@@ -219,9 +174,7 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
       if (_selectedSalaryRange?.label == label) {
         _selectedSalaryRange = null;
       } else {
-        _selectedSalaryRange = kSalaryRanges.firstWhere(
-          (r) => r.label == label,
-        );
+        _selectedSalaryRange = kSalaryRanges.firstWhere((r) => r.label == label);
       }
     });
   }
@@ -249,8 +202,28 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
   }
 }
 
+class _SectionTitle extends StatelessWidget {
+  const _SectionTitle({required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.space2),
+      child: Text(
+        title,
+        style: AppTextStyles.title.copyWith(
+          color: Theme.of(context).colorScheme.onSurface,
+        ),
+      ),
+    );
+  }
+}
+
 class _Option {
   const _Option({required this.label, required this.value});
+
   final String label;
   final String value;
 }
@@ -269,32 +242,18 @@ class _MultiSelectChips extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: options.map((option) {
-          final isSelected = selectedValues.contains(option.value);
-          return FilterChip(
-            label: Text(
-              option.label,
-              style: AppTextStyles.label.copyWith(
-                color: isSelected ? AppColors.onPrimary : AppColors.textPrimary,
-              ),
-            ),
-            selected: isSelected,
-            onSelected: (_) => onToggle(option.value),
-            selectedColor: AppColors.primary,
-            backgroundColor: AppColors.surface,
-            side: BorderSide(
-              color: isSelected ? AppColors.primary : AppColors.divider,
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          );
-        }).toList(),
-      );
-    }
+      spacing: AppSpacing.space2,
+      runSpacing: AppSpacing.space2,
+      children: options.map((option) {
+        final isSelected = selectedValues.contains(option.value);
+        return FilterChip(
+          label: Text(option.label),
+          selected: isSelected,
+          onSelected: (_) => onToggle(option.value),
+        );
+      }).toList(),
+    );
+  }
 }
 
 class _SingleSelectChips extends StatelessWidget {
@@ -311,28 +270,14 @@ class _SingleSelectChips extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Wrap(
-      spacing: 8,
-      runSpacing: 8,
+      spacing: AppSpacing.space2,
+      runSpacing: AppSpacing.space2,
       children: options.map((option) {
         final isSelected = selectedValue == option.value;
         return FilterChip(
-          label: Text(
-            option.label,
-            style: AppTextStyles.label.copyWith(
-              color: isSelected ? AppColors.onPrimary : AppColors.textPrimary,
-            ),
-          ),
+          label: Text(option.label),
           selected: isSelected,
           onSelected: (_) => onTap(option.value),
-          selectedColor: AppColors.primary,
-          backgroundColor: AppColors.surface,
-          side: BorderSide(
-            color: isSelected ? AppColors.primary : AppColors.divider,
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         );
       }).toList(),
     );
@@ -341,24 +286,17 @@ class _SingleSelectChips extends StatelessWidget {
 
 class _LoadingChips extends StatelessWidget {
   const _LoadingChips({required this.count});
+
   final int count;
 
   @override
   Widget build(BuildContext context) {
     return Wrap(
-      spacing: 8,
-      runSpacing: 8,
+      spacing: AppSpacing.space2,
+      runSpacing: AppSpacing.space2,
       children: List.generate(
         count,
-        (_) => Container(
-          height: 32,
-          width: 60 + (count * 7) % 40,
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: AppColors.divider),
-          ),
-        ),
+        (_) => const AppSkeleton(width: 84, height: 32),
       ),
     );
   }

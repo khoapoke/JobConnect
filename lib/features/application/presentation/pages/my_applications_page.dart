@@ -5,8 +5,13 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_radii.dart';
+import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/storage_utils.dart';
+import '../../../../shared/presentation/widgets/app_gradient_background.dart';
+import '../../../../shared/presentation/widgets/glass_surface.dart';
+import '../../../../shared/presentation/widgets/premium_button.dart';
 import '../../../auth/domain/entities/auth_state.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../domain/entities/application.dart';
@@ -29,173 +34,141 @@ class _MyApplicationsPageState extends ConsumerState<MyApplicationsPage> {
     final applicationsAsync = ref.watch(myApplicationsProvider(_filter));
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(AppStrings.myApplications),
-        backgroundColor: AppColors.surface,
-        foregroundColor: AppColors.textPrimary,
-        actions: [
-          IconButton(
-            onPressed: () => context.push('/resumes'),
-            icon: const Icon(Icons.description_outlined),
-            tooltip: AppStrings.resumeManager,
-          ),
-        ],
-      ),
-      backgroundColor: AppColors.background,
-      body: Column(
-        children: [
-          SizedBox(
-            height: 56,
-            child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              scrollDirection: Axis.horizontal,
-              children: ApplicationStatusFilter.values
-                  .map(
-                    (filter) => Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: ChoiceChip(
-                        label: Text(_labelFor(filter)),
-                        selected: _filter == filter,
-                        onSelected: (_) => setState(() => _filter = filter),
+      body: AppGradientBackground(
+        child: SafeArea(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.space4,
+                  AppSpacing.space3,
+                  AppSpacing.space4,
+                  AppSpacing.space2,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        AppStrings.myApplications,
+                        style: AppTextStyles.sectionTitle.copyWith(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
                       ),
                     ),
-                  )
-                  .toList(),
-            ),
-          ),
-          Expanded(
-            child: applicationsAsync.when(
-              data: (applications) {
-                if (applications.isEmpty) {
-                  return Center(
-                    child: Text(
-                      AppStrings.noApplications,
-                      style: AppTextStyles.body.copyWith(
-                        color: AppColors.textSecondary,
+                    GlassSurface(
+                      borderRadius: AppRadii.md,
+                      padding: EdgeInsets.zero,
+                      blurSigma: 12,
+                      child: IconButton(
+                        onPressed: () => context.push('/resumes'),
+                        icon: const Icon(Icons.description_outlined),
+                        tooltip: AppStrings.resumeManager,
                       ),
                     ),
-                  );
-                }
-
-                return RefreshIndicator(
-                  onRefresh: () async =>
-                      ref.invalidate(myApplicationsProvider(_filter)),
-                  child: ListView.separated(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: applications.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
-                    itemBuilder: (context, index) {
-                      final application = applications[index];
-                      return InkWell(
-                        onTap: () =>
-                            context.push('/applications/${application.id}'),
-                        borderRadius: BorderRadius.circular(18),
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: AppColors.surface,
-                            borderRadius: BorderRadius.circular(18),
-                            border: Border.all(color: AppColors.divider),
+                  ],
+                ),
+              ),
+              SizedBox(
+                height: 56,
+                child: ListView(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.space4,
+                    vertical: AppSpacing.space2,
+                  ),
+                  scrollDirection: Axis.horizontal,
+                  children: ApplicationStatusFilter.values
+                      .map(
+                        (filter) => Padding(
+                          padding: const EdgeInsets.only(right: AppSpacing.space2),
+                          child: ChoiceChip(
+                            label: Text(_labelFor(filter)),
+                            selected: _filter == filter,
+                            onSelected: (_) => setState(() => _filter = filter),
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  _CompanyLogo(
-                                    logoUrl: application.companyLogoUrl,
-                                    companyName: application.companyName,
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          application.jobTitle,
-                                          style: AppTextStyles.title.copyWith(
-                                            color: AppColors.textPrimary,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          application.companyName,
-                                          style: AppTextStyles.body.copyWith(
-                                            color: AppColors.textSecondary,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      ApplicationStatusChip(
-                                        status: application.status,
-                                      ),
-                                      if (application.isJobPostClosed) ...[
-                                        const SizedBox(height: 6),
-                                        const _ClosedBadge(),
-                                      ],
-                                    ],
-                                  ),
-                                ],
+                        ),
+                      )
+                      .toList(),
+                ),
+              ),
+              Expanded(
+                child: applicationsAsync.when(
+                  data: (applications) {
+                    if (applications.isEmpty) {
+                      return Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(AppSpacing.space8),
+                          child: GlassSurface(
+                            borderRadius: AppRadii.xl,
+                            child: Text(
+                              AppStrings.noApplications,
+                              style: AppTextStyles.body.copyWith(
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
                               ),
-                              const SizedBox(height: 12),
-                              Text(
-                                DateFormat(
-                                  'dd/MM/yyyy · HH:mm',
-                                ).format(application.createdAt),
-                                style: AppTextStyles.bodySmall.copyWith(
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                              if (application.interviewSchedule != null) ...[
-                                const SizedBox(height: 12),
-                                Container(
-                                  width: double.infinity,
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.surfaceVariant,
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                  child: Text(
-                                    '${AppStrings.interviewSchedule}: ${DateFormat('dd/MM/yyyy · HH:mm').format(application.interviewSchedule!.scheduledAt)}${application.interviewSchedule!.location?.isNotEmpty == true ? ' · ${application.interviewSchedule!.location}' : ''}',
-                                    style: AppTextStyles.bodySmall.copyWith(
-                                      color: AppColors.textPrimary,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                              if (application.canWithdraw) ...[
-                                const SizedBox(height: 12),
-                                Align(
-                                  alignment: Alignment.centerRight,
-                                  child: OutlinedButton(
-                                    onPressed: () =>
-                                        _confirmWithdraw(application),
-                                    child: const Text(
-                                      AppStrings.withdrawApplication,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ],
+                              textAlign: TextAlign.center,
+                            ),
                           ),
                         ),
                       );
-                    },
+                    }
+
+                    return RefreshIndicator(
+                      onRefresh: () async =>
+                          ref.invalidate(myApplicationsProvider(_filter)),
+                      child: ListView.separated(
+                        padding: const EdgeInsets.fromLTRB(
+                          AppSpacing.space4,
+                          AppSpacing.space4,
+                          AppSpacing.space4,
+                          AppSpacing.space8,
+                        ),
+                        itemCount: applications.length,
+                        separatorBuilder: (_, __) =>
+                            const SizedBox(height: AppSpacing.space3),
+                        itemBuilder: (context, index) {
+                          final application = applications[index];
+                          return _ApplicationCard(
+                            application: application,
+                            onTap: () => context.push('/applications/${application.id}'),
+                            onWithdraw: application.canWithdraw
+                                ? () => _confirmWithdraw(application)
+                                : null,
+                          );
+                        },
+                      ),
+                    );
+                  },
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (error, _) => Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppSpacing.space8),
+                      child: GlassSurface(
+                        borderRadius: AppRadii.xl,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.error_outline_rounded,
+                              size: 48,
+                              color: AppColors.error,
+                            ),
+                            const SizedBox(height: AppSpacing.space3),
+                            Text(
+                              error.toString(),
+                              style: AppTextStyles.body.copyWith(
+                                color: AppColors.error,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
-                );
-              },
-              loading: () => const Center(
-                child: CircularProgressIndicator(color: AppColors.primary),
+                ),
               ),
-              error: (error, _) => Center(child: Text(error.toString())),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -208,14 +181,10 @@ class _MyApplicationsPageState extends ConsumerState<MyApplicationsPage> {
       context: context,
       builder: (dialogContext) => Theme(
         data: Theme.of(dialogContext).copyWith(
-          dialogTheme: const DialogThemeData(
-            backgroundColor: AppColors.surface,
-          ),
+          dialogTheme: const DialogThemeData(backgroundColor: AppColors.surface),
         ),
         child: AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
-          ),
+          shape: const RoundedRectangleBorder(borderRadius: AppRadii.xl),
           title: const Text(AppStrings.withdrawConfirmTitle),
           content: const Text(AppStrings.withdrawConfirmMessage),
           actions: [
@@ -257,6 +226,117 @@ class _MyApplicationsPageState extends ConsumerState<MyApplicationsPage> {
   };
 }
 
+class _ApplicationCard extends StatelessWidget {
+  const _ApplicationCard({
+    required this.application,
+    required this.onTap,
+    this.onWithdraw,
+  });
+
+  final Application application;
+  final VoidCallback onTap;
+  final VoidCallback? onWithdraw;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AppRadii.xl,
+        child: Container(
+          padding: const EdgeInsets.all(AppSpacing.space4),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: AppRadii.xl,
+            border: Border.all(color: Theme.of(context).colorScheme.outline),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  _CompanyLogo(
+                    logoUrl: application.companyLogoUrl,
+                    companyName: application.companyName,
+                  ),
+                  const SizedBox(width: AppSpacing.space3),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          application.jobTitle,
+                          style: AppTextStyles.title.copyWith(
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          application.companyName,
+                          style: AppTextStyles.body.copyWith(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      ApplicationStatusChip(status: application.status),
+                      if (application.isJobPostClosed) ...[
+                        const SizedBox(height: 6),
+                        const _ClosedBadge(),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.space3),
+              Text(
+                DateFormat('dd/MM/yyyy · HH:mm').format(application.createdAt),
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+              if (application.interviewSchedule != null) ...[
+                const SizedBox(height: AppSpacing.space3),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(AppSpacing.space3),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    borderRadius: AppRadii.md,
+                  ),
+                  child: Text(
+                    '${AppStrings.interviewSchedule}: ${DateFormat('dd/MM/yyyy · HH:mm').format(application.interviewSchedule!.scheduledAt)}${application.interviewSchedule!.location?.isNotEmpty == true ? ' · ${application.interviewSchedule!.location}' : ''}',
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                ),
+              ],
+              if (onWithdraw != null) ...[
+                const SizedBox(height: AppSpacing.space3),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: PremiumButton(
+                    label: AppStrings.withdrawApplication,
+                    variant: PremiumButtonVariant.secondary,
+                    expand: false,
+                    onPressed: onWithdraw,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _ClosedBadge extends StatelessWidget {
   const _ClosedBadge();
 
@@ -265,8 +345,8 @@ class _ClosedBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: AppColors.textSecondary.withAlpha(24),
-        borderRadius: BorderRadius.circular(8),
+        color: AppColors.textSecondary.withValues(alpha: 0.14),
+        borderRadius: AppRadii.sm,
       ),
       child: Text(
         AppStrings.jobPostClosed,
@@ -290,7 +370,7 @@ class _CompanyLogo extends StatelessWidget {
     if (logoUrl == null || logoUrl!.isEmpty) {
       return CircleAvatar(
         radius: 22,
-        backgroundColor: AppColors.surfaceVariant,
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
         child: Text(companyName.isEmpty ? '?' : companyName[0].toUpperCase()),
       );
     }

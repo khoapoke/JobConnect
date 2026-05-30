@@ -4,7 +4,13 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_radii.dart';
+import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../shared/presentation/widgets/app_gradient_background.dart';
+import '../../../../shared/presentation/widgets/glass_surface.dart';
+import '../../../../shared/presentation/widgets/premium_button.dart';
+import '../../../../shared/presentation/widgets/status_chip.dart';
 import '../../domain/entities/job_filter.dart';
 import '../../domain/entities/job_search_result.dart';
 import '../providers/job_search_provider.dart';
@@ -12,7 +18,6 @@ import '../widgets/filter_bottom_sheet.dart';
 import '../widgets/job_card.dart';
 import '../widgets/job_card_skeleton.dart';
 
-/// Seeker-facing job search page with search bar, filters, and infinite scroll.
 class JobSearchPage extends ConsumerStatefulWidget {
   const JobSearchPage({super.key});
 
@@ -47,126 +52,94 @@ class _JobSearchPageState extends ConsumerState<JobSearchPage> {
     final state = ref.watch(jobSearchNotifierProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Search bar + Filter button
-            _buildSearchBar(),
-
-            // Active filter chips
-            if (_activeFilter.hasFilters) _buildActiveFilterChips(),
-
-            // Results count or loading indicator
-            _buildResultsHeader(state),
-
-            // Job list
-            Expanded(
-              child: state.when(
-                data: (jobs) => _buildJobList(jobs),
-                loading: () => _buildSkeletonList(),
-                error: (error, _) => _buildErrorState(error),
+      body: AppGradientBackground(
+        child: SafeArea(
+          child: Column(
+            children: [
+              _buildSearchHeader(context),
+              if (_activeFilter.hasFilters) _buildActiveFilterChips(),
+              _buildResultsHeader(state),
+              Expanded(
+                child: state.when(
+                  data: (jobs) => _buildJobList(jobs),
+                  loading: _buildSkeletonList,
+                  error: (error, _) => _buildErrorState(),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildSearchBar() {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-      color: AppColors.background,
-      child: Row(
+  Widget _buildSearchHeader(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.space4,
+        AppSpacing.space3,
+        AppSpacing.space4,
+        AppSpacing.space2,
+      ),
+      child: Column(
         children: [
-          Expanded(
-            child: TextField(
-              controller: _searchController,
-              onChanged: (value) {
-                ref
-                    .read(jobSearchNotifierProvider.notifier)
-                    .updateSearchQuery(value);
-              },
-              decoration: InputDecoration(
-                hintText: AppStrings.searchHint,
-                prefixIcon: const Icon(
-                  Icons.search,
-                  color: AppColors.textSecondary,
-                ),
-                filled: true,
-                fillColor: AppColors.surface,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
+          Row(
+            children: [
+              Expanded(
+                child: GlassSurface(
+                  borderRadius: AppRadii.lg,
+                  blurSigma: 12,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.space3,
+                    vertical: AppSpacing.space1,
+                  ),
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: (value) {
+                      ref
+                          .read(jobSearchNotifierProvider.notifier)
+                          .updateSearchQuery(value);
+                    },
+                    decoration: const InputDecoration(
+                      hintText: AppStrings.searchHint,
+                      prefixIcon: Icon(Icons.search_rounded),
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      filled: false,
+                    ),
+                    style: AppTextStyles.body,
+                  ),
                 ),
               ),
-              style: AppTextStyles.body.copyWith(color: AppColors.textPrimary),
-            ),
+              const SizedBox(width: AppSpacing.space2),
+              _HeaderIconButton(
+                icon: Icons.tune_rounded,
+                isActive: _activeFilter.hasFilters,
+                onTap: _openFilterSheet,
+              ),
+              const SizedBox(width: AppSpacing.space2),
+              _HeaderIconButton(
+                icon: Icons.bookmark_border_rounded,
+                onTap: () => context.push('/search/bookmarks'),
+              ),
+            ],
           ),
-          const SizedBox(width: 8),
-          _buildFilterButton(),
-          const SizedBox(width: 8),
-          _buildBookmarksButton(),
         ],
       ),
     );
   }
 
-  Widget _buildFilterButton() {
-    return Material(
-      color: AppColors.surface,
-      borderRadius: BorderRadius.circular(12),
-      child: InkWell(
-        onTap: _openFilterSheet,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.all(12),
-          child: Icon(
-            Icons.tune,
-            color: _activeFilter.hasFilters
-                ? AppColors.primary
-                : AppColors.textSecondary,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBookmarksButton() {
-    return Material(
-      color: AppColors.surface,
-      borderRadius: BorderRadius.circular(12),
-      child: InkWell(
-        onTap: () => context.push('/search/bookmarks'),
-        borderRadius: BorderRadius.circular(12),
-        child: const Padding(
-          padding: EdgeInsets.all(12),
-          child: Icon(Icons.bookmark_border, color: AppColors.textSecondary),
-        ),
-      ),
-    );
-  }
-
   Widget _buildActiveFilterChips() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space4),
       child: Wrap(
-        spacing: 6,
-        runSpacing: 6,
+        spacing: AppSpacing.space2,
+        runSpacing: AppSpacing.space2,
         children: [
           ..._buildFilterChipList(),
           TextButton(
             onPressed: _clearAllFilters,
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-              minimumSize: Size.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            ),
             child: Text(
               AppStrings.clearAll,
               style: AppTextStyles.label.copyWith(color: AppColors.error),
@@ -180,18 +153,15 @@ class _JobSearchPageState extends ConsumerState<JobSearchPage> {
   List<Widget> _buildFilterChipList() {
     final chips = <Widget>[];
 
-    // Category chips
     for (final id in _activeFilter.categoryIds) {
       chips.add(
         _FilterChip(
           label: 'Ngành: $id',
-          onRemove: () =>
-              _removeFilter(_activeFilter.copyWith(categoryIds: [])),
+          onRemove: () => _removeFilter(_activeFilter.copyWith(categoryIds: [])),
         ),
       );
     }
 
-    // Province chips
     for (final province in _activeFilter.provinces) {
       chips.add(
         _FilterChip(
@@ -204,7 +174,6 @@ class _JobSearchPageState extends ConsumerState<JobSearchPage> {
       );
     }
 
-    // Job type chips
     for (final type in _activeFilter.jobTypes) {
       final label = kJobTypeLabels[type] ?? type;
       chips.add(
@@ -218,18 +187,15 @@ class _JobSearchPageState extends ConsumerState<JobSearchPage> {
       );
     }
 
-    // Salary chip
     if (_activeFilter.salaryRange != null) {
       chips.add(
         _FilterChip(
           label: _activeFilter.salaryRange!.label,
-          onRemove: () =>
-              _removeFilter(_activeFilter.copyWith(salaryRange: null)),
+          onRemove: () => _removeFilter(_activeFilter.copyWith(salaryRange: null)),
         ),
       );
     }
 
-    // Remote chip
     if (_activeFilter.isRemote != null) {
       chips.add(
         _FilterChip(
@@ -244,16 +210,26 @@ class _JobSearchPageState extends ConsumerState<JobSearchPage> {
 
   Widget _buildResultsHeader(AsyncValue<List<JobSearchResult>> state) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
-      child: state.maybeWhen(
-        data: (jobs) {
-          if (jobs.isEmpty) return const SizedBox.shrink();
-          return Text(
-            '${jobs.length} ${AppStrings.jobResultsCount}',
-            style: AppTextStyles.label.copyWith(color: AppColors.textSecondary),
-          );
-        },
-        orElse: () => const SizedBox.shrink(),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.space4,
+        AppSpacing.space2,
+        AppSpacing.space4,
+        AppSpacing.space3,
+      ),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: state.maybeWhen(
+          data: (jobs) {
+            if (jobs.isEmpty) return const SizedBox.shrink();
+            return Text(
+              '${jobs.length} ${AppStrings.jobResultsCount}',
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            );
+          },
+          orElse: () => const SizedBox.shrink(),
+        ),
       ),
     );
   }
@@ -268,9 +244,7 @@ class _JobSearchPageState extends ConsumerState<JobSearchPage> {
 
     return RefreshIndicator(
       onRefresh: () async {
-        await ref
-            .read(jobSearchNotifierProvider.notifier)
-            .loadJobs(refresh: true);
+        await ref.read(jobSearchNotifierProvider.notifier).loadJobs(refresh: true);
       },
       child: NotificationListener<ScrollNotification>(
         onNotification: (notification) {
@@ -283,7 +257,12 @@ class _JobSearchPageState extends ConsumerState<JobSearchPage> {
           return false;
         },
         child: ListView.builder(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.space4,
+            0,
+            AppSpacing.space4,
+            AppSpacing.space8,
+          ),
           physics: const AlwaysScrollableScrollPhysics(),
           itemCount: jobs.length + (showLoadMoreIndicator ? 1 : 0),
           itemBuilder: (context, index) {
@@ -291,7 +270,7 @@ class _JobSearchPageState extends ConsumerState<JobSearchPage> {
               return const _LoadMoreIndicator();
             }
             return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.only(bottom: AppSpacing.space3),
               child: JobCard(result: jobs[index]),
             );
           },
@@ -302,11 +281,11 @@ class _JobSearchPageState extends ConsumerState<JobSearchPage> {
 
   Widget _buildSkeletonList() {
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.space4),
       itemCount: 3,
       itemBuilder: (context, index) {
         return const Padding(
-          padding: EdgeInsets.only(bottom: 12),
+          padding: EdgeInsets.only(bottom: AppSpacing.space3),
           child: JobCardSkeleton(),
         );
       },
@@ -316,68 +295,64 @@ class _JobSearchPageState extends ConsumerState<JobSearchPage> {
   Widget _buildEmptyState() {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.search_off,
-              size: 64,
-              color: AppColors.textSecondary.withAlpha(76),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              AppStrings.noResults,
-              style: AppTextStyles.body.copyWith(
-                color: AppColors.textSecondary,
+        padding: const EdgeInsets.all(AppSpacing.space8),
+        child: GlassSurface(
+          borderRadius: AppRadii.xl,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.search_off_rounded,
+                size: 64,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
-              textAlign: TextAlign.center,
-            ),
-            if (_activeFilter.hasFilters) ...[
-              const SizedBox(height: 16),
-              FilledButton(
-                onPressed: _clearAllFilters,
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: AppColors.onPrimary,
+              const SizedBox(height: AppSpacing.space4),
+              Text(
+                AppStrings.noResults,
+                style: AppTextStyles.sectionTitle.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
-                child: const Text(AppStrings.clearFilters),
+                textAlign: TextAlign.center,
               ),
+              const SizedBox(height: AppSpacing.space2),
+              if (_activeFilter.hasFilters) ...[
+                PremiumButton(
+                  label: AppStrings.clearFilters,
+                  onPressed: _clearAllFilters,
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildErrorState(Object error) {
+  Widget _buildErrorState() {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, size: 48, color: AppColors.error),
-            const SizedBox(height: 16),
-            Text(
-              AppStrings.loadMoreError,
-              style: AppTextStyles.body.copyWith(color: AppColors.error),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            FilledButton(
-              onPressed: () {
-                ref
-                    .read(jobSearchNotifierProvider.notifier)
-                    .loadJobs(refresh: true);
-              },
-              style: FilledButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.onPrimary,
+        padding: const EdgeInsets.all(AppSpacing.space8),
+        child: GlassSurface(
+          borderRadius: AppRadii.xl,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.error_outline_rounded, size: 48, color: AppColors.error),
+              const SizedBox(height: AppSpacing.space4),
+              Text(
+                AppStrings.loadMoreError,
+                style: AppTextStyles.body.copyWith(color: AppColors.error),
+                textAlign: TextAlign.center,
               ),
-              child: const Text(AppStrings.retry),
-            ),
-          ],
+              const SizedBox(height: AppSpacing.space4),
+              PremiumButton(
+                label: AppStrings.retry,
+                onPressed: () {
+                  ref.read(jobSearchNotifierProvider.notifier).loadJobs(refresh: true);
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -387,14 +362,10 @@ class _JobSearchPageState extends ConsumerState<JobSearchPage> {
     final result = await showModalBottomSheet<JobFilter>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.surfaceVariant,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
       builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.7,
+        initialChildSize: 0.78,
         minChildSize: 0.4,
-        maxChildSize: 0.9,
+        maxChildSize: 0.92,
         expand: false,
         builder: (context, scrollController) => SingleChildScrollView(
           controller: scrollController,
@@ -426,6 +397,36 @@ class _JobSearchPageState extends ConsumerState<JobSearchPage> {
   }
 }
 
+class _HeaderIconButton extends StatelessWidget {
+  const _HeaderIconButton({
+    required this.icon,
+    required this.onTap,
+    this.isActive = false,
+  });
+
+  final IconData icon;
+  final VoidCallback onTap;
+  final bool isActive;
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassSurface(
+      borderRadius: AppRadii.md,
+      blurSigma: 12,
+      padding: EdgeInsets.zero,
+      child: IconButton(
+        onPressed: onTap,
+        icon: Icon(
+          icon,
+          color: isActive
+              ? AppColors.primary
+              : Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+      ),
+    );
+  }
+}
+
 class _FilterChip extends StatelessWidget {
   const _FilterChip({required this.label, required this.onRemove});
 
@@ -434,25 +435,16 @@ class _FilterChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: AppColors.primary.withAlpha(26),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            label,
-            style: AppTextStyles.label.copyWith(color: AppColors.primary),
-          ),
-          const SizedBox(width: 4),
-          GestureDetector(
-            onTap: onRemove,
-            child: const Icon(Icons.close, size: 14, color: AppColors.primary),
-          ),
-        ],
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onRemove,
+        borderRadius: AppRadii.sm,
+        child: StatusChip(
+          label: label,
+          tone: StatusChipTone.primary,
+          icon: Icons.close_rounded,
+        ),
       ),
     );
   }
@@ -464,17 +456,8 @@ class _LoadMoreIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Padding(
-      padding: EdgeInsets.symmetric(vertical: 16),
-      child: Center(
-        child: SizedBox(
-          width: 24,
-          height: 24,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            color: AppColors.primary,
-          ),
-        ),
-      ),
+      padding: EdgeInsets.symmetric(vertical: AppSpacing.space4),
+      child: Center(child: CircularProgressIndicator()),
     );
   }
 }

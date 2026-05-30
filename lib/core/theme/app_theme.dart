@@ -78,8 +78,13 @@ class AppTheme {
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: isDark ? AppColors.surface : AppColors.surfaceLight,
+        height: 76,
         labelTextStyle: WidgetStatePropertyAll(
-          AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w700),
+          AppTextStyles.bodySmall.copyWith(
+            fontWeight: FontWeight.w600,
+            fontSize: 11,
+            height: 1.05,
+          ),
         ),
         indicatorColor: primary.withValues(alpha: isDark ? 0.18 : 0.12),
         iconTheme: WidgetStateProperty.resolveWith((states) {
@@ -95,9 +100,14 @@ class AppTheme {
         selectedItemColor: primary,
         unselectedItemColor: onSurfaceVariant,
         selectedLabelStyle: AppTextStyles.bodySmall.copyWith(
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w600,
+          fontSize: 11,
+          height: 1.05,
         ),
-        unselectedLabelStyle: AppTextStyles.bodySmall,
+        unselectedLabelStyle: AppTextStyles.bodySmall.copyWith(
+          fontSize: 11,
+          height: 1.05,
+        ),
         type: BottomNavigationBarType.fixed,
         elevation: 0,
       ),

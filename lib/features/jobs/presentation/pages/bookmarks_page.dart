@@ -3,7 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_radii.dart';
+import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../shared/presentation/widgets/app_gradient_background.dart';
+import '../../../../shared/presentation/widgets/glass_surface.dart';
+import '../../../../shared/presentation/widgets/premium_button.dart';
 import '../../domain/entities/bookmarked_job.dart';
 import '../providers/bookmark_provider.dart';
 import '../widgets/job_card.dart';
@@ -16,40 +21,35 @@ class BookmarksPage extends ConsumerWidget {
     final state = ref.watch(bookmarkedJobsProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text(AppStrings.bookmarkList),
-        backgroundColor: AppColors.surface,
-        foregroundColor: AppColors.textPrimary,
-      ),
-      body: state.when(
-        data: (bookmarks) {
-          if (bookmarks.isEmpty) return const _EmptyBookmarks();
-          return RefreshIndicator(
-            onRefresh: () async => ref.invalidate(bookmarkedJobsProvider),
-            child: ListView.separated(
-              padding: const EdgeInsets.all(16),
-              itemCount: bookmarks.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
-              itemBuilder: (context, index) {
-                final bookmark = bookmarks[index];
-                final result = bookmark.result;
-                if (result == null) {
-                  return UnavailableBookmarkedJobCard(bookmark: bookmark);
-                }
-                return JobCard(
-                  result: result,
-                  onBookmarkRemoved: () => ref.invalidate(bookmarkedJobsProvider),
-                );
-              },
-            ),
-          );
-        },
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
-        ),
-        error: (_, __) => _ErrorBookmarks(
-          onRetry: () => ref.invalidate(bookmarkedJobsProvider),
+      appBar: AppBar(title: const Text(AppStrings.bookmarkList)),
+      body: AppGradientBackground(
+        child: state.when(
+          data: (bookmarks) {
+            if (bookmarks.isEmpty) return const _EmptyBookmarks();
+            return RefreshIndicator(
+              onRefresh: () async => ref.invalidate(bookmarkedJobsProvider),
+              child: ListView.separated(
+                padding: const EdgeInsets.all(AppSpacing.space4),
+                itemCount: bookmarks.length,
+                separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.space3),
+                itemBuilder: (context, index) {
+                  final bookmark = bookmarks[index];
+                  final result = bookmark.result;
+                  if (result == null) {
+                    return UnavailableBookmarkedJobCard(bookmark: bookmark);
+                  }
+                  return JobCard(
+                    result: result,
+                    onBookmarkRemoved: () => ref.invalidate(bookmarkedJobsProvider),
+                  );
+                },
+              ),
+            );
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (_, __) => _ErrorBookmarks(
+            onRetry: () => ref.invalidate(bookmarkedJobsProvider),
+          ),
         ),
       ),
     );
@@ -99,67 +99,59 @@ class _UnavailableBookmarkedJobCardState
   Widget build(BuildContext context) {
     ref.watch(activeBookmarkIdsProvider);
 
-    return Card(
-      color: AppColors.surface,
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: AppColors.divider),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: AppColors.surfaceVariant,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(
-                Icons.work_off_outlined,
-                color: AppColors.textSecondary,
-              ),
+    return GlassSurface(
+      borderRadius: AppRadii.lg,
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              borderRadius: AppRadii.md,
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    AppStrings.unavailableBookmark,
-                    style: AppTextStyles.title.copyWith(
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    AppStrings.unavailableJobPost,
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
+            child: const Icon(
+              Icons.work_off_outlined,
+              color: AppColors.textSecondary,
             ),
-            ValueListenableBuilder<bool>(
-              valueListenable: _locked,
-              builder: (context, locked, _) {
-                return IconButton(
-                  onPressed: locked ? null : _removeBookmark,
-                  icon: ScaleTransition(
-                    scale: _scale,
-                    child: const Icon(
-                      Icons.bookmark_rounded,
-                      color: AppColors.primary,
-                    ),
+          ),
+          const SizedBox(width: AppSpacing.space3),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppStrings.unavailableBookmark,
+                  style: AppTextStyles.title.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
-                );
-              },
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  AppStrings.unavailableJobPost,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+          ValueListenableBuilder<bool>(
+            valueListenable: _locked,
+            builder: (context, locked, _) {
+              return IconButton(
+                onPressed: locked ? null : _removeBookmark,
+                icon: ScaleTransition(
+                  scale: _scale,
+                  child: const Icon(
+                    Icons.bookmark_rounded,
+                    color: AppColors.primary,
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
@@ -181,13 +173,7 @@ class _UnavailableBookmarkedJobCardState
     final success = results.first as bool;
     if (!success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            bookmarkFailureMessage(adding: false),
-            style: AppTextStyles.body.copyWith(color: AppColors.onPrimary),
-          ),
-          backgroundColor: AppColors.error,
-        ),
+        SnackBar(content: Text(bookmarkFailureMessage(adding: false))),
       );
       await _controller.reverse();
     }
@@ -202,28 +188,35 @@ class _EmptyBookmarks extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.bookmark_border,
-              size: 64,
-              color: AppColors.textSecondary.withAlpha(90),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              AppStrings.noBookmarks,
-              style: AppTextStyles.title.copyWith(color: AppColors.textPrimary),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              AppStrings.noBookmarksSubtitle,
-              style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
-              textAlign: TextAlign.center,
-            ),
-          ],
+        padding: const EdgeInsets.all(AppSpacing.space8),
+        child: GlassSurface(
+          borderRadius: AppRadii.xl,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.bookmark_border_rounded,
+                size: 64,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+              const SizedBox(height: AppSpacing.space4),
+              Text(
+                AppStrings.noBookmarks,
+                style: AppTextStyles.sectionTitle.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.space2),
+              Text(
+                AppStrings.noBookmarksSubtitle,
+                style: AppTextStyles.body.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -239,22 +232,22 @@ class _ErrorBookmarks extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, size: 48, color: AppColors.error),
-            const SizedBox(height: 16),
-            Text(
-              AppStrings.errorGeneral,
-              style: AppTextStyles.body.copyWith(color: AppColors.error),
-            ),
-            const SizedBox(height: 16),
-            FilledButton(
-              onPressed: onRetry,
-              child: const Text(AppStrings.retry),
-            ),
-          ],
+        padding: const EdgeInsets.all(AppSpacing.space8),
+        child: GlassSurface(
+          borderRadius: AppRadii.xl,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.error_outline, size: 48, color: AppColors.error),
+              const SizedBox(height: AppSpacing.space4),
+              Text(
+                AppStrings.errorGeneral,
+                style: AppTextStyles.body.copyWith(color: AppColors.error),
+              ),
+              const SizedBox(height: AppSpacing.space4),
+              PremiumButton(label: AppStrings.retry, onPressed: onRetry),
+            ],
+          ),
         ),
       ),
     );

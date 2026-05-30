@@ -6,7 +6,6 @@ import '../../shared/presentation/widgets/scroll_aware_bottom_nav_scaffold.dart'
 import '../../shared/widgets/placeholder_page.dart';
 import '../../shared/widgets/recruiter_shell.dart';
 import '../constants/app_strings.dart';
-import '../theme/app_colors.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/forgot_password_page.dart';
@@ -21,6 +20,7 @@ import '../../features/recruiter/presentation/pages/create_job_post_page.dart';
 import '../../features/recruiter/presentation/pages/my_job_posts_page.dart';
 import '../../features/recruiter/presentation/pages/edit_job_post_page.dart';
 import '../../features/recruiter/presentation/providers/company_provider.dart';
+import '../../features/jobs/presentation/pages/job_feed_page.dart';
 import '../../features/jobs/presentation/pages/job_search_page.dart';
 import '../../features/jobs/presentation/pages/job_detail_page.dart';
 import '../../features/jobs/presentation/pages/bookmarks_page.dart';
@@ -90,35 +90,36 @@ GoRouter appRouter(Ref ref) {
             UserRole.seeker => ScrollAwareBottomNavScaffold(
               currentIndex: navigationShell.currentIndex,
               body: navigationShell,
-              bottomNavigationBar: BottomNavigationBar(
-                currentIndex: navigationShell.currentIndex,
-                onTap: (index) => navigationShell.goBranch(
+              bottomNavigationBar: NavigationBar(
+                selectedIndex: navigationShell.currentIndex,
+                onDestinationSelected: (index) => navigationShell.goBranch(
                   index,
                   initialLocation: index == navigationShell.currentIndex,
                 ),
-                type: BottomNavigationBarType.fixed,
-                backgroundColor: AppColors.surface,
-                selectedItemColor: AppColors.primary,
-                unselectedItemColor: AppColors.textSecondary,
-                items: const [
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.home),
+                destinations: const [
+                  NavigationDestination(
+                    icon: Icon(Icons.home_outlined),
+                    selectedIcon: Icon(Icons.home_rounded),
                     label: AppStrings.home,
                   ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.search),
+                  NavigationDestination(
+                    icon: Icon(Icons.search_rounded),
+                    selectedIcon: Icon(Icons.search_off_rounded),
                     label: AppStrings.search,
                   ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.work),
-                    label: AppStrings.applications,
+                  NavigationDestination(
+                    icon: Icon(Icons.work_outline_rounded),
+                    selectedIcon: Icon(Icons.work_rounded),
+                    label: 'Ứng tuyển',
                   ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.message),
+                  NavigationDestination(
+                    icon: Icon(Icons.chat_bubble_outline_rounded),
+                    selectedIcon: Icon(Icons.chat_bubble_rounded),
                     label: AppStrings.conversations,
                   ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.person),
+                  NavigationDestination(
+                    icon: Icon(Icons.person_outline_rounded),
+                    selectedIcon: Icon(Icons.person_rounded),
                     label: AppStrings.profile,
                   ),
                 ],
@@ -130,35 +131,36 @@ GoRouter appRouter(Ref ref) {
             UserRole.admin => ScrollAwareBottomNavScaffold(
               currentIndex: navigationShell.currentIndex,
               body: navigationShell,
-              bottomNavigationBar: BottomNavigationBar(
-                currentIndex: navigationShell.currentIndex,
-                onTap: (index) => navigationShell.goBranch(
+              bottomNavigationBar: NavigationBar(
+                selectedIndex: navigationShell.currentIndex,
+                onDestinationSelected: (index) => navigationShell.goBranch(
                   index,
                   initialLocation: index == navigationShell.currentIndex,
                 ),
-                type: BottomNavigationBarType.fixed,
-                backgroundColor: AppColors.surface,
-                selectedItemColor: AppColors.primary,
-                unselectedItemColor: AppColors.textSecondary,
-                items: const [
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.home),
+                destinations: const [
+                  NavigationDestination(
+                    icon: Icon(Icons.home_outlined),
+                    selectedIcon: Icon(Icons.home_rounded),
                     label: AppStrings.home,
                   ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.search),
+                  NavigationDestination(
+                    icon: Icon(Icons.search_rounded),
+                    selectedIcon: Icon(Icons.search_off_rounded),
                     label: AppStrings.search,
                   ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.work),
-                    label: AppStrings.applications,
+                  NavigationDestination(
+                    icon: Icon(Icons.work_outline_rounded),
+                    selectedIcon: Icon(Icons.work_rounded),
+                    label: 'Ứng tuyển',
                   ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.message),
+                  NavigationDestination(
+                    icon: Icon(Icons.chat_bubble_outline_rounded),
+                    selectedIcon: Icon(Icons.chat_bubble_rounded),
                     label: AppStrings.conversations,
                   ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.person),
+                  NavigationDestination(
+                    icon: Icon(Icons.person_outline_rounded),
+                    selectedIcon: Icon(Icons.person_rounded),
                     label: AppStrings.profile,
                   ),
                 ],
@@ -174,8 +176,7 @@ GoRouter appRouter(Ref ref) {
             routes: [
               GoRoute(
                 path: '/',
-                builder: (context, state) =>
-                    const PlaceholderPage(title: AppStrings.home),
+                builder: (context, state) => const JobFeedPage(),
               ),
             ],
           ),
