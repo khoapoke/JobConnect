@@ -34,6 +34,7 @@ class JobConnectApp extends ConsumerWidget {
       title: AppConstants.appName,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
+      themeMode: ThemeMode.dark,
       routerConfig: router,
     );
   }

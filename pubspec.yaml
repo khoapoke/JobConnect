@@ -39,15 +39,27 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   fonts:
-    - family: PlusJakartaSans
+    - family: Inter
       fonts:
-        - asset: assets/fonts/PlusJakartaSans-Regular.ttf
+        - asset: assets/fonts/inter/Inter-Variable.ttf
           weight: 400
-        - asset: assets/fonts/PlusJakartaSans-Medium.ttf
+        - asset: assets/fonts/inter/Inter-Variable.ttf
           weight: 500
-        - asset: assets/fonts/PlusJakartaSans-SemiBold.ttf
+        - asset: assets/fonts/inter/Inter-Variable.ttf
           weight: 600
-        - asset: assets/fonts/PlusJakartaSans-Bold.ttf
+        - asset: assets/fonts/inter/Inter-Variable.ttf
           weight: 700
-        - asset: assets/fonts/PlusJakartaSans-ExtraBold.ttf
+        - asset: assets/fonts/inter/Inter-Variable.ttf
           weight: 800
+        - asset: assets/fonts/inter/Inter-Italic-Variable.ttf
+          style: italic
+          weight: 400
+        - asset: assets/fonts/inter/Inter-Italic-Variable.ttf
+          style: italic
+          weight: 500
+    - family: SpaceGrotesk
+      fonts:
+        - asset: assets/fonts/space_grotesk/SpaceGrotesk-Variable.ttf
+          weight: 500
+        - asset: assets/fonts/space_grotesk/SpaceGrotesk-Variable.ttf
+          weight: 700

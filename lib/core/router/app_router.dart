@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:go_router/go_router.dart';
+import '../../shared/presentation/widgets/scroll_aware_bottom_nav_scaffold.dart';
 import '../../shared/widgets/placeholder_page.dart';
 import '../../shared/widgets/recruiter_shell.dart';
 import '../constants/app_strings.dart';
@@ -86,7 +87,8 @@ GoRouter appRouter(Ref ref) {
         builder: (context, state, navigationShell) {
           final role = _resolveRole(ref);
           return switch (role) {
-            UserRole.seeker => Scaffold(
+            UserRole.seeker => ScrollAwareBottomNavScaffold(
+              currentIndex: navigationShell.currentIndex,
               body: navigationShell,
               bottomNavigationBar: BottomNavigationBar(
                 currentIndex: navigationShell.currentIndex,
@@ -125,7 +127,8 @@ GoRouter appRouter(Ref ref) {
             // TODO(T-33): Replace with AdminShell when admin feature is built.
             // Admin borrows SeekerShell temporarily — cannot use PlaceholderPage
             // here because StatefulShellRoute builder expects a shell widget.
-            UserRole.admin => Scaffold(
+            UserRole.admin => ScrollAwareBottomNavScaffold(
+              currentIndex: navigationShell.currentIndex,
               body: navigationShell,
               bottomNavigationBar: BottomNavigationBar(
                 currentIndex: navigationShell.currentIndex,
