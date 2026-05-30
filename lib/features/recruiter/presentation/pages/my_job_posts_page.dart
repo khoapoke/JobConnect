@@ -68,7 +68,7 @@ class _MyJobPostsPageState extends ConsumerState<MyJobPostsPage>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.error_outline, size: 48, color: AppColors.error),
+              const Icon(Icons.error_outline, size: 48, color: AppColors.error),
               const SizedBox(height: 16),
               Text(
                 'Lỗi: ${error.toString()}',
@@ -95,8 +95,9 @@ class _MyJobPostsPageState extends ConsumerState<MyJobPostsPage>
   Widget _buildTabViews(List<JobPost> jobPosts) {
     final draftPosts = jobPosts.where((p) => p.status == 'draft').toList();
     final activePosts = jobPosts.where((p) => p.status == 'active').toList();
-    final closedPosts =
-        jobPosts.where((p) => p.status == 'closed' || p.status == 'rejected').toList();
+    final closedPosts = jobPosts
+        .where((p) => p.status == 'closed' || p.status == 'rejected')
+        .toList();
 
     return TabBarView(
       controller: _tabController,
@@ -137,7 +138,7 @@ class _MyJobPostsPageState extends ConsumerState<MyJobPostsPage>
             Icon(
               Icons.work_outline,
               size: 64,
-              color: AppColors.textSecondary.withOpacity(0.3),
+              color: AppColors.textSecondary.withValues(alpha: 0.3),
             ),
             const SizedBox(height: 16),
             Text(
@@ -175,11 +176,15 @@ class _MyJobPostsPageState extends ConsumerState<MyJobPostsPage>
               onClose: showClose && jobPost.canClose
                   ? () => _confirmClose(jobPost)
                   : null,
-              onDiscard: showDiscard
-                  ? () => _confirmDiscard(jobPost)
-                  : null,
-              onResubmit: showResubmitForRejected && jobPost.status == 'rejected'
+              onDiscard: showDiscard ? () => _confirmDiscard(jobPost) : null,
+              onResubmit:
+                  showResubmitForRejected && jobPost.status == 'rejected'
                   ? () => _confirmResubmit(jobPost)
+                  : null,
+              onViewApplicants: jobPost.status == 'active'
+                  ? () => context.push(
+                      '/recruiter/posts/${jobPost.id}/applicants',
+                    )
                   : null,
             ),
           );
@@ -240,7 +245,9 @@ class _MyJobPostsPageState extends ConsumerState<MyJobPostsPage>
       context: context,
       builder: (dialogContext) => Theme(
         data: Theme.of(dialogContext).copyWith(
-          dialogTheme: const DialogThemeData(backgroundColor: AppColors.surface),
+          dialogTheme: const DialogThemeData(
+            backgroundColor: AppColors.surface,
+          ),
         ),
         child: AlertDialog(
           title: Text(
@@ -256,7 +263,9 @@ class _MyJobPostsPageState extends ConsumerState<MyJobPostsPage>
               onPressed: () => Navigator.pop(dialogContext, false),
               child: Text(
                 AppStrings.cancel,
-                style: AppTextStyles.label.copyWith(color: AppColors.textSecondary),
+                style: AppTextStyles.label.copyWith(
+                  color: AppColors.textSecondary,
+                ),
               ),
             ),
             FilledButton(
@@ -265,10 +274,7 @@ class _MyJobPostsPageState extends ConsumerState<MyJobPostsPage>
                 backgroundColor: AppColors.primary,
                 foregroundColor: AppColors.onPrimary,
               ),
-              child: Text(
-                AppStrings.confirm,
-                style: AppTextStyles.label,
-              ),
+              child: const Text(AppStrings.confirm),
             ),
           ],
           shape: RoundedRectangleBorder(
@@ -292,14 +298,14 @@ class _MyJobPostsPageState extends ConsumerState<MyJobPostsPage>
 
     result.fold(
       (failure) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(failure.message)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(failure.message)));
       },
       (_) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(successMessage)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(successMessage)));
         ref.invalidate(myJobPostsProvider);
       },
     );

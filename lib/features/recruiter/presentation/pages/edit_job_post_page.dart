@@ -155,7 +155,7 @@ class _EditJobPostPageState extends ConsumerState<EditJobPostPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.error_outline, size: 48, color: AppColors.error),
+                    const Icon(Icons.error_outline, size: 48, color: AppColors.error),
                     const SizedBox(height: 16),
                     Text(
                       'Lỗi: ${error.toString()}',
@@ -183,7 +183,7 @@ class _EditJobPostPageState extends ConsumerState<EditJobPostPage> {
           // Title
           TextFormField(
             controller: _titleController,
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               labelText: 'Tiêu đề *',
               border: OutlineInputBorder(),
             ),
@@ -194,7 +194,7 @@ class _EditJobPostPageState extends ConsumerState<EditJobPostPage> {
           // Description
           TextFormField(
             controller: _descriptionController,
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               labelText: 'Mô tả *',
               border: OutlineInputBorder(),
             ),
@@ -206,7 +206,7 @@ class _EditJobPostPageState extends ConsumerState<EditJobPostPage> {
           // Requirements
           TextFormField(
             controller: _requirementsController,
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               labelText: 'Yêu cầu *',
               border: OutlineInputBorder(),
             ),
@@ -221,7 +221,7 @@ class _EditJobPostPageState extends ConsumerState<EditJobPostPage> {
               Expanded(
                 child: TextFormField(
                   controller: _salaryMinController,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Lương tối thiểu (VNĐ) *',
                     border: OutlineInputBorder(),
                   ),
@@ -233,7 +233,7 @@ class _EditJobPostPageState extends ConsumerState<EditJobPostPage> {
               Expanded(
                 child: TextFormField(
                   controller: _salaryMaxController,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Lương tối đa (VNĐ) *',
                     border: OutlineInputBorder(),
                   ),
@@ -260,7 +260,7 @@ class _EditJobPostPageState extends ConsumerState<EditJobPostPage> {
           // Job type
           DropdownButtonFormField<String>(
             initialValue: _selectedType,
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               labelText: 'Loại công việc *',
               border: OutlineInputBorder(),
             ),
@@ -280,7 +280,7 @@ class _EditJobPostPageState extends ConsumerState<EditJobPostPage> {
             onTap: _pickCategory,
             borderRadius: BorderRadius.circular(8),
             child: InputDecorator(
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: AppStrings.jobCategory,
                 border: OutlineInputBorder(),
               ),
@@ -304,7 +304,7 @@ class _EditJobPostPageState extends ConsumerState<EditJobPostPage> {
           const SizedBox(height: 8),
           TextFormField(
             controller: _provinceController,
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               labelText: 'Tỉnh/Thành phố *',
               border: OutlineInputBorder(),
             ),
@@ -313,7 +313,7 @@ class _EditJobPostPageState extends ConsumerState<EditJobPostPage> {
           const SizedBox(height: 16),
           TextFormField(
             controller: _districtController,
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               labelText: 'Quận/Huyện',
               border: OutlineInputBorder(),
             ),
@@ -321,7 +321,7 @@ class _EditJobPostPageState extends ConsumerState<EditJobPostPage> {
           const SizedBox(height: 16),
           TextFormField(
             controller: _addressController,
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               labelText: 'Địa chỉ cụ thể',
               border: OutlineInputBorder(),
             ),
@@ -340,10 +340,10 @@ class _EditJobPostPageState extends ConsumerState<EditJobPostPage> {
 
           // Expires at
           TextFormField(
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               labelText: 'Hạn nộp hồ sơ',
-              border: const OutlineInputBorder(),
-              suffixIcon: const Icon(Icons.calendar_today),
+              border: OutlineInputBorder(),
+              suffixIcon: Icon(Icons.calendar_today),
             ),
             readOnly: true,
             controller: TextEditingController(
@@ -438,7 +438,7 @@ class _EditJobPostPageState extends ConsumerState<EditJobPostPage> {
                 foregroundColor: AppColors.onPrimary,
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
-              child: Text(
+              child: const Text(
                 AppStrings.saveChanges,
                 style: AppTextStyles.label,
               ),
@@ -467,7 +467,7 @@ class _EditJobPostPageState extends ConsumerState<EditJobPostPage> {
                   side: const BorderSide(color: AppColors.error),
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                child: Text(
+                child: const Text(
                   AppStrings.close,
                   style: AppTextStyles.label,
                 ),
@@ -497,7 +497,7 @@ class _EditJobPostPageState extends ConsumerState<EditJobPostPage> {
     if (salaryMin == null || salaryMax == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lương không hợp lệ')),
+          const SnackBar(content: Text('Lương không hợp lệ')),
         );
       }
       setState(() => _isSaving = false);
@@ -560,16 +560,16 @@ class _EditJobPostPageState extends ConsumerState<EditJobPostPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(AppStrings.publishConfirmTitle),
-        content: Text(AppStrings.publishConfirmMessage),
+        title: const Text(AppStrings.publishConfirmTitle),
+        content: const Text(AppStrings.publishConfirmMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text(AppStrings.cancel),
+            child: const Text(AppStrings.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text(AppStrings.confirm),
+            child: const Text(AppStrings.confirm),
           ),
         ],
       ),
@@ -607,12 +607,12 @@ class _EditJobPostPageState extends ConsumerState<EditJobPostPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(AppStrings.closeConfirmTitle),
-        content: Text(AppStrings.closeConfirmMessage),
+        title: const Text(AppStrings.closeConfirmTitle),
+        content: const Text(AppStrings.closeConfirmMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text(AppStrings.cancel),
+            child: const Text(AppStrings.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
@@ -620,7 +620,7 @@ class _EditJobPostPageState extends ConsumerState<EditJobPostPage> {
               backgroundColor: AppColors.error,
               foregroundColor: AppColors.onPrimary,
             ),
-            child: Text(AppStrings.confirm),
+            child: const Text(AppStrings.confirm),
           ),
         ],
       ),
@@ -658,12 +658,12 @@ class _EditJobPostPageState extends ConsumerState<EditJobPostPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(AppStrings.discardConfirmTitle),
-        content: Text(AppStrings.discardConfirmMessage),
+        title: const Text(AppStrings.discardConfirmTitle),
+        content: const Text(AppStrings.discardConfirmMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text(AppStrings.cancel),
+            child: const Text(AppStrings.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
@@ -671,7 +671,7 @@ class _EditJobPostPageState extends ConsumerState<EditJobPostPage> {
               backgroundColor: AppColors.error,
               foregroundColor: AppColors.onPrimary,
             ),
-            child: Text(AppStrings.confirm),
+            child: const Text(AppStrings.confirm),
           ),
         ],
       ),

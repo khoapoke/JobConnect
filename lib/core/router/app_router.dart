@@ -23,6 +23,16 @@ import '../../features/recruiter/presentation/providers/company_provider.dart';
 import '../../features/jobs/presentation/pages/job_search_page.dart';
 import '../../features/jobs/presentation/pages/job_detail_page.dart';
 import '../../features/jobs/presentation/pages/bookmarks_page.dart';
+import '../../features/application/domain/entities/resume.dart';
+import '../../features/application/presentation/pages/application_detail_page.dart';
+import '../../features/application/presentation/pages/applicant_detail_page.dart';
+import '../../features/application/presentation/pages/applicants_page.dart';
+import '../../features/application/presentation/pages/apply_page.dart';
+import '../../features/application/presentation/pages/my_applications_page.dart';
+import '../../features/application/presentation/pages/resume_builder_page.dart';
+import '../../features/application/presentation/pages/resume_preview_page.dart';
+import '../../features/application/presentation/pages/resumes_page.dart';
+import '../../features/application/presentation/pages/schedule_interview_page.dart';
 import 'user_role.dart';
 
 part 'app_router.g.dart';
@@ -39,10 +49,7 @@ UserRole _resolveRole(Ref ref) {
 @riverpod
 GoRouter appRouter(Ref ref) {
   final listenable = ValueNotifier<bool>(false);
-  ref.listen(
-    authProvider,
-    (_, __) => listenable.value = !listenable.value,
-  );
+  ref.listen(authProvider, (_, __) => listenable.value = !listenable.value);
 
   return GoRouter(
     initialLocation: '/',
@@ -58,9 +65,7 @@ GoRouter appRouter(Ref ref) {
         if (!authState.isOnboardingComplete) return '/onboarding';
         if (publicRoutes.contains(state.matchedLocation)) {
           // Redirect to role-appropriate home
-          return authState.role == UserRole.recruiter
-              ? '/recruiter/home'
-              : '/';
+          return authState.role == UserRole.recruiter ? '/recruiter/home' : '/';
         }
         // Company guard for job post creation
         if (state.matchedLocation == '/recruiter/posts/new') {
@@ -82,51 +87,83 @@ GoRouter appRouter(Ref ref) {
           final role = _resolveRole(ref);
           return switch (role) {
             UserRole.seeker => Scaffold(
-                body: navigationShell,
-                bottomNavigationBar: BottomNavigationBar(
-                  currentIndex: navigationShell.currentIndex,
-                  onTap: (index) => navigationShell.goBranch(
-                    index,
-                    initialLocation: index == navigationShell.currentIndex,
-                  ),
-                  type: BottomNavigationBarType.fixed,
-                  backgroundColor: AppColors.surface,
-                  selectedItemColor: AppColors.primary,
-                  unselectedItemColor: AppColors.textSecondary,
-                  items: const [
-                    BottomNavigationBarItem(icon: Icon(Icons.home), label: AppStrings.home),
-                    BottomNavigationBarItem(icon: Icon(Icons.search), label: AppStrings.search),
-                    BottomNavigationBarItem(icon: Icon(Icons.work), label: AppStrings.applications),
-                    BottomNavigationBarItem(icon: Icon(Icons.message), label: AppStrings.conversations),
-                    BottomNavigationBarItem(icon: Icon(Icons.person), label: AppStrings.profile),
-                  ],
+              body: navigationShell,
+              bottomNavigationBar: BottomNavigationBar(
+                currentIndex: navigationShell.currentIndex,
+                onTap: (index) => navigationShell.goBranch(
+                  index,
+                  initialLocation: index == navigationShell.currentIndex,
                 ),
+                type: BottomNavigationBarType.fixed,
+                backgroundColor: AppColors.surface,
+                selectedItemColor: AppColors.primary,
+                unselectedItemColor: AppColors.textSecondary,
+                items: const [
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.home),
+                    label: AppStrings.home,
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.search),
+                    label: AppStrings.search,
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.work),
+                    label: AppStrings.applications,
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.message),
+                    label: AppStrings.conversations,
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.person),
+                    label: AppStrings.profile,
+                  ),
+                ],
               ),
+            ),
             // TODO(T-33): Replace with AdminShell when admin feature is built.
             // Admin borrows SeekerShell temporarily — cannot use PlaceholderPage
             // here because StatefulShellRoute builder expects a shell widget.
             UserRole.admin => Scaffold(
-                body: navigationShell,
-                bottomNavigationBar: BottomNavigationBar(
-                  currentIndex: navigationShell.currentIndex,
-                  onTap: (index) => navigationShell.goBranch(
-                    index,
-                    initialLocation: index == navigationShell.currentIndex,
-                  ),
-                  type: BottomNavigationBarType.fixed,
-                  backgroundColor: AppColors.surface,
-                  selectedItemColor: AppColors.primary,
-                  unselectedItemColor: AppColors.textSecondary,
-                  items: const [
-                    BottomNavigationBarItem(icon: Icon(Icons.home), label: AppStrings.home),
-                    BottomNavigationBarItem(icon: Icon(Icons.search), label: AppStrings.search),
-                    BottomNavigationBarItem(icon: Icon(Icons.work), label: AppStrings.applications),
-                    BottomNavigationBarItem(icon: Icon(Icons.message), label: AppStrings.conversations),
-                    BottomNavigationBarItem(icon: Icon(Icons.person), label: AppStrings.profile),
-                  ],
+              body: navigationShell,
+              bottomNavigationBar: BottomNavigationBar(
+                currentIndex: navigationShell.currentIndex,
+                onTap: (index) => navigationShell.goBranch(
+                  index,
+                  initialLocation: index == navigationShell.currentIndex,
                 ),
+                type: BottomNavigationBarType.fixed,
+                backgroundColor: AppColors.surface,
+                selectedItemColor: AppColors.primary,
+                unselectedItemColor: AppColors.textSecondary,
+                items: const [
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.home),
+                    label: AppStrings.home,
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.search),
+                    label: AppStrings.search,
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.work),
+                    label: AppStrings.applications,
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.message),
+                    label: AppStrings.conversations,
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.person),
+                    label: AppStrings.profile,
+                  ),
+                ],
               ),
-            UserRole.recruiter => RecruiterShell(navigationShell: navigationShell),
+            ),
+            UserRole.recruiter => RecruiterShell(
+              navigationShell: navigationShell,
+            ),
           };
         },
         branches: [
@@ -134,7 +171,8 @@ GoRouter appRouter(Ref ref) {
             routes: [
               GoRoute(
                 path: '/',
-                builder: (context, state) => const PlaceholderPage(title: AppStrings.home),
+                builder: (context, state) =>
+                    const PlaceholderPage(title: AppStrings.home),
               ),
             ],
           ),
@@ -154,6 +192,13 @@ GoRouter appRouter(Ref ref) {
                       final id = state.pathParameters['id']!;
                       return JobDetailPage(jobPostId: id);
                     },
+                    routes: [
+                      GoRoute(
+                        path: 'apply',
+                        builder: (context, state) =>
+                            ApplyPage(jobId: state.pathParameters['id']!),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -163,7 +208,15 @@ GoRouter appRouter(Ref ref) {
             routes: [
               GoRoute(
                 path: '/applications',
-                builder: (context, state) => const PlaceholderPage(title: AppStrings.applications),
+                builder: (context, state) => const MyApplicationsPage(),
+                routes: [
+                  GoRoute(
+                    path: ':id',
+                    builder: (context, state) => ApplicationDetailPage(
+                      applicationId: state.pathParameters['id']!,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -171,7 +224,8 @@ GoRouter appRouter(Ref ref) {
             routes: [
               GoRoute(
                 path: '/conversations',
-                builder: (context, state) => const PlaceholderPage(title: AppStrings.conversations),
+                builder: (context, state) =>
+                    const PlaceholderPage(title: AppStrings.conversations),
               ),
             ],
           ),
@@ -218,6 +272,11 @@ GoRouter appRouter(Ref ref) {
                       return EditJobPostPage(jobId: id);
                     },
                   ),
+                  GoRoute(
+                    path: ':id/applicants',
+                    builder: (context, state) =>
+                        ApplicantsPage(jobId: state.pathParameters['id']!),
+                  ),
                 ],
               ),
             ],
@@ -243,10 +302,7 @@ GoRouter appRouter(Ref ref) {
       ),
 
       // ─── Auth routes (outside shell) ─────────────────────────────
-      GoRoute(
-        path: '/login',
-        builder: (context, state) => const LoginPage(),
-      ),
+      GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
       GoRoute(
         path: '/register',
         builder: (context, state) => const RegisterPage(),
@@ -278,6 +334,48 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/recruiter/profile/edit',
         builder: (context, state) => const EditProfilePage(),
+      ),
+      GoRoute(
+        path: '/resumes',
+        builder: (context, state) => const ResumesPage(),
+        routes: [
+          GoRoute(
+            path: 'builder',
+            builder: (context, state) =>
+                ResumeBuilderPage(initialResume: state.extra as Resume?),
+          ),
+          GoRoute(
+            path: 'preview',
+            builder: (context, state) {
+              final resume = state.extra! as Resume;
+              return ResumePreviewPage(
+                resumePath: resume.fileUrl!,
+                title: resume.title,
+              );
+            },
+          ),
+          GoRoute(
+            path: 'preview-path',
+            builder: (context, state) {
+              final resumePath = state.extra! as String;
+              return ResumePreviewPage(resumePath: resumePath);
+            },
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/recruiter/applications/:id',
+        builder: (context, state) =>
+            ApplicantDetailPage(applicationId: state.pathParameters['id']!),
+        routes: [
+          GoRoute(
+            path: 'schedule',
+            builder: (context, state) => ScheduleInterviewPage(
+              applicationId: state.pathParameters['id']!,
+              jobId: state.extra! as String,
+            ),
+          ),
+        ],
       ),
     ],
   );

@@ -124,7 +124,8 @@ class JobPostDatasourceImpl implements JobPostDatasource {
           .select('job_id, skill_id, is_required, skills!inner(name)')
           .eq('job_id', jobId);
 
-      final skills = (skillsData as List).map((json) {
+      final skills = (skillsData as List<dynamic>).map((item) {
+        final json = item as Map<String, dynamic>;
         final skillData = json['skills'] as Map<String, dynamic>?;
         final skillName = skillData?['name'] as String?;
         return JobRequiredSkillModel.fromJson({

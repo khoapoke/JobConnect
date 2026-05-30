@@ -1,0 +1,268 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
+
+import '../../../../core/constants/app_strings.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../../auth/domain/entities/auth_state.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
+import '../providers/application_provider.dart';
+import '../widgets/application_status_chip.dart';
+
+class ApplicationDetailPage extends ConsumerWidget {
+  const ApplicationDetailPage({super.key, required this.applicationId});
+
+  final String applicationId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final detailAsync = ref.watch(myApplicationDetailProvider(applicationId));
+    final auth = ref.watch(authProvider);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(AppStrings.applicationDetail),
+        backgroundColor: AppColors.surface,
+        foregroundColor: AppColors.textPrimary,
+      ),
+      backgroundColor: AppColors.background,
+      body: detailAsync.when(
+        data: (application) {
+          if (application == null) {
+            return const Center(child: Text(AppStrings.unavailableJobPost));
+          }
+          return ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: AppColors.divider),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                application.jobTitle,
+                                style: AppTextStyles.headline.copyWith(
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                application.companyName,
+                                style: AppTextStyles.body.copyWith(
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        ApplicationStatusChip(status: application.status),
+                      ],
+                    ),
+                    if (application.isJobPostClosed)
+                      const _JobClosedBanner(),
+                    const SizedBox(height: 12),
+                    Text(
+                      DateFormat(
+                        'dd/MM/yyyy · HH:mm',
+                      ).format(application.createdAt),
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    if (application.resumeUrl?.isNotEmpty == true) ...[
+                      const SizedBox(height: 12),
+                      OutlinedButton.icon(
+                        onPressed: () => context.push(
+                          '/resumes/preview-path',
+                          extra: application.resumeUrl!,
+                        ),
+                        icon: const Icon(Icons.picture_as_pdf_outlined),
+                        label: const Text(AppStrings.viewResume),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              if (application.coverLetter?.isNotEmpty == true) ...[
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: AppColors.divider),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        AppStrings.coverLetter,
+                        style: AppTextStyles.title.copyWith(
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        application.coverLetter!,
+                        style: AppTextStyles.body.copyWith(
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+              if (application.interviewSchedule != null) ...[
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: AppColors.divider),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        AppStrings.interviewSchedule,
+                        style: AppTextStyles.title.copyWith(
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        DateFormat(
+                          'dd/MM/yyyy · HH:mm',
+                        ).format(application.interviewSchedule!.scheduledAt),
+                      ),
+                      if (application.interviewSchedule!.location?.isNotEmpty ==
+                          true)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Text(application.interviewSchedule!.location!),
+                        ),
+                      if (application.interviewSchedule!.note?.isNotEmpty ==
+                          true)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Text(application.interviewSchedule!.note!),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+              if ((application.canEditSubmission || application.canWithdraw) &&
+                  auth is AuthAuthenticated) ...[
+                const SizedBox(height: 20),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  alignment: WrapAlignment.end,
+                  children: [
+                    if (application.canEditSubmission)
+                      OutlinedButton.icon(
+                        onPressed: () => context.push(
+                          '/search/${application.jobId}/apply',
+                        ),
+                        icon: const Icon(Icons.edit_outlined),
+                        label: const Text(AppStrings.editApplication),
+                      ),
+                    if (application.canWithdraw)
+                      FilledButton(
+                        onPressed: () async {
+                          final result = await ref
+                              .read(
+                                applicationActionNotifierProvider.notifier,
+                              )
+                              .withdraw(
+                                seekerId: auth.userId,
+                                applicationId: application.id,
+                              );
+                          if (!context.mounted) return;
+                          result.fold(
+                            (failure) => ScaffoldMessenger.of(
+                              context,
+                            ).showSnackBar(
+                              SnackBar(content: Text(failure.message)),
+                            ),
+                            (_) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    AppStrings.applicationWithdrawn,
+                                  ),
+                                ),
+                              );
+                              ref.invalidate(
+                                myApplicationDetailProvider(application.id),
+                              );
+                            },
+                          );
+                        },
+                        child: const Text(AppStrings.withdrawApplication),
+                      ),
+                  ],
+                ),
+              ],
+            ],
+          );
+        },
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
+        error: (error, _) => Center(child: Text(error.toString())),
+      ),
+    );
+  }
+}
+
+class _JobClosedBanner extends StatelessWidget {
+  const _JobClosedBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 10),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: AppColors.textSecondary.withAlpha(20),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          children: [
+            const Icon(
+              Icons.info_outline,
+              size: 16,
+              color: AppColors.textSecondary,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                AppStrings.jobPostClosed,
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

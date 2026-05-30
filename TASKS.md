@@ -96,19 +96,19 @@
 
 > Dependency: Profile (Phase 2) + Job Discovery (Phase 4). Seeker cần profile + có job để apply.
 
-- [ ] **T-19: Resume — CV Builder + Upload PDF**
+- [X] **T-19: Resume — CV Builder + Upload PDF**
   Seeker tạo CV qua builder (JSON template) hoặc upload PDF (≤ 5MB). Xem trước CV. Chọn CV mặc định. Bảng: `resumes`. Storage: `resumes/{userId}/`.
 
-- [ ] **T-20: Apply — Nộp đơn ứng tuyển**
+- [X] **T-20: Apply — Nộp đơn ứng tuyển**
   Seeker chọn CV, viết cover letter (optional), nộp vào Job Post. Tạo `application` với status `pending`. Chặn apply trùng. `ApplyPage` hoặc `ApplyBottomSheet`.
 
-- [ ] **T-21: Application Tracking — Xem trạng thái + rút đơn**
+- [X] **T-21: Application Tracking — Xem trạng thái + rút đơn**
   Seeker xem danh sách applications đã nộp, filter theo status. Rút đơn (chỉ khi `pending`). `MyApplicationsPage`.
 
-- [ ] **T-22: Recruiter — Quản lý ứng viên**
+- [X] **T-22: Recruiter — Quản lý ứng viên**
   Recruiter xem danh sách ứng viên đã apply vào từng Job Post. Xem CV (PDF viewer). Cập nhật status (reviewing → interview → rejected). Thêm ghi chú nội bộ (`application_notes`). `ApplicantsPage` + `ApplicantDetailPage`.
 
-- [ ] **T-23: Recruiter — Đề xuất lịch phỏng vấn**
+- [X] **T-23: Recruiter — Đề xuất lịch phỏng vấn**
   Khi status = `interview`, Recruiter tạo `interview_schedule` (ngày giờ, địa điểm, ghi chú). Seeker nhận notification + xem trong Application detail. `ScheduleInterviewPage`.
 
 ---

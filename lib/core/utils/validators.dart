@@ -2,7 +2,9 @@ class Validators {
   const Validators._();
 
   static String? required(String? value, String fieldName) {
-    if (value == null || value.trim().isEmpty) return '$fieldName không được để trống';
+    if (value == null || value.trim().isEmpty) {
+      return '$fieldName không được để trống';
+    }
     return null;
   }
 
@@ -17,7 +19,9 @@ class Validators {
   static String? email(String? value) {
     final req = required(value, 'Email');
     if (req != null) return req;
-    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value!)) return 'Email không hợp lệ';
+    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value!)) {
+      return 'Email không hợp lệ';
+    }
     return null;
   }
 
@@ -71,8 +75,12 @@ class Validators {
 
   /// Generic text field: required, min/max length.
   /// Reusable for any named text field.
-  static String? text(String? value, String fieldName,
-      {int min = 2, int max = 100}) {
+  static String? text(
+    String? value,
+    String fieldName, {
+    int min = 2,
+    int max = 100,
+  }) {
     final req = required(value, fieldName);
     if (req != null) return req;
     final trimmed = value!.trim();
@@ -87,8 +95,7 @@ class Validators {
 
   /// Optional long text field: validates max length only when provided.
   /// Reusable for descriptions, bios, etc.
-  static String? longText(String? value, String fieldName,
-      {int max = 1000}) {
+  static String? longText(String? value, String fieldName, {int max = 1000}) {
     if (value == null || value.trim().isEmpty) return null;
     if (value.trim().length > max) {
       return '$fieldName không được quá $max ký tự';
@@ -158,6 +165,32 @@ class Validators {
     }
     if (value.isAfter(maxDate)) {
       return 'Hạn nộp hồ sơ không được quá 90 ngày kể từ hôm nay';
+    }
+    return null;
+  }
+
+  // T-19/T-23 validators
+  static String? resumeTitle(String? value) {
+    return text(value, 'Tên Resume', min: 3, max: 60);
+  }
+
+  static String? summary(String? value) {
+    if (value == null || value.trim().isEmpty) return null;
+    if (value.trim().length > 1000) {
+      return 'Tóm tắt không được quá 1000 ký tự';
+    }
+    return null;
+  }
+
+  static String? emailOptional(String? value) {
+    if (value == null || value.trim().isEmpty) return null;
+    return email(value);
+  }
+
+  static String? scheduledAt(DateTime? value) {
+    if (value == null) return 'Vui lòng chọn ngày giờ phỏng vấn';
+    if (value.isBefore(DateTime.now())) {
+      return 'Ngày giờ phỏng vấn phải ở tương lai';
     }
     return null;
   }

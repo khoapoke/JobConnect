@@ -17,6 +17,7 @@ class JobPostCard extends StatelessWidget {
     this.onClose,
     this.onDiscard,
     this.onResubmit,
+    this.onViewApplicants,
     this.applicantCount,
   });
 
@@ -26,6 +27,7 @@ class JobPostCard extends StatelessWidget {
   final VoidCallback? onClose;
   final VoidCallback? onDiscard;
   final VoidCallback? onResubmit;
+  final VoidCallback? onViewApplicants;
   final int? applicantCount;
 
   @override
@@ -35,7 +37,7 @@ class JobPostCard extends StatelessWidget {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: AppColors.divider),
+        side: const BorderSide(color: AppColors.divider),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -75,9 +77,7 @@ class JobPostCard extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 '$applicantCount ${AppStrings.applicants}',
-                style: AppTextStyles.label.copyWith(
-                  color: AppColors.primary,
-                ),
+                style: AppTextStyles.label.copyWith(color: AppColors.primary),
               ),
             ],
 
@@ -87,7 +87,7 @@ class JobPostCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.error.withOpacity(0.1),
+                  color: AppColors.error.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
@@ -101,10 +101,7 @@ class JobPostCard extends StatelessWidget {
             ],
 
             // Action buttons
-            if (_hasActions) ...[
-              const SizedBox(height: 12),
-              _buildActions(),
-            ],
+            if (_hasActions) ...[const SizedBox(height: 12), _buildActions()],
           ],
         ),
       ),
@@ -116,7 +113,8 @@ class JobPostCard extends StatelessWidget {
         onPublish != null ||
         onClose != null ||
         onDiscard != null ||
-        onResubmit != null;
+        onResubmit != null ||
+        onViewApplicants != null;
   }
 
   Widget _buildStatusBadge() {
@@ -131,7 +129,7 @@ class JobPostCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
@@ -164,7 +162,9 @@ class JobPostCard extends StatelessWidget {
             onPressed: onPublish,
             icon: const Icon(Icons.publish, size: 16),
             label: Text(
-              jobPost.status == 'rejected' ? AppStrings.resubmit : AppStrings.publish,
+              jobPost.status == 'rejected'
+                  ? AppStrings.resubmit
+                  : AppStrings.publish,
             ),
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.primary,
@@ -181,14 +181,22 @@ class JobPostCard extends StatelessWidget {
               side: const BorderSide(color: AppColors.warning),
             ),
           ),
+        if (onViewApplicants != null)
+          OutlinedButton.icon(
+            onPressed: onViewApplicants,
+            icon: const Icon(Icons.people_outline, size: 16),
+            label: const Text(AppStrings.viewApplicants),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.primary,
+              side: const BorderSide(color: AppColors.primary),
+            ),
+          ),
         if (onDiscard != null)
           TextButton.icon(
             onPressed: onDiscard,
             icon: const Icon(Icons.delete_outline, size: 16),
             label: const Text('Xóa'),
-            style: TextButton.styleFrom(
-              foregroundColor: AppColors.error,
-            ),
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
           ),
       ],
     );

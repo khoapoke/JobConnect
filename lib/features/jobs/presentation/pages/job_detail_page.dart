@@ -1,11 +1,13 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/storage_utils.dart';
+import '../../../application/presentation/providers/application_provider.dart';
 import '../../domain/entities/job_detail.dart';
 import '../providers/job_detail_provider.dart';
 import '../widgets/animated_bookmark_button.dart';
@@ -360,13 +362,17 @@ class _SkillPill extends StatelessWidget {
   }
 }
 
-class _BottomActionBar extends StatelessWidget {
+class _BottomActionBar extends ConsumerWidget {
   const _BottomActionBar({required this.jobPostId});
 
   final String jobPostId;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final existingApplicationAsync = ref.watch(
+      myApplicationForJobProvider(jobPostId),
+    );
+
     return SafeArea(
       top: false,
       child: Container(
@@ -384,10 +390,37 @@ class _BottomActionBar extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: FilledButton.icon(
-                onPressed: null,
-                icon: const Icon(Icons.send_outlined),
-                label: const Text('${AppStrings.apply} • ${AppStrings.comingSoon}'),
+              child: existingApplicationAsync.when(
+                data: (application) {
+                  if (application != null) {
+                    return FilledButton.icon(
+                      onPressed: null,
+                      icon: const Icon(Icons.check),
+                      label: const Text(AppStrings.applied),
+                    );
+                  }
+                  return FilledButton.icon(
+                    onPressed: () => context.push('/search/$jobPostId/apply'),
+                    icon: const Icon(Icons.send_outlined),
+                    label: const Text(AppStrings.apply),
+                  );
+                },
+                loading: () => const FilledButton(
+                  onPressed: null,
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppColors.onPrimary,
+                    ),
+                  ),
+                ),
+                error: (_, __) => FilledButton.icon(
+                  onPressed: () => context.push('/search/$jobPostId/apply'),
+                  icon: const Icon(Icons.send_outlined),
+                  label: const Text(AppStrings.apply),
+                ),
               ),
             ),
           ],

@@ -84,13 +84,16 @@ class AppStrings {
   static const tabClosed = 'Đã đóng';
   static const publish = 'Đăng tin';
   static const publishConfirmTitle = 'Đăng tin tuyển dụng?';
-  static const publishConfirmMessage = 'Tin sẽ hiển thị công khai cho ứng viên sau khi đăng.';
+  static const publishConfirmMessage =
+      'Tin sẽ hiển thị công khai cho ứng viên sau khi đăng.';
   static const close = 'Đóng tin';
   static const closeConfirmTitle = 'Đóng tin tuyển dụng?';
-  static const closeConfirmMessage = 'Ứng viên sẽ không thể ứng tuyển sau khi đóng tin.';
+  static const closeConfirmMessage =
+      'Ứng viên sẽ không thể ứng tuyển sau khi đóng tin.';
   static const discard = 'Xóa nháp';
   static const discardConfirmTitle = 'Xóa tin nháp?';
-  static const discardConfirmMessage = 'Tin nháp sẽ bị xóa. Bạn không thể khôi phục.';
+  static const discardConfirmMessage =
+      'Tin nháp sẽ bị xóa. Bạn không thể khôi phục.';
   static const resubmit = 'Đăng lại';
   static const removedByAdmin = 'Bị gỡ bởi Admin';
   static const jobPostPublished = 'Đã đăng tin thành công';
@@ -134,10 +137,12 @@ class AppStrings {
   static const expiresAt = 'Hạn nộp hồ sơ';
   static const selectExpiryDate = 'Chọn hạn nộp hồ sơ';
   static const unsavedChangesTitle = 'Thay đổi chưa lưu';
-  static const unsavedChangesMessage = 'Bạn có chắc muốn rời khỏi trang? Thay đổi sẽ bị mất.';
+  static const unsavedChangesMessage =
+      'Bạn có chắc muốn rời khỏi trang? Thay đổi sẽ bị mất.';
   static const stay = 'Ở lại';
   static const leave = 'Rời khỏi';
-  static const noCompanyGuardMessage = 'Vui lòng tạo hồ sơ công ty trước khi đăng tin.';
+  static const noCompanyGuardMessage =
+      'Vui lòng tạo hồ sơ công ty trước khi đăng tin.';
   static const selectSkill = 'Chọn kỹ năng';
 
   // T-16: Job Search
@@ -157,13 +162,103 @@ class AppStrings {
 
   // T-17/T-18: Job Detail + Bookmark
   static const jobDetail = 'Chi tiết tin tuyển dụng';
-  static const unavailableJobPost = 'Tin tuyển dụng không còn khả dụng hoặc đã đóng.';
+  static const unavailableJobPost =
+      'Tin tuyển dụng không còn khả dụng hoặc đã đóng.';
   static const bookmarkList = 'Bookmark';
   static const noBookmarks = 'Bạn chưa lưu Job Post nào';
-  static const noBookmarksSubtitle = 'Các Job Post đã lưu sẽ xuất hiện tại đây.';
+  static const noBookmarksSubtitle =
+      'Các Job Post đã lưu sẽ xuất hiện tại đây.';
   static const apply = 'Apply';
   static const comingSoon = 'Sắp ra mắt';
   static const companyInfo = 'Thông tin công ty';
   static const jobOverview = 'Tổng quan';
   static const unavailableBookmark = 'Job Post này không còn khả dụng.';
+
+  // T-19 → T-23: Application flow
+  static const resume = 'Resume';
+  static const resumes = 'Resume của bạn';
+  static const resumeManager = 'Quản lý Resume';
+  static const createResume = 'Tạo Resume';
+  static const uploadResumePdf = 'Upload PDF';
+  static const resumeBuilder = 'CV Builder';
+  static const resumePreview = 'Xem trước Resume';
+  static const resumeTitle = 'Tên Resume';
+  static const resumeTitleHint = 'Ví dụ: CV Flutter Developer';
+  static const professionalTitle = 'Vị trí mong muốn';
+  static const contactEmail = 'Email liên hệ';
+  static const summary = 'Tóm tắt';
+  static const summaryHint =
+      'Viết ngắn gọn về thế mạnh và mục tiêu nghề nghiệp';
+  static const oneItemPerLine = 'Mỗi dòng là một mục';
+  static const firstResumeDefault = 'Resume đầu tiên sẽ tự động là mặc định';
+  static const setDefaultResume = 'Đặt làm mặc định';
+  static const defaultResume = 'Mặc định';
+  static const builderResume = 'Resume tạo trong app';
+  static const uploadedResume = 'Resume PDF đã upload';
+  static const previewPdf = 'Xem PDF';
+  static const editResume = 'Chỉnh sửa Resume';
+  static const replacePdf = 'Thay PDF';
+  static const deleteResume = 'Xóa Resume';
+  static const saveResume = 'Lưu Resume';
+  static const resumeSaved = 'Đã lưu Resume';
+  static const resumeUpdated = 'Đã cập nhật Resume';
+  static const resumeDeleted = 'Đã xóa Resume';
+  static const resumeUploaded = 'Đã upload Resume';
+  static const resumeDefaultUpdated = 'Đã cập nhật Resume mặc định';
+  static const resumeRequired = 'Vui lòng chọn Resume';
+  static const pickPdf = 'Chọn file PDF';
+  static const pdfOnly = 'Chỉ hỗ trợ file PDF';
+  static const pdfMaxSize = 'PDF phải nhỏ hơn hoặc bằng 5MB';
+  static const noResumes = 'Bạn chưa có Resume nào';
+  static const noResumesSubtitle =
+      'Tạo Resume trong app hoặc upload PDF để bắt đầu apply.';
+  static const applicationSubmitted = 'Đã nộp đơn ứng tuyển';
+  static const applicationUpdated = 'Đã cập nhật đơn ứng tuyển';
+  static const applicationResubmitted = 'Đã nộp lại đơn ứng tuyển';
+  static const applicationBlocked =
+      'Bạn không thể chỉnh sửa Application ở trạng thái hiện tại';
+  static const applicationWithdrawn = 'Đã rút đơn ứng tuyển';
+  static const duplicateApplication = 'Bạn đã apply Job Post này trước đó';
+  static const coverLetter = 'Cover letter';
+  static const coverLetterHint =
+      'Viết vài dòng giới thiệu bản thân (không bắt buộc)';
+  static const submitApplication = 'Nộp đơn ứng tuyển';
+  static const myApplications = 'Đơn ứng tuyển của tôi';
+  static const applicationDetail = 'Chi tiết Application';
+  static const noApplications = 'Bạn chưa có đơn ứng tuyển nào';
+  static const withdrawApplication = 'Withdraw';
+  static const withdrawConfirmTitle = 'Rút đơn ứng tuyển?';
+  static const withdrawConfirmMessage =
+      'Bạn chỉ có thể rút khi Application còn ở trạng thái pending.';
+  static const statusPending = 'Đang chờ';
+  static const statusReviewing = 'Đang xem xét';
+  static const statusInterview = 'Phỏng vấn';
+  static const statusRejectedApplication = 'Đã từ chối';
+  static const statusWithdrawn = 'Đã rút';
+  static const all = 'Tất cả';
+  static const interviewSchedule = 'Lịch phỏng vấn';
+  static const scheduleInterview = 'Đặt lịch phỏng vấn';
+  static const interviewScheduled = 'Đã lưu lịch phỏng vấn';
+  static const applied = 'Đã apply';
+  static const editApplication = 'Chỉnh sửa đơn ứng tuyển';
+  static const interviewLocation = 'Địa điểm phỏng vấn';
+  static const interviewNote = 'Ghi chú phỏng vấn';
+  static const scheduledAt = 'Ngày giờ phỏng vấn';
+  static const pickDateTime = 'Chọn ngày giờ';
+  static const applicantsPageTitle = 'Ứng viên';
+  static const applicantDetail = 'Chi tiết ứng viên';
+  static const internalNote = 'Ghi chú nội bộ';
+  static const internalNoteHint = 'Chỉ Recruiter nhìn thấy';
+  static const saveNote = 'Lưu ghi chú';
+  static const noteSaved = 'Đã lưu ghi chú';
+  static const shortlist = 'Shortlist';
+  static const invite = 'Invite';
+  static const reject = 'Reject';
+  static const noApplicants = 'Chưa có ứng viên nào cho Job Post này';
+  static const viewApplicants = 'Xem ứng viên';
+  static const viewResume = 'Xem Resume';
+  static const openResume = 'Mở Resume';
+  static const updateStatus = 'Cập nhật trạng thái';
+  static const deleteResumeConfirmTitle = 'Xóa Resume?';
+  static const deleteResumeConfirmMessage = 'Bạn có chắc muốn xóa Resume này?';
 }
