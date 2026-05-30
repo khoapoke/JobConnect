@@ -21,6 +21,8 @@ import '../../features/recruiter/presentation/pages/my_job_posts_page.dart';
 import '../../features/recruiter/presentation/pages/edit_job_post_page.dart';
 import '../../features/recruiter/presentation/providers/company_provider.dart';
 import '../../features/jobs/presentation/pages/job_search_page.dart';
+import '../../features/jobs/presentation/pages/job_detail_page.dart';
+import '../../features/jobs/presentation/pages/bookmarks_page.dart';
 import 'user_role.dart';
 
 part 'app_router.g.dart';
@@ -143,12 +145,14 @@ GoRouter appRouter(Ref ref) {
                 builder: (context, state) => const JobSearchPage(),
                 routes: [
                   GoRoute(
+                    path: 'bookmarks',
+                    builder: (context, state) => const BookmarksPage(),
+                  ),
+                  GoRoute(
                     path: ':id',
                     builder: (context, state) {
                       final id = state.pathParameters['id']!;
-                      return PlaceholderPage(
-                        title: 'Chi tiết tin $id',
-                      ); // T-17 will implement
+                      return JobDetailPage(jobPostId: id);
                     },
                   ),
                 ],

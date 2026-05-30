@@ -345,6 +345,17 @@ test(auth): add unit test for LoginUseCase
 
 ---
 
+## MVP / University Project Bias
+
+JobConnect is a university mobile-project demo, not an enterprise-scale product.
+Prefer simple, reliable implementation and polished UI over exhaustive edge-case handling.
+
+- Prioritize visual quality, motion, spacing, empty/loading/error states, and demo flow.
+- Avoid over-engineering unless the task explicitly requires it or data loss/security is at risk.
+- Grill sessions should clarify product behavior, but stop before turning small features into large systems.
+- For MVP-only complexity, choose the simpler path and document the trade-off briefly.
+- Do not optimize for hundreds/thousands of users unless a future task asks for it.
+
 ## DO NOT
 
 - Tạo file ngoài cấu trúc thư mục đã định trong docs/BRIEF.md

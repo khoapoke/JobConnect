@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -109,6 +110,8 @@ class _JobSearchPageState extends ConsumerState<JobSearchPage> {
           ),
           const SizedBox(width: 8),
           _buildFilterButton(),
+          const SizedBox(width: 8),
+          _buildBookmarksButton(),
         ],
       ),
     );
@@ -129,6 +132,21 @@ class _JobSearchPageState extends ConsumerState<JobSearchPage> {
                 ? AppColors.primary
                 : AppColors.textSecondary,
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBookmarksButton() {
+    return Material(
+      color: AppColors.surface,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: () => context.push('/search/bookmarks'),
+        borderRadius: BorderRadius.circular(12),
+        child: const Padding(
+          padding: EdgeInsets.all(12),
+          child: Icon(Icons.bookmark_border, color: AppColors.textSecondary),
         ),
       ),
     );

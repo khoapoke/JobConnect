@@ -84,10 +84,10 @@
 - [X] **T-16: Job Search — Danh sách + tìm kiếm + lọc**
   Seeker xem danh sách Job Posts (`status = active`). Tìm kiếm theo từ khóa. Lọc theo: category, salary range, location, type (full-time/part-time/remote). `JobSearchPage` + `JobCard` widget + `FilterBottomSheet`.
 
-- [ ] **T-17: Job Detail — Xem chi tiết tin tuyển dụng**
+- [X] **T-17: Job Detail — Xem chi tiết tin tuyển dụng**
   Seeker xem full detail Job Post: company info, description, requirements, required skills, salary, location. Nút Bookmark + Apply. `JobDetailPage`.
 
-- [ ] **T-18: Bookmark — Lưu tin yêu thích**
+- [X] **T-18: Bookmark — Lưu tin yêu thích**
   Toggle bookmark trên `JobCard` và `JobDetailPage`. Xem danh sách bookmarks trong `BookmarksPage`. Bảng: `bookmarks`.
 
 ---

@@ -154,4 +154,16 @@ class AppStrings {
   static const hoursAgo = 'giờ trước';
   static const daysAgo = 'ngày trước';
   static const weeksAgo = 'tuần trước';
+
+  // T-17/T-18: Job Detail + Bookmark
+  static const jobDetail = 'Chi tiết tin tuyển dụng';
+  static const unavailableJobPost = 'Tin tuyển dụng không còn khả dụng hoặc đã đóng.';
+  static const bookmarkList = 'Bookmark';
+  static const noBookmarks = 'Bạn chưa lưu Job Post nào';
+  static const noBookmarksSubtitle = 'Các Job Post đã lưu sẽ xuất hiện tại đây.';
+  static const apply = 'Apply';
+  static const comingSoon = 'Sắp ra mắt';
+  static const companyInfo = 'Thông tin công ty';
+  static const jobOverview = 'Tổng quan';
+  static const unavailableBookmark = 'Job Post này không còn khả dụng.';
 }
