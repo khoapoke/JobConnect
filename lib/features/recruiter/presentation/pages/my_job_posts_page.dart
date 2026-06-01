@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../ai_suggestion/presentation/providers/ai_suggestion_provider.dart';
 import '../../domain/entities/job_post.dart';
 import '../providers/job_post_provider.dart';
 import '../widgets/job_post_card.dart';
@@ -307,7 +308,17 @@ class _MyJobPostsPageState extends ConsumerState<MyJobPostsPage>
           context,
         ).showSnackBar(SnackBar(content: Text(successMessage)));
         ref.invalidate(myJobPostsProvider);
+
+        // T-24: Non-blocking job embedding generation on activation
+        if (newStatus == 'active') {
+          _triggerJobEmbedding(jobId);
+        }
       },
     );
+  }
+
+  void _triggerJobEmbedding(String jobId) {
+    // Fire-and-forget; do not block activation or show errors
+    ref.read(aiEmbeddingNotifierProvider.notifier).rebuildJobEmbedding(jobId);
   }
 }

@@ -118,22 +118,22 @@
 > Run before Phase 6 AI UI work. Full direction lives in `docs/design/JOB_CONNECT_UI_SYSTEM.md` and roadmap in `docs/design/UI_UX_IMPLEMENTATION_ROADMAP.md`.
 > Principle: CRUD should feel invisible. Core features should feel memorable.
 
-- [ ] **UI-01: Design foundation tokens + font assets**
+- [X] **UI-01: Design foundation tokens + font assets**
   Replace global theme foundation with Modern Social Productivity Design: Blue × Violet Hybrid, dark default + refreshing light mode, Inter UI/body + Space Grotesk display. Add `AppSpacing`, `AppRadii`, `AppDurations`, `AppGradients`, `AppShadows`. Bundle fonts under `assets/fonts/` and register in `pubspec.yaml`.
 
-- [ ] **UI-02: Shared feed-ready primitives + scroll-aware nav foundation**
+- [X] **UI-02: Shared feed-ready primitives + scroll-aware nav foundation**
   Create reusable widgets in `lib/shared/presentation/widgets/`: `AppGradientBackground`, `GlassSurface`, `PremiumButton`, `StatusChip`, `SpotlightSearchBar`, `AnimatedPressable`, `AppSkeleton`, `ConnectionLoopLogo`, `ScrollAwareBottomNavScaffold` (or integrate equivalent behavior into app shell). No hardcoded gradients/shadows/colors scattered in feature widgets.
 
-- [ ] **UI-03: Global theme replacement pass**
+- [X] **UI-03: Global theme replacement pass**
   Apply new theme to Material `ThemeData`: app bars, navigation, buttons, inputs, chips, cards, dialogs, bottom sheets, snackbars. Keep CRUD/basic pages minimal, not over-animated.
 
-- [ ] **UI-04: Job Seeker Home / Feed flagship redesign**
+- [X] **UI-04: Job Seeker Home / Feed flagship redesign**
   Redesign job discovery as feed-first + Spotlight search: mixed feed cards, featured cinematic job card, normal social cards, AI insight placeholder card, clean bookmark/apply actions.
 
-- [ ] **UI-05: Job Detail + Apply flow polish**
+- [X] **UI-05: Job Detail + Apply flow polish**
   Apply premium hierarchy to job detail and clean minimal apply flow. Add polished loading/success states. Use shared primitives only.
 
-- [ ] **UI-06: Connection-loop splash integration**
+- [X] **UI-06: Connection-loop splash integration**
   After foundation/feed are stable, wire `ConnectionLoopLogo` into splash/onboarding. Animated loop draw + node pulse + wordmark reveal; reduced motion fallback required.
 
 ---
@@ -143,7 +143,7 @@
 > Dependency: Profile + Skills (Phase 2) + Job Posts (Phase 3). Embedding cần data từ cả 2.
 > UI dependency: Phase 5.5 should provide reusable AI/visual primitives before building AI-facing screens.
 
-- [ ] **T-24: AI — Embedding pipeline (profile + job)**
+- [X] **T-24: AI — Embedding pipeline (profile + job)**
   Khi Seeker cập nhật profile/skills → gọi Gemini `text-embedding-004` → lưu vào `profile_embeddings`. Khi Job Post status = `active` → tương tự → `job_embeddings`. Edge Function hoặc datasource level. `core/constants/prompt_templates.dart` cho prompt format.
 
 - [ ] **T-25: AI — Tab "Dành cho bạn" (cosine similarity)**

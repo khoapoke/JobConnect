@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/constants/app_strings.dart';
 import '../../../../core/theme/app_gradients.dart';
 import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../shared/presentation/widgets/premium_button.dart';
+import '../../../ai_suggestion/domain/entities/ai_embedding_result.dart';
+import '../../../ai_suggestion/presentation/providers/ai_suggestion_provider.dart';
 
-class AiInsightPlaceholderCard extends StatelessWidget {
+class AiInsightPlaceholderCard extends ConsumerWidget {
   const AiInsightPlaceholderCard({
     super.key,
     required this.jobCount,
@@ -17,7 +21,7 @@ class AiInsightPlaceholderCard extends StatelessWidget {
   final VoidCallback? onPressed;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       decoration: const BoxDecoration(
         gradient: AppGradients.ai,
@@ -45,9 +49,70 @@ class AiInsightPlaceholderCard extends StatelessWidget {
               variant: PremiumButtonVariant.secondary,
               onPressed: onPressed,
             ),
+            const SizedBox(height: AppSpacing.space3),
+            _RefreshAiMatchButton(
+              onResult: (message) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(message)),
+                );
+              },
+            ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _RefreshAiMatchButton extends ConsumerStatefulWidget {
+  const _RefreshAiMatchButton({required this.onResult});
+
+  final ValueChanged<String> onResult;
+
+  @override
+  ConsumerState<_RefreshAiMatchButton> createState() => _RefreshAiMatchButtonState();
+}
+
+class _RefreshAiMatchButtonState extends ConsumerState<_RefreshAiMatchButton> {
+  bool _isLoading = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return PremiumButton(
+      label: AppStrings.aiMatchRefresh,
+      variant: PremiumButtonVariant.secondary,
+      isLoading: _isLoading,
+      onPressed: _isLoading
+          ? null
+          : () async {
+              setState(() => _isLoading = true);
+              try {
+                final result = await ref
+                    .read(aiEmbeddingNotifierProvider.notifier)
+                    .rebuildProfileEmbedding();
+
+                if (result == null) {
+                  widget.onResult(AppStrings.aiMatchError);
+                  return;
+                }
+
+                final message = switch (result.status) {
+                  AiEmbeddingStatus.generated => AppStrings.aiMatchUpdated,
+                  AiEmbeddingStatus.unchanged => AppStrings.aiMatchReady,
+                  AiEmbeddingStatus.rateLimited => AppStrings.aiMatchRateLimited,
+                  AiEmbeddingStatus.missingData => AppStrings.aiMatchMissingData,
+                  AiEmbeddingStatus.error => result.message.isNotEmpty
+                      ? result.message
+                      : AppStrings.aiMatchError,
+                };
+
+                widget.onResult(message);
+              } finally {
+                if (mounted) {
+                  setState(() => _isLoading = false);
+                }
+              }
+            },
     );
   }
 }

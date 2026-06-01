@@ -271,9 +271,10 @@ notifications        (id, user_id, type, title, body, data_json, read, created_a
 device_tokens        (id, user_id, fcm_token, platform, created_at)
 
 -- NHÓM 7: AI & Vector Search ⭐
-profile_embeddings   (user_id PK, embedding vector(768), updated_at)
-job_embeddings       (job_id PK, embedding vector(768), updated_at)
+profile_embeddings   (user_id PK, embedding vector(768), source_hash TEXT, updated_at)
+job_embeddings       (job_id PK, embedding vector(768), source_hash TEXT, updated_at)
 ai_suggestions       (id, seeker_id, job_id, score FLOAT, reason TEXT, cached_at)
+ai_request_logs      (id, user_id, request_type, created_at)
 
 -- NHÓM 8: Social & Job Alert
 bookmarks            (id, seeker_id, job_id, created_at)

@@ -245,6 +245,15 @@ class AppStrings {
   static const interviewNote = 'Ghi chú phỏng vấn';
   static const scheduledAt = 'Ngày giờ phỏng vấn';
   static const pickDateTime = 'Chọn ngày giờ';
+
+  // T-24: AI Embedding
+  static const aiMatchUpdated = 'AI đã cập nhật Profile Embedding.';
+  static const aiMatchReady = 'AI Match đã sẵn sàng.';
+  static const aiMatchRateLimited = 'Vui lòng thử lại sau vài phút.';
+  static const aiMatchMissingData =
+      'Hãy thêm headline, kỹ năng hoặc kinh nghiệm trước khi bật AI Match.';
+  static const aiMatchError = 'Đã có lỗi khi cập nhật AI Match.';
+  static const aiMatchRefresh = 'Cập nhật AI Match';
   static const applicantsPageTitle = 'Ứng viên';
   static const applicantDetail = 'Chi tiết ứng viên';
   static const internalNote = 'Ghi chú nội bộ';
