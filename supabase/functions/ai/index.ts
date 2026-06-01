@@ -1,5 +1,5 @@
-// T-24: AI Embedding Pipeline Edge Function
-// Actions: rebuild_profile_embedding, rebuild_job_embedding
+// T-24 + T-25: AI Embedding Pipeline + AI Suggestions Edge Function
+// Actions: rebuild_profile_embedding, rebuild_job_embedding, rebuild_ai_suggestions
 //
 // Env vars required:
 //   SUPABASE_URL
@@ -26,6 +26,14 @@ interface EmbeddingResult {
   message: string;
   sourceHash?: string;
   updatedAt?: string;
+  suggestions?: AiSuggestionRow[];
+}
+
+interface AiSuggestionRow {
+  job_id: string;
+  score: number;
+  reason: string | null;
+  cached_at: string;
 }
 
 Deno.serve(async (req) => {
@@ -53,8 +61,6 @@ Deno.serve(async (req) => {
       }, 500);
     }
 
-    const geminiModel = Deno.env.get("GEMINI_EMBEDDING_MODEL") || "gemini-embedding-001";
-
     // Client with caller JWT for auth checks
     const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
       global: {
@@ -78,6 +84,9 @@ Deno.serve(async (req) => {
           return jsonResponse({ status: "error", message: "jobId is required" }, 400);
         }
         return await handleRebuildJobEmbedding(supabaseClient, supabaseAdmin, geminiApiKey, jobId);
+      }
+      case "rebuild_ai_suggestions": {
+        return await handleRebuildAiSuggestions(supabaseClient, supabaseAdmin, geminiApiKey);
       }
       default: {
         return jsonResponse({ status: "error", message: `Unknown action: ${action}` }, 400);
@@ -202,137 +211,54 @@ async function callGeminiEmbedding(apiKey: string, text: string): Promise<number
   return embedding;
 }
 
-/* ─── Profile Embedding ────────────────────────────────────────────── */
+/* ─── Profile data helpers ─────────────────────────────────────────── */
 
-async function handleRebuildProfileEmbedding(
-  supabaseClient: any,
-  supabaseAdmin: any,
-  geminiApiKey: string,
-): Promise<Response> {
-  const user = await getAuthUser(supabaseClient);
-  if (!user) {
-    return jsonResponse({ status: "error", message: "Unauthorized" }, 401);
-  }
-
-  const role = await getUserRole(supabaseAdmin, user.id);
-  if (role !== "seeker") {
-    return jsonResponse({ status: "error", message: "Only seekers can rebuild profile embedding" }, 403);
-  }
-
-  // Fetch profile data
-  const { data: profile } = await supabaseAdmin
-    .from("profiles")
-    .select("headline, bio, location")
-    .eq("id", user.id)
-    .single();
-
-  const { data: skills } = await supabaseAdmin
-    .from("user_skills")
-    .select("level, skills(name)")
-    .eq("user_id", user.id)
-    .order("skills(name)");
-
-  const { data: experiences } = await supabaseAdmin
-    .from("work_experiences")
-    .select("company, role, from_date, to_date, description, is_current")
-    .eq("user_id", user.id)
-    .order("from_date", { ascending: false });
-
-  const { data: educations } = await supabaseAdmin
-    .from("educations")
-    .select("school, degree, major, from_date, to_date")
-    .eq("user_id", user.id)
-    .order("from_date", { ascending: false });
-
-  const { data: certificates } = await supabaseAdmin
-    .from("certificates")
-    .select("name, issuer, issued_at")
-    .eq("user_id", user.id)
-    .order("issued_at", { ascending: false });
-
-  // Missing-data check
-  const hasMeaningfulData =
-    (profile?.headline && (profile.headline as string).trim().length > 0) ||
-    (profile?.bio && (profile.bio as string).trim().length > 0) ||
-    (skills && skills.length > 0) ||
-    (experiences && experiences.length > 0) ||
-    (educations && educations.length > 0) ||
-    (certificates && certificates.length > 0);
-
-  if (!hasMeaningfulData) {
-    return jsonResponse({
-      status: "missingData",
-      message: "Hãy thêm headline, kỹ năng hoặc kinh nghiệm trước khi bật AI Match.",
-    });
-  }
-
-  // Build canonical source text
-  const sourceText = buildProfileSourceText(profile, skills, experiences, educations, certificates);
-  const sourceHash = await sha256Hex(sourceText);
-
-  // Check existing hash
-  const { data: existing } = await supabaseAdmin
-    .from("profile_embeddings")
-    .select("source_hash")
-    .eq("user_id", user.id)
-    .maybeSingle();
-
-  if (existing && existing.source_hash === sourceHash) {
-    return jsonResponse({
-      status: "unchanged",
-      message: "AI Match đã sẵn sàng.",
-      sourceHash,
-      updatedAt: new Date().toISOString(),
-    });
-  }
-
-  // Rate limit: 1 attempt / 5 minutes
-  const rateOk = await checkRateLimit(supabaseAdmin, user.id, "profile_embedding", 5, 1);
-  if (!rateOk) {
-    return jsonResponse({
-      status: "rateLimited",
-      message: "Vui lòng thử lại sau vài phút.",
-      sourceHash: existing?.source_hash,
-      updatedAt: new Date().toISOString(),
-    });
-  }
-
-  // Log attempt before calling Gemini
-  await insertRequestLog(supabaseAdmin, user.id, "profile_embedding");
-
-  // Call Gemini
-  const embedding = await callGeminiEmbedding(geminiApiKey, sourceText);
-
-  // Upsert
-  const { error: upsertError } = await supabaseAdmin
-    .from("profile_embeddings")
-    .upsert({
-      user_id: user.id,
-      embedding,
-      source_hash: sourceHash,
-      updated_at: new Date().toISOString(),
-    });
-
-  if (upsertError) {
-    console.error("Upsert error:", upsertError);
-    return jsonResponse({ status: "error", message: "Failed to save embedding" }, 500);
-  }
-
-  return jsonResponse({
-    status: "generated",
-    message: "AI đã cập nhật Profile Embedding.",
-    sourceHash,
-    updatedAt: new Date().toISOString(),
-  });
+interface ProfileData {
+  profile: any;
+  skills: any[] | null;
+  experiences: any[] | null;
+  educations: any[] | null;
+  certificates: any[] | null;
 }
 
-function buildProfileSourceText(
-  profile: any,
-  skills: any[] | null,
-  experiences: any[] | null,
-  educations: any[] | null,
-  certificates: any[] | null,
-): string {
+async function fetchProfileData(supabaseAdmin: any, userId: string): Promise<ProfileData> {
+  const [{ data: profile }, { data: skills }, { data: experiences }, { data: educations }, { data: certificates }] =
+    await Promise.all([
+      supabaseAdmin.from("profiles").select("headline, bio, location").eq("id", userId).single(),
+      supabaseAdmin.from("user_skills").select("level, skills(name)").eq("user_id", userId).order("skills(name)"),
+      supabaseAdmin
+        .from("work_experiences")
+        .select("company, role, from_date, to_date, description, is_current")
+        .eq("user_id", userId)
+        .order("from_date", { ascending: false }),
+      supabaseAdmin
+        .from("educations")
+        .select("school, degree, major, from_date, to_date")
+        .eq("user_id", userId)
+        .order("from_date", { ascending: false }),
+      supabaseAdmin
+        .from("certificates")
+        .select("name, issuer, issued_at")
+        .eq("user_id", userId)
+        .order("issued_at", { ascending: false }),
+    ]);
+
+  return { profile, skills, experiences, educations, certificates };
+}
+
+function hasMeaningfulProfileData(data: ProfileData): boolean {
+  return (
+    (data.profile?.headline && (data.profile.headline as string).trim().length > 0) ||
+    (data.profile?.bio && (data.profile.bio as string).trim().length > 0) ||
+    (data.skills && data.skills.length > 0) ||
+    (data.experiences && data.experiences.length > 0) ||
+    (data.educations && data.educations.length > 0) ||
+    (data.certificates && data.certificates.length > 0)
+  );
+}
+
+function buildProfileSourceText(data: ProfileData): string {
+  const { profile, skills, experiences, educations, certificates } = data;
   const parts: string[] = [];
 
   if (profile?.headline) parts.push(`Headline: ${profile.headline}`);
@@ -375,6 +301,88 @@ function buildProfileSourceText(
   }
 
   return parts.join("\n");
+}
+
+/* ─── Profile Embedding ────────────────────────────────────────────── */
+
+async function handleRebuildProfileEmbedding(
+  supabaseClient: any,
+  supabaseAdmin: any,
+  geminiApiKey: string,
+): Promise<Response> {
+  const user = await getAuthUser(supabaseClient);
+  if (!user) {
+    return jsonResponse({ status: "error", message: "Unauthorized" }, 401);
+  }
+
+  const role = await getUserRole(supabaseAdmin, user.id);
+  if (role !== "seeker") {
+    return jsonResponse({ status: "error", message: "Only seekers can rebuild profile embedding" }, 403);
+  }
+
+  const profileData = await fetchProfileData(supabaseAdmin, user.id);
+
+  if (!hasMeaningfulProfileData(profileData)) {
+    return jsonResponse({
+      status: "missingData",
+      message: "Hãy thêm headline, kỹ năng hoặc kinh nghiệm trước khi bật AI Match.",
+    });
+  }
+
+  const sourceText = buildProfileSourceText(profileData);
+  const sourceHash = await sha256Hex(sourceText);
+
+  // Check existing hash
+  const { data: existing } = await supabaseAdmin
+    .from("profile_embeddings")
+    .select("source_hash")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (existing && existing.source_hash === sourceHash) {
+    return jsonResponse({
+      status: "unchanged",
+      message: "AI Match đã sẵn sàng.",
+      sourceHash,
+      updatedAt: new Date().toISOString(),
+    });
+  }
+
+  // Rate limit: 1 attempt / 5 minutes
+  const rateOk = await checkRateLimit(supabaseAdmin, user.id, "profile_embedding", 5, 1);
+  if (!rateOk) {
+    return jsonResponse({
+      status: "rateLimited",
+      message: "Vui lòng thử lại sau vài phút.",
+      sourceHash: existing?.source_hash,
+      updatedAt: new Date().toISOString(),
+    });
+  }
+
+  await insertRequestLog(supabaseAdmin, user.id, "profile_embedding");
+
+  const embedding = await callGeminiEmbedding(geminiApiKey, sourceText);
+
+  const { error: upsertError } = await supabaseAdmin
+    .from("profile_embeddings")
+    .upsert({
+      user_id: user.id,
+      embedding,
+      source_hash: sourceHash,
+      updated_at: new Date().toISOString(),
+    });
+
+  if (upsertError) {
+    console.error("Upsert error:", upsertError);
+    return jsonResponse({ status: "error", message: "Failed to save embedding" }, 500);
+  }
+
+  return jsonResponse({
+    status: "generated",
+    message: "AI đã cập nhật Profile Embedding.",
+    sourceHash,
+    updatedAt: new Date().toISOString(),
+  });
 }
 
 /* ─── Job Embedding ──────────────────────────────────────────────────── */
@@ -557,4 +565,284 @@ function buildJobSourceText(
   }
 
   return parts.join("\n");
+}
+
+/* ─── Cosine Similarity ────────────────────────────────────────────── */
+
+function cosineSimilarity(a: number[], b: number[]): number {
+  let dot = 0;
+  let normA = 0;
+  let normB = 0;
+  for (let i = 0; i < a.length; i++) {
+    dot += a[i] * b[i];
+    normA += a[i] * a[i];
+    normB += b[i] * b[i];
+  }
+  const denom = Math.sqrt(normA) * Math.sqrt(normB);
+  if (denom === 0) return 0;
+  return dot / denom;
+}
+
+/** Parse a pgvector embedding from Supabase into a number[].
+ *  Supabase may return vectors as plain arrays, strings like "[1,2,3]",
+ *  or Float32Array objects depending on the driver version.
+ */
+function parseEmbedding(raw: any): number[] | null {
+  if (!raw) return null;
+  if (Array.isArray(raw)) {
+    return raw.map((v) => Number(v)).filter((n) => !isNaN(n));
+  }
+  if (typeof raw === "string") {
+    const cleaned = raw.trim().replace(/^\[|\]$/g, "");
+    return cleaned
+      .split(",")
+      .map((s) => Number(s.trim()))
+      .filter((n) => !isNaN(n));
+  }
+  // Float32Array or similar typed array
+  if (raw.length !== undefined && typeof raw[Symbol.iterator] === "function") {
+    return Array.from(raw as Iterable<number>)
+      .map((v) => Number(v))
+      .filter((n) => !isNaN(n));
+  }
+  return null;
+}
+
+/* ─── AI Suggestions ───────────────────────────────────────────────── */
+
+async function handleRebuildAiSuggestions(
+  supabaseClient: any,
+  supabaseAdmin: any,
+  geminiApiKey: string,
+): Promise<Response> {
+  const user = await getAuthUser(supabaseClient);
+  if (!user) {
+    return jsonResponse({ status: "error", message: "Unauthorized" }, 401);
+  }
+
+  const role = await getUserRole(supabaseAdmin, user.id);
+  if (role !== "seeker") {
+    return jsonResponse({ status: "error", message: "Only seekers can rebuild AI suggestions" }, 403);
+  }
+
+  // Rate limit: 1 suggestion rebuild / 5 minutes
+  const rateOk = await checkRateLimit(supabaseAdmin, user.id, "ai_suggestions", 5, 1);
+  if (!rateOk) {
+    return jsonResponse({
+      status: "rateLimited",
+      message: "Vui lòng thử lại sau vài phút.",
+      updatedAt: new Date().toISOString(),
+    });
+  }
+
+  // Step 1: Ensure profile embedding exists / is up to date
+  const profileData = await fetchProfileData(supabaseAdmin, user.id);
+
+  if (!hasMeaningfulProfileData(profileData)) {
+    return jsonResponse({
+      status: "missingData",
+      message: "Hãy thêm headline, kỹ năng hoặc kinh nghiệm trước khi bật AI Match.",
+    });
+  }
+
+  const sourceText = buildProfileSourceText(profileData);
+  const sourceHash = await sha256Hex(sourceText);
+
+  let profileEmbedding: number[] | null = null;
+
+  const { data: existingProfileEmbedding } = await supabaseAdmin
+    .from("profile_embeddings")
+    .select("embedding, source_hash")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (existingProfileEmbedding && existingProfileEmbedding.source_hash === sourceHash) {
+    profileEmbedding = parseEmbedding(existingProfileEmbedding.embedding);
+    console.log("Profile embedding unchanged, reusing existing. dims:", profileEmbedding?.length);
+  } else {
+    // Need to rebuild profile embedding
+    // Check profile embedding rate limit separately
+    const profileRateOk = await checkRateLimit(supabaseAdmin, user.id, "profile_embedding", 5, 1);
+    if (!profileRateOk) {
+      // If profile embedding is rate-limited but we have an old one, use it
+      if (existingProfileEmbedding?.embedding) {
+        profileEmbedding = parseEmbedding(existingProfileEmbedding.embedding);
+        console.log("Profile embedding rate limited, using existing embedding. dims:", profileEmbedding?.length);
+      } else {
+        return jsonResponse({
+          status: "rateLimited",
+          message: "Vui lòng thử lại sau vài phút.",
+          updatedAt: new Date().toISOString(),
+        });
+      }
+    } else {
+      await insertRequestLog(supabaseAdmin, user.id, "profile_embedding");
+      profileEmbedding = await callGeminiEmbedding(geminiApiKey, sourceText);
+
+      const { error: profileUpsertError } = await supabaseAdmin
+        .from("profile_embeddings")
+        .upsert({
+          user_id: user.id,
+          embedding: profileEmbedding,
+          source_hash: sourceHash,
+          updated_at: new Date().toISOString(),
+        });
+
+      if (profileUpsertError) {
+        console.error("Profile upsert error:", profileUpsertError);
+        return jsonResponse({ status: "error", message: "Failed to save profile embedding" }, 500);
+      }
+    }
+  }
+
+  if (!profileEmbedding) {
+    return jsonResponse({ status: "error", message: "Could not obtain profile embedding" }, 500);
+  }
+
+  // Step 2: Fetch active job embeddings with job data
+  const { data: jobRows, error: jobError } = await supabaseAdmin
+    .from("job_embeddings")
+    .select(`
+      job_id,
+      embedding,
+      job_posts!inner(
+        id,
+        company_id,
+        title,
+        description,
+        requirements,
+        salary_min,
+        salary_max,
+        is_salary_visible,
+        type,
+        category_id,
+        status,
+        expires_at,
+        created_at,
+        updated_at,
+        companies!inner(
+          id,
+          recruiter_id,
+          name,
+          logo_url,
+          description,
+          website,
+          size,
+          province,
+          created_at,
+          updated_at
+        ),
+        job_locations!inner(
+          id,
+          job_id,
+          province,
+          district,
+          address,
+          is_remote,
+          created_at
+        ),
+        job_required_skills(
+          job_id,
+          skill_id,
+          is_required,
+          skills(name)
+        ),
+        job_categories(name)
+      )
+    `)
+    .eq("job_posts.status", "active");
+
+  if (jobError) {
+    console.error("Job fetch error:", jobError);
+    return jsonResponse({ status: "error", message: "Failed to fetch job embeddings" }, 500);
+  }
+
+  if (!jobRows || jobRows.length === 0) {
+    return jsonResponse({
+      status: "noJobEmbeddings",
+      message: "Gợi ý đang được chuẩn bị. Một số Job Post cần được đồng bộ AI trước khi có Match Score.",
+    });
+  }
+
+  // Step 3: Compute cosine similarity
+  const scored = [];
+  for (const row of jobRows) {
+    const jobEmbedding = parseEmbedding(row.embedding);
+    if (!jobEmbedding || jobEmbedding.length === 0) {
+      console.log("Skipping job", row.job_id, "— no parseable embedding");
+      continue;
+    }
+    const score = cosineSimilarity(profileEmbedding, jobEmbedding);
+    if (isNaN(score) || !isFinite(score)) {
+      console.log("Skipping job", row.job_id, "— NaN score");
+      continue;
+    }
+    scored.push({ row, score });
+  }
+
+  if (scored.length === 0) {
+    return jsonResponse({
+      status: "noJobEmbeddings",
+      message: "Gợi ý đang được chuẩn bị. Một số Job Post cần được đồng bộ AI trước khi có Match Score.",
+    });
+  }
+
+  // Sort descending by score
+  scored.sort((a, b) => b.score - a.score);
+
+  // Take top 20
+  const top20 = scored.slice(0, 20);
+  const now = new Date().toISOString();
+
+  // Step 4: Delete old suggestions for this seeker
+  const { error: deleteError } = await supabaseAdmin
+    .from("ai_suggestions")
+    .delete()
+    .eq("seeker_id", user.id);
+
+  if (deleteError) {
+    console.error("Delete old suggestions error:", deleteError);
+    return jsonResponse({ status: "error", message: "Failed to clear old suggestions" }, 500);
+  }
+
+  // Step 5: Insert fresh suggestions
+  const inserts = top20.map((item) => ({
+    id: crypto.randomUUID(),
+    seeker_id: user.id,
+    job_id: item.row.job_id as string,
+    score: item.score,
+    reason: null,
+    cached_at: now,
+  }));
+
+  console.log("Inserting", inserts.length, "ai_suggestions rows");
+
+  const { error: insertError } = await supabaseAdmin
+    .from("ai_suggestions")
+    .insert(inserts);
+
+  if (insertError) {
+    console.error("Insert suggestions error:", insertError);
+    return jsonResponse({
+      status: "error",
+      message: `Failed to save suggestions: ${insertError.message || insertError.code || "unknown"}`,
+    }, 500);
+  }
+
+  // Step 6: Log the suggestion rebuild
+  await insertRequestLog(supabaseAdmin, user.id, "ai_suggestions");
+
+  const suggestions: AiSuggestionRow[] = top20.map((item) => ({
+    job_id: item.row.job_id as string,
+    score: item.score,
+    reason: null,
+    cached_at: now,
+  }));
+
+  return jsonResponse({
+    status: "success",
+    message: "AI đã cập nhật gợi ý việc làm.",
+    suggestions,
+    updatedAt: now,
+  });
 }

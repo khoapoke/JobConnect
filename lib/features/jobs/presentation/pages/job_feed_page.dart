@@ -12,6 +12,8 @@ import '../../../../shared/presentation/widgets/connection_loop_logo.dart';
 import '../../../../shared/presentation/widgets/glass_surface.dart';
 import '../../../../shared/presentation/widgets/premium_button.dart';
 import '../../../../shared/presentation/widgets/spotlight_search_bar.dart';
+import '../../../ai_suggestion/presentation/providers/ai_suggestion_provider.dart';
+import '../../../ai_suggestion/presentation/widgets/for_you_feed.dart';
 import '../../../profile/presentation/providers/profile_provider.dart';
 import '../../domain/entities/job_search_result.dart';
 import '../providers/job_feed_provider.dart';
@@ -43,6 +45,9 @@ class _JobFeedPageState extends ConsumerState<JobFeedPage> {
           child: RefreshIndicator(
             onRefresh: () async {
               ref.invalidate(jobFeedProvider);
+              if (_selectedTab == _FeedTab.forYou) {
+                ref.invalidate(aiSuggestionsProvider);
+              }
             },
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
@@ -198,6 +203,10 @@ class _FeedContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (_isAiTab) {
+      return const ForYouFeed();
+    }
+
     final jobs = _filterJobs();
     if (jobs.isEmpty) {
       return _FeedEmptyState(selectedTab: selectedTab);
@@ -253,6 +262,8 @@ class _FeedContent extends StatelessWidget {
         ..sort((a, b) => b.jobPost.createdAt.compareTo(a.jobPost.createdAt)),
     };
   }
+
+  bool get _isAiTab => selectedTab == _FeedTab.forYou;
 }
 
 class _FeedLoadingState extends StatelessWidget {

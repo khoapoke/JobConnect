@@ -3,6 +3,8 @@ enum AiEmbeddingStatus {
   unchanged,
   rateLimited,
   missingData,
+  noJobEmbeddings,
+  success,
   error,
 }
 

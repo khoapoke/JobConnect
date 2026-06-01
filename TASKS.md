@@ -146,7 +146,7 @@
 - [X] **T-24: AI — Embedding pipeline (profile + job)**
   Khi Seeker cập nhật profile/skills → gọi Gemini `text-embedding-004` → lưu vào `profile_embeddings`. Khi Job Post status = `active` → tương tự → `job_embeddings`. Edge Function hoặc datasource level. `core/constants/prompt_templates.dart` cho prompt format.
 
-- [ ] **T-25: AI — Tab "Dành cho bạn" (cosine similarity)**
+- [X] **T-25: AI — Tab "Dành cho bạn" (cosine similarity)**
   Query pgvector cosine similarity → hiển thị top 20 Job Posts + Match Score (%). Cache vào `ai_suggestions` (TTL 24h). Rate limit: 1 rebuild/user/5 phút. `ForYouPage` hoặc tab trong `HomePage`.
 
 - [ ] **T-26: AI — Match explanation (Gemini Flash)**

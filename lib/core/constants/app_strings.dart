@@ -254,6 +254,36 @@ class AppStrings {
       'Hãy thêm headline, kỹ năng hoặc kinh nghiệm trước khi bật AI Match.';
   static const aiMatchError = 'Đã có lỗi khi cập nhật AI Match.';
   static const aiMatchRefresh = 'Cập nhật AI Match';
+
+  // T-25: AI Suggestions
+  static const aiSuggestionsTitle = 'Gợi ý bởi AI';
+  static const aiSuggestionsSubtitle =
+      'Match Score dựa trên Profile, kỹ năng và mô tả Job Post.';
+  static const aiStaleWarning =
+      'Gợi ý đã cũ hơn 24 giờ. Hãy cập nhật để nhận kết quả mới nhất.';
+  static const aiUpdateSuggestions = 'Cập nhật';
+  static const aiOnboardingTitle = 'AI Gợi ý';
+  static const aiOnboardingBody =
+      'JobConnect sẽ phân tích Profile và so sánh với hàng trăm tin tuyển dụng để tìm việc phù hợp nhất.';
+  static const aiCreateSuggestions = 'Tạo gợi ý';
+  static const aiCompleteProfileTitle =
+      'Hoàn thiện Profile để nhận gợi ý tốt hơn';
+  static const aiCompleteProfileBody =
+      'Thêm headline, kỹ năng hoặc kinh nghiệm để JobConnect hiểu hướng đi của bạn.';
+  static const aiUpdateProfile = 'Cập nhật Profile';
+  static const aiPreparingTitle = 'Gợi ý đang được chuẩn bị';
+  static const aiPreparingBody =
+      'Một số Job Post cần được đồng bộ AI trước khi có Match Score.';
+  static const aiViewLatestJobs = 'Xem việc mới nhất';
+  static const aiSuggestionsError = 'Không tải được gợi ý AI';
+  static const aiSuggestionsErrorBody =
+      'Hãy thử lại để tiếp tục khám phá cơ hội phù hợp.';
+  static const latestJobs = 'Việc mới nhất';
+  static const noJobPostsYet = 'Chưa có tin tuyển dụng nào.';
+  static const matchVeryRelevant = 'Rất phù hợp';
+  static const matchRelevant = 'Phù hợp';
+  static const matchPotential = 'Có tiềm năng';
+  static const matchExploreMore = 'Khám phá thêm';
   static const applicantsPageTitle = 'Ứng viên';
   static const applicantDetail = 'Chi tiết ứng viên';
   static const internalNote = 'Ghi chú nội bộ';

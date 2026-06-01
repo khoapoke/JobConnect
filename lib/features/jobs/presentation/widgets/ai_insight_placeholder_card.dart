@@ -101,6 +101,9 @@ class _RefreshAiMatchButtonState extends ConsumerState<_RefreshAiMatchButton> {
                   AiEmbeddingStatus.unchanged => AppStrings.aiMatchReady,
                   AiEmbeddingStatus.rateLimited => AppStrings.aiMatchRateLimited,
                   AiEmbeddingStatus.missingData => AppStrings.aiMatchMissingData,
+                  AiEmbeddingStatus.noJobEmbeddings =>
+                      AppStrings.aiMatchMissingData,
+                  AiEmbeddingStatus.success => AppStrings.aiMatchUpdated,
                   AiEmbeddingStatus.error => result.message.isNotEmpty
                       ? result.message
                       : AppStrings.aiMatchError,
