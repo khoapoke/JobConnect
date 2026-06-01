@@ -10,6 +10,7 @@ import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/forgot_password_page.dart';
 import '../../features/auth/presentation/pages/role_selection_page.dart';
+import '../../features/splash/presentation/pages/splash_page.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/auth/domain/entities/auth_state.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
@@ -38,7 +39,7 @@ import 'user_role.dart';
 
 part 'app_router.g.dart';
 
-final publicRoutes = ['/login', '/register', '/forgot-password', '/onboarding'];
+final publicRoutes = ['/login', '/register', '/forgot-password', '/onboarding', '/splash'];
 
 /// Resolves the current user's role from auth state.
 UserRole _resolveRole(Ref ref) {
@@ -53,9 +54,10 @@ GoRouter appRouter(Ref ref) {
   ref.listen(authProvider, (_, __) => listenable.value = !listenable.value);
 
   return GoRouter(
-    initialLocation: '/',
+    initialLocation: '/splash',
     refreshListenable: listenable,
     redirect: (context, state) {
+      if (state.matchedLocation == '/splash') return null;
       final authState = ref.read(authProvider);
       if (authState is AuthInitial) return null;
       if (authState is AuthUnauthenticated || authState is AuthError) {
@@ -82,6 +84,12 @@ GoRouter appRouter(Ref ref) {
       return null;
     },
     routes: [
+      // ─── Splash ────────────────────────────────────────────────────
+      GoRoute(
+        path: '/splash',
+        builder: (context, state) => const SplashPage(),
+      ),
+
       // ─── Seeker Shell ──────────────────────────────────────────────
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
