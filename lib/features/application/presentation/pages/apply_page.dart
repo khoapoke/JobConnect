@@ -213,7 +213,7 @@ class _ApplyPageState extends ConsumerState<ApplyPage> {
           'resubmitted' => AppStrings.applicationResubmitted,
           _ => AppStrings.applicationSubmitted,
         };
-        final route = success.action == 'submitted' ? '/search' : '/applications';
+        const route = '/applications';
         _showSuccessAndNavigate(message, route);
       },
     );
@@ -239,8 +239,10 @@ class _ApplyPageState extends ConsumerState<ApplyPage> {
       AppDurations.base + AppDurations.fast,
       () {
         if (!mounted) return;
-        context.pop();
-        context.go(route);
+        Navigator.of(context, rootNavigator: true).pop();
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) context.go(route);
+        });
       },
     );
   }

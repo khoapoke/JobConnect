@@ -171,10 +171,10 @@
 
 > Dependency: Auth + có Seeker + Recruiter accounts. Chat cần cả 2 roles.
 
-- [ ] **T-28: Chat — Conversation list + tạo conversation**
+- [x] **T-28: Chat — Conversation list + tạo conversation**
   Seeker bắt đầu chat từ `JobDetailPage` hoặc `ApplicantDetailPage`. Tạo conversation nếu chưa tồn tại. Hiển thị danh sách conversations. `ConversationsPage`. Bảng: `conversations`.
 
-- [ ] **T-29: Chat — Realtime messaging**
+- [x] **T-29: Chat — Realtime messaging**
   Gửi/nhận tin nhắn realtime qua Supabase Realtime. Hiển thị messages, đánh dấu read. Auto-scroll. `ChatPage`. Bảng: `messages`. Provider subscribe → `ref.onDispose` cancel.
 
 ---
@@ -183,7 +183,7 @@
 
 > Dependency: Phase 7 chat logic is working.
 
-- [ ] **UI-08: Chat interface polish**
+- [x] **UI-08: Chat interface polish**
   Apply Modern Social Productivity styling to conversations and chat: clean message bubbles, recruiter/seeker identity clarity, attachment/CV preview states, realtime sending/read feedback, empty states, and keyboard-safe layout. Keep motion subtle and functional.
 
 ---

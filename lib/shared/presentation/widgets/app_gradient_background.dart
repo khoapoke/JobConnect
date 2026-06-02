@@ -26,9 +26,11 @@ class AppGradientBackground extends StatelessWidget {
                 ? AppGradients.darkBackground
                 : AppGradients.lightBackground),
       ),
-      child: Padding(
-        padding: padding ?? EdgeInsets.zero,
-        child: child,
+      child: SizedBox.expand(
+        child: Padding(
+          padding: padding ?? EdgeInsets.zero,
+          child: child,
+        ),
       ),
     );
   }
