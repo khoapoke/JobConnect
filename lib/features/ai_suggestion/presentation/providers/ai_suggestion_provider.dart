@@ -1,12 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../../core/errors/failure.dart';
 import '../../../../core/router/user_role.dart';
 import '../../../auth/domain/entities/auth_state.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../data/repositories/ai_suggestion_repository_impl.dart';
 import '../../domain/entities/ai_embedding_result.dart';
 import '../../domain/entities/ai_suggestion.dart';
+import '../../domain/entities/match_explanation.dart';
+import '../../domain/usecases/explain_match_usecase.dart';
 import '../../domain/usecases/get_ai_suggestions_usecase.dart';
 import '../../domain/usecases/rebuild_ai_suggestions_usecase.dart';
 import '../../domain/usecases/rebuild_job_embedding_usecase.dart';
@@ -38,6 +41,12 @@ RebuildAiSuggestionsUseCase rebuildAiSuggestionsUseCase(Ref ref) {
   return RebuildAiSuggestionsUseCase(repository);
 }
 
+@riverpod
+ExplainMatchUseCase explainMatchUseCase(Ref ref) {
+  final repository = ref.watch(aiSuggestionRepositoryProvider);
+  return ExplainMatchUseCase(repository);
+}
+
 /// Watches cached AI suggestions for the current authenticated seeker.
 /// Auto-rebuilds when auth state changes.
 @riverpod
@@ -50,10 +59,20 @@ Future<List<AiSuggestion>> aiSuggestions(Ref ref) async {
   final useCase = ref.watch(getAiSuggestionsUseCaseProvider);
   final result = await useCase.call();
 
-  return result.fold(
-    (failure) => throw failure,
-    (suggestions) => suggestions,
-  );
+  return result.fold((failure) => throw failure, (suggestions) => suggestions);
+}
+
+@riverpod
+Future<MatchExplanation> matchExplanation(Ref ref, String suggestionId) async {
+  final auth = ref.watch(authProvider);
+  if (auth is! AuthAuthenticated || auth.role != UserRole.seeker) {
+    throw const AuthFailure(message: 'User not authenticated');
+  }
+
+  final useCase = ref.watch(explainMatchUseCaseProvider);
+  final result = await useCase.call(suggestionId);
+
+  return result.fold((failure) => throw failure, (explanation) => explanation);
 }
 
 /// Action notifier for AI embedding rebuilds and suggestion rebuilds.

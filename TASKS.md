@@ -149,7 +149,7 @@
 - [X] **T-25: AI — Tab "Dành cho bạn" (cosine similarity)**
   Query pgvector cosine similarity → hiển thị top 20 Job Posts + Match Score (%). Cache vào `ai_suggestions` (TTL 24h). Rate limit: 1 rebuild/user/5 phút. `ForYouPage` hoặc tab trong `HomePage`.
 
-- [ ] **T-26: AI — Match explanation (Gemini Flash)**
+- [X] **T-26: AI — Match explanation (Gemini Flash)**
   Khi Seeker xem AI suggestion detail → gọi Gemini Flash giải thích top 3 lý do phù hợp bằng tiếng Việt. Hiển thị trong `JobDetailPage` khi truy cập từ AI tab.
 
 - [ ] **T-27: Skill Gap — Phân tích kỹ năng còn thiếu**

@@ -1,5 +1,5 @@
-// T-24 + T-25: AI Embedding Pipeline + AI Suggestions Edge Function
-// Actions: rebuild_profile_embedding, rebuild_job_embedding, rebuild_ai_suggestions
+// T-24 + T-25 + T-26: AI Embedding Pipeline + AI Suggestions + Match Explanation
+// Actions: rebuild_profile_embedding, rebuild_job_embedding, rebuild_ai_suggestions, explain_match
 //
 // Env vars required:
 //   SUPABASE_URL
@@ -8,6 +8,7 @@
 //   GEMINI_API_KEY
 // Env vars optional:
 //   GEMINI_EMBEDDING_MODEL (default: gemini-embedding-001)
+//   GEMINI_FLASH_MODEL (default: gemini-3.1-flash-lite)
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -19,14 +20,18 @@ const corsHeaders = {
 interface RequestBody {
   action: string;
   jobId?: string;
+  suggestionId?: string;
 }
 
-interface EmbeddingResult {
+interface ApiResult {
   status: string;
   message: string;
   sourceHash?: string;
   updatedAt?: string;
   suggestions?: AiSuggestionRow[];
+  suggestionId?: string;
+  reason?: string;
+  cached?: boolean;
 }
 
 interface AiSuggestionRow {
@@ -34,6 +39,14 @@ interface AiSuggestionRow {
   score: number;
   reason: string | null;
   cached_at: string;
+}
+
+interface ProfileData {
+  profile: any;
+  skills: any[] | null;
+  experiences: any[] | null;
+  educations: any[] | null;
+  certificates: any[] | null;
 }
 
 Deno.serve(async (req) => {
@@ -61,14 +74,12 @@ Deno.serve(async (req) => {
       }, 500);
     }
 
-    // Client with caller JWT for auth checks
     const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
       global: {
         headers: { Authorization: req.headers.get("Authorization") || "" },
       },
     });
 
-    // Admin client for DB ops (bypasses RLS)
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey);
 
     const body: RequestBody = await req.json();
@@ -88,6 +99,13 @@ Deno.serve(async (req) => {
       case "rebuild_ai_suggestions": {
         return await handleRebuildAiSuggestions(supabaseClient, supabaseAdmin, geminiApiKey);
       }
+      case "explain_match": {
+        const suggestionId = body.suggestionId;
+        if (!suggestionId) {
+          return jsonResponse({ status: "error", message: "suggestionId is required" }, 400);
+        }
+        return await handleExplainMatch(supabaseClient, supabaseAdmin, geminiApiKey, suggestionId);
+      }
       default: {
         return jsonResponse({ status: "error", message: `Unknown action: ${action}` }, 400);
       }
@@ -98,7 +116,7 @@ Deno.serve(async (req) => {
   }
 });
 
-function jsonResponse(result: EmbeddingResult, status = 200) {
+function jsonResponse(result: ApiResult, status = 200) {
   return new Response(JSON.stringify(result), {
     status,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -140,7 +158,6 @@ async function checkRateLimit(
   });
 
   if (error) {
-    // Fallback if RPC doesn't exist: count manually
     const cutoff = new Date(Date.now() - windowMinutes * 60_000).toISOString();
     const { count } = await supabaseAdmin
       .from("ai_request_logs")
@@ -172,7 +189,7 @@ async function sha256Hex(text: string): Promise<string> {
   return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-/* ─── Gemini embedding ─────────────────────────────────────────────── */
+/* ─── Gemini API helpers ───────────────────────────────────────────── */
 
 async function callGeminiEmbedding(apiKey: string, text: string): Promise<number[]> {
   const geminiModel = Deno.env.get("GEMINI_EMBEDDING_MODEL") || "gemini-embedding-001";
@@ -201,30 +218,64 @@ async function callGeminiEmbedding(apiKey: string, text: string): Promise<number
   }
 
   const json = await response.json();
-  console.log("Gemini response keys:", Object.keys(json));
-
   const embedding = json?.embedding?.values as number[];
   if (!embedding || embedding.length === 0) {
     throw new Error("Gemini returned empty embedding");
   }
-  console.log("Embedding generated, dimensions:", embedding.length);
+
   return embedding;
+}
+
+async function callGeminiFlash(apiKey: string, prompt: string): Promise<string> {
+  const geminiFlashModel = Deno.env.get("GEMINI_FLASH_MODEL") || "gemini-3.1-flash-lite";
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${geminiFlashModel}:generateContent?key=${apiKey}`;
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [
+        {
+          role: "user",
+          parts: [{ text: prompt }],
+        },
+      ],
+      generationConfig: {
+        temperature: 0.4,
+        maxOutputTokens: 350,
+        responseMimeType: "application/json",
+        thinkingConfig: {
+          thinkingBudget: 0,
+        },
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    const errText = await response.text();
+    console.error("Gemini Flash API error:", response.status, errText);
+    throw new Error(`Gemini Flash API error ${response.status}: ${errText}`);
+  }
+
+  const json = await response.json();
+  const text = json?.candidates?.[0]?.content?.parts
+    ?.map((part: { text?: string }) => part.text || "")
+    .join("")
+    .trim();
+
+  if (!text) {
+    throw new Error("Gemini Flash returned empty content");
+  }
+
+  return text;
 }
 
 /* ─── Profile data helpers ─────────────────────────────────────────── */
 
-interface ProfileData {
-  profile: any;
-  skills: any[] | null;
-  experiences: any[] | null;
-  educations: any[] | null;
-  certificates: any[] | null;
-}
-
 async function fetchProfileData(supabaseAdmin: any, userId: string): Promise<ProfileData> {
   const [{ data: profile }, { data: skills }, { data: experiences }, { data: educations }, { data: certificates }] =
     await Promise.all([
-      supabaseAdmin.from("profiles").select("headline, bio, location").eq("id", userId).single(),
+      supabaseAdmin.from("profiles").select("full_name, headline, bio, location").eq("id", userId).single(),
       supabaseAdmin.from("user_skills").select("level, skills(name)").eq("user_id", userId).order("skills(name)"),
       supabaseAdmin
         .from("work_experiences")
@@ -276,9 +327,7 @@ function buildProfileSourceText(data: ProfileData): string {
   if (experiences && experiences.length > 0) {
     parts.push("Work Experience:");
     for (const e of experiences) {
-      const duration = e.is_current
-        ? `${e.from_date} to present`
-        : `${e.from_date} to ${e.to_date || ""}`;
+      const duration = e.is_current ? `${e.from_date} to present` : `${e.from_date} to ${e.to_date || ""}`;
       parts.push(`- ${e.role} at ${e.company} (${duration})`);
       if (e.description) parts.push(`  ${e.description}`);
     }
@@ -332,7 +381,6 @@ async function handleRebuildProfileEmbedding(
   const sourceText = buildProfileSourceText(profileData);
   const sourceHash = await sha256Hex(sourceText);
 
-  // Check existing hash
   const { data: existing } = await supabaseAdmin
     .from("profile_embeddings")
     .select("source_hash")
@@ -348,7 +396,6 @@ async function handleRebuildProfileEmbedding(
     });
   }
 
-  // Rate limit: 1 attempt / 5 minutes
   const rateOk = await checkRateLimit(supabaseAdmin, user.id, "profile_embedding", 5, 1);
   if (!rateOk) {
     return jsonResponse({
@@ -385,7 +432,7 @@ async function handleRebuildProfileEmbedding(
   });
 }
 
-/* ─── Job Embedding ──────────────────────────────────────────────────── */
+/* ─── Job Embedding ────────────────────────────────────────────────── */
 
 async function handleRebuildJobEmbedding(
   supabaseClient: any,
@@ -403,7 +450,6 @@ async function handleRebuildJobEmbedding(
     return jsonResponse({ status: "error", message: "Only recruiters can rebuild job embedding" }, 403);
   }
 
-  // Verify job belongs to recruiter's company
   const { data: company } = await supabaseAdmin
     .from("companies")
     .select("id")
@@ -432,7 +478,6 @@ async function handleRebuildJobEmbedding(
     return jsonResponse({ status: "missingData", message: "Job must be active to generate embedding" });
   }
 
-  // Missing data check
   const hasTitle = job.title && (job.title as string).trim().length > 0;
   const hasDescription = job.description && (job.description as string).trim().length > 0;
   const hasRequirements = job.requirements && (job.requirements as string).trim().length > 0;
@@ -444,7 +489,6 @@ async function handleRebuildJobEmbedding(
     });
   }
 
-  // Fetch related data
   const { data: location } = await supabaseAdmin
     .from("job_locations")
     .select("province, district, address, is_remote")
@@ -469,11 +513,9 @@ async function handleRebuildJobEmbedding(
     .eq("job_id", jobId)
     .order("skills(name)");
 
-  // Build source text
   const sourceText = buildJobSourceText(job, location, category, companyRow, requiredSkills);
   const sourceHash = await sha256Hex(sourceText);
 
-  // Check existing hash
   const { data: existing } = await supabaseAdmin
     .from("job_embeddings")
     .select("source_hash")
@@ -489,7 +531,6 @@ async function handleRebuildJobEmbedding(
     });
   }
 
-  // Rate limit: 1 attempt / 1 minute for recruiters
   const rateOk = await checkRateLimit(supabaseAdmin, user.id, "job_embedding", 1, 1);
   if (!rateOk) {
     return jsonResponse({
@@ -583,10 +624,6 @@ function cosineSimilarity(a: number[], b: number[]): number {
   return dot / denom;
 }
 
-/** Parse a pgvector embedding from Supabase into a number[].
- *  Supabase may return vectors as plain arrays, strings like "[1,2,3]",
- *  or Float32Array objects depending on the driver version.
- */
 function parseEmbedding(raw: any): number[] | null {
   if (!raw) return null;
   if (Array.isArray(raw)) {
@@ -599,7 +636,6 @@ function parseEmbedding(raw: any): number[] | null {
       .map((s) => Number(s.trim()))
       .filter((n) => !isNaN(n));
   }
-  // Float32Array or similar typed array
   if (raw.length !== undefined && typeof raw[Symbol.iterator] === "function") {
     return Array.from(raw as Iterable<number>)
       .map((v) => Number(v))
@@ -625,7 +661,6 @@ async function handleRebuildAiSuggestions(
     return jsonResponse({ status: "error", message: "Only seekers can rebuild AI suggestions" }, 403);
   }
 
-  // Rate limit: 1 suggestion rebuild / 5 minutes
   const rateOk = await checkRateLimit(supabaseAdmin, user.id, "ai_suggestions", 5, 1);
   if (!rateOk) {
     return jsonResponse({
@@ -635,7 +670,6 @@ async function handleRebuildAiSuggestions(
     });
   }
 
-  // Step 1: Ensure profile embedding exists / is up to date
   const profileData = await fetchProfileData(supabaseAdmin, user.id);
 
   if (!hasMeaningfulProfileData(profileData)) {
@@ -658,16 +692,11 @@ async function handleRebuildAiSuggestions(
 
   if (existingProfileEmbedding && existingProfileEmbedding.source_hash === sourceHash) {
     profileEmbedding = parseEmbedding(existingProfileEmbedding.embedding);
-    console.log("Profile embedding unchanged, reusing existing. dims:", profileEmbedding?.length);
   } else {
-    // Need to rebuild profile embedding
-    // Check profile embedding rate limit separately
     const profileRateOk = await checkRateLimit(supabaseAdmin, user.id, "profile_embedding", 5, 1);
     if (!profileRateOk) {
-      // If profile embedding is rate-limited but we have an old one, use it
       if (existingProfileEmbedding?.embedding) {
         profileEmbedding = parseEmbedding(existingProfileEmbedding.embedding);
-        console.log("Profile embedding rate limited, using existing embedding. dims:", profileEmbedding?.length);
       } else {
         return jsonResponse({
           status: "rateLimited",
@@ -699,7 +728,6 @@ async function handleRebuildAiSuggestions(
     return jsonResponse({ status: "error", message: "Could not obtain profile embedding" }, 500);
   }
 
-  // Step 2: Fetch active job embeddings with job data
   const { data: jobRows, error: jobError } = await supabaseAdmin
     .from("job_embeddings")
     .select(`
@@ -764,19 +792,20 @@ async function handleRebuildAiSuggestions(
     });
   }
 
-  // Step 3: Compute cosine similarity
-  const scored = [];
+  const scored: Array<{ row: any; score: number }> = [];
   for (const row of jobRows) {
     const jobEmbedding = parseEmbedding(row.embedding);
     if (!jobEmbedding || jobEmbedding.length === 0) {
       console.log("Skipping job", row.job_id, "— no parseable embedding");
       continue;
     }
+
     const score = cosineSimilarity(profileEmbedding, jobEmbedding);
     if (isNaN(score) || !isFinite(score)) {
       console.log("Skipping job", row.job_id, "— NaN score");
       continue;
     }
+
     scored.push({ row, score });
   }
 
@@ -787,14 +816,10 @@ async function handleRebuildAiSuggestions(
     });
   }
 
-  // Sort descending by score
   scored.sort((a, b) => b.score - a.score);
-
-  // Take top 20
   const top20 = scored.slice(0, 20);
   const now = new Date().toISOString();
 
-  // Step 4: Delete old suggestions for this seeker
   const { error: deleteError } = await supabaseAdmin
     .from("ai_suggestions")
     .delete()
@@ -805,7 +830,6 @@ async function handleRebuildAiSuggestions(
     return jsonResponse({ status: "error", message: "Failed to clear old suggestions" }, 500);
   }
 
-  // Step 5: Insert fresh suggestions
   const inserts = top20.map((item) => ({
     id: crypto.randomUUID(),
     seeker_id: user.id,
@@ -814,8 +838,6 @@ async function handleRebuildAiSuggestions(
     reason: null,
     cached_at: now,
   }));
-
-  console.log("Inserting", inserts.length, "ai_suggestions rows");
 
   const { error: insertError } = await supabaseAdmin
     .from("ai_suggestions")
@@ -829,7 +851,6 @@ async function handleRebuildAiSuggestions(
     }, 500);
   }
 
-  // Step 6: Log the suggestion rebuild
   await insertRequestLog(supabaseAdmin, user.id, "ai_suggestions");
 
   const suggestions: AiSuggestionRow[] = top20.map((item) => ({
@@ -845,4 +866,267 @@ async function handleRebuildAiSuggestions(
     suggestions,
     updatedAt: now,
   });
+}
+
+/* ─── Match Explanation ────────────────────────────────────────────── */
+
+async function handleExplainMatch(
+  supabaseClient: any,
+  supabaseAdmin: any,
+  geminiApiKey: string,
+  suggestionId: string,
+): Promise<Response> {
+  const user = await getAuthUser(supabaseClient);
+  if (!user) {
+    return jsonResponse({ status: "error", message: "Unauthorized" }, 401);
+  }
+
+  const role = await getUserRole(supabaseAdmin, user.id);
+  if (role !== "seeker") {
+    return jsonResponse({ status: "error", message: "Only seekers can explain AI matches" }, 403);
+  }
+
+  const { data: suggestion, error: suggestionError } = await supabaseAdmin
+    .from("ai_suggestions")
+    .select("id, seeker_id, job_id, score, reason")
+    .eq("id", suggestionId)
+    .eq("seeker_id", user.id)
+    .maybeSingle();
+
+  if (suggestionError || !suggestion) {
+    return jsonResponse({ status: "error", message: "AI Suggestion not found." }, 404);
+  }
+
+  const cachedReason = typeof suggestion.reason === "string" ? suggestion.reason.trim() : "";
+  if (cachedReason.length > 0) {
+    return jsonResponse({
+      status: "success",
+      message: "Match explanation loaded from cache.",
+      suggestionId,
+      reason: cachedReason,
+      cached: true,
+    });
+  }
+
+  const rateOk = await checkRateLimit(supabaseAdmin, user.id, "explain_match", 10, 3);
+  if (!rateOk) {
+    return jsonResponse({
+      status: "rateLimited",
+      message: "Bạn đã xem nhiều giải thích AI. Thử lại sau ít phút.",
+      suggestionId,
+    }, 429);
+  }
+
+  const profileData = await fetchProfileData(supabaseAdmin, user.id);
+  const { data: jobContext, error: jobContextError } = await supabaseAdmin
+    .from("job_posts")
+    .select(`
+      id,
+      company_id,
+      title,
+      description,
+      requirements,
+      salary_min,
+      salary_max,
+      is_salary_visible,
+      type,
+      status,
+      companies!inner(name),
+      job_locations!inner(province, district, address, is_remote),
+      job_required_skills(is_required, skills(name)),
+      job_categories(name)
+    `)
+    .eq("id", suggestion.job_id)
+    .eq("status", "active")
+    .single();
+
+  if (jobContextError || !jobContext) {
+    return jsonResponse({ status: "error", message: "Job Post not found for AI explanation." }, 404);
+  }
+
+  await insertRequestLog(supabaseAdmin, user.id, "explain_match");
+
+  const prompt = buildMatchExplanationPrompt({
+    profileData,
+    jobContext,
+    matchScore: Number(suggestion.score ?? 0),
+  });
+
+  const rawText = await callGeminiFlash(geminiApiKey, prompt);
+  const reason = formatMatchExplanation(rawText);
+
+  if (!reason) {
+    return jsonResponse({
+      status: "error",
+      message: "Không thể tạo giải thích AI từ phản hồi hiện tại.",
+      suggestionId,
+    }, 500);
+  }
+
+  const { data: updatedRows, error: updateError } = await supabaseAdmin
+    .from("ai_suggestions")
+    .update({ reason })
+    .eq("id", suggestionId)
+    .eq("seeker_id", user.id)
+    .select("id, reason");
+
+  if (updateError || !updatedRows || updatedRows.length === 0) {
+    console.error("Update ai_suggestions.reason error:", updateError);
+    return jsonResponse({
+      status: "error",
+      message: "Không thể lưu giải thích AI.",
+      suggestionId,
+    }, 500);
+  }
+
+  return jsonResponse({
+    status: "success",
+    message: "Match explanation generated.",
+    suggestionId,
+    reason,
+    cached: false,
+  });
+}
+
+function buildMatchExplanationPrompt({
+  profileData,
+  jobContext,
+  matchScore,
+}: {
+  profileData: ProfileData;
+  jobContext: any;
+  matchScore: number;
+}): string {
+  const profile = profileData.profile ?? {};
+  const userSkills = (profileData.skills ?? [])
+    .map((item) => `- ${item.skills?.name || ""} (${item.level || "unknown"})`)
+    .join("\n");
+  const experiences = (profileData.experiences ?? [])
+    .map((item) => {
+      const duration = item.is_current ? `${item.from_date} - nay` : `${item.from_date} - ${item.to_date || ""}`;
+      return `- ${item.role || ""} tại ${item.company || ""} (${duration})${item.description ? `: ${item.description}` : ""}`;
+    })
+    .join("\n");
+  const educations = (profileData.educations ?? [])
+    .map((item) => `- ${item.degree || ""} ${item.major ? `- ${item.major}` : ""} tại ${item.school || ""}`)
+    .join("\n");
+  const certificates = (profileData.certificates ?? [])
+    .map((item) => `- ${item.name || ""}${item.issuer ? ` (${item.issuer})` : ""}`)
+    .join("\n");
+
+  const location = Array.isArray(jobContext.job_locations) ? jobContext.job_locations[0] : jobContext.job_locations;
+  const company = jobContext.companies;
+  const category = jobContext.job_categories;
+  const requiredSkills = (jobContext.job_required_skills ?? [])
+    .map((item: any) => `- ${item.skills?.name || ""} (${item.is_required ? "bắt buộc" : "ưu tiên"})`)
+    .join("\n");
+
+  return [
+    "Bạn là AI của JobConnect.",
+    "Nhiệm vụ: giải thích vì sao một Job Post có thể phù hợp với Seeker bằng tiếng Việt.",
+    "Chỉ dùng dữ liệu được cung cấp. Không được bịa kỹ năng, kinh nghiệm, công ty, yêu cầu hoặc mức độ phù hợp.",
+    "Giọng điệu phải được hiệu chỉnh theo Match Score:",
+    "- >= 0.75: có thể dùng 'rất phù hợp'",
+    "- 0.60 đến 0.74: dùng 'phù hợp'",
+    "- 0.45 đến 0.59: dùng 'có tiềm năng phù hợp'",
+    "- < 0.45: dùng 'có vài điểm liên quan'",
+    "Không dùng lời lẽ tiêu cực hoặc khẳng định quá mức.",
+    "Trả về JSON hợp lệ đúng schema sau:",
+    '{"summary":"...","reasons":["...","...","..."],"missingSkills":["..."],"recommendation":"..."}',
+    "Yêu cầu bắt buộc:",
+    "- summary: đúng 1 câu kết luận ngắn",
+    "- reasons: đúng 3 lý do, mỗi lý do ngắn, ưu tiên <= 25 từ",
+    "- missingSkills: liệt kê ngắn nếu có, không bắt buộc",
+    "- recommendation: 1 câu gợi ý nhẹ nhàng, có thể để chuỗi rỗng nếu không cần",
+    "- Không thêm markdown, không thêm ```json, không thêm giải thích ngoài JSON",
+    "",
+    `Match Score: ${(matchScore * 100).toFixed(0)}%`,
+    "",
+    "=== PROFILE ===",
+    `Full name: ${profile.full_name || ""}`,
+    `Headline: ${profile.headline || ""}`,
+    `Bio: ${profile.bio || ""}`,
+    `Location: ${profile.location || ""}`,
+    "User Skills:",
+    userSkills || "- Không có dữ liệu",
+    "Work Experiences:",
+    experiences || "- Không có dữ liệu",
+    "Educations:",
+    educations || "- Không có dữ liệu",
+    "Certificates:",
+    certificates || "- Không có dữ liệu",
+    "",
+    "=== JOB POST ===",
+    `Title: ${jobContext.title || ""}`,
+    `Company: ${company?.name || ""}`,
+    `Category: ${category?.name || ""}`,
+    `Type: ${jobContext.type || ""}`,
+    `Remote: ${location?.is_remote ? "Có" : "Không"}`,
+    `Job Location: ${[location?.address, location?.district, location?.province].filter(Boolean).join(", ")}`,
+    `Salary: ${jobContext.is_salary_visible ? `${jobContext.salary_min || ""}-${jobContext.salary_max || ""}` : "Ẩn"}`,
+    `Description: ${jobContext.description || ""}`,
+    `Requirements: ${jobContext.requirements || ""}`,
+    "Required Skills:",
+    requiredSkills || "- Không có dữ liệu",
+  ].join("\n");
+}
+
+function formatMatchExplanation(rawText: string): string | null {
+  const trimmed = rawText.trim();
+  if (!trimmed) return null;
+
+  const parsed = parseGeminiExplanationJson(trimmed) ?? parseGeminiExplanationJson(stripJsonFence(trimmed));
+  if (parsed) {
+    const formatted = formatStructuredExplanation(parsed);
+    if (formatted) return formatted;
+  }
+
+  if (isReadableText(trimmed)) {
+    return trimmed;
+  }
+
+  return null;
+}
+
+function parseGeminiExplanationJson(text: string): any | null {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+}
+
+function stripJsonFence(text: string): string {
+  return text.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```$/i, "").trim();
+}
+
+function formatStructuredExplanation(payload: any): string | null {
+  const summary = typeof payload?.summary === "string" ? payload.summary.trim() : "";
+  const reasons = Array.isArray(payload?.reasons)
+    ? payload.reasons.map((item: unknown) => String(item).trim()).filter(Boolean).slice(0, 3)
+    : [];
+  const recommendation = typeof payload?.recommendation === "string"
+    ? payload.recommendation.trim()
+    : "";
+
+  if (!summary && reasons.length === 0 && !recommendation) {
+    return null;
+  }
+
+  const lines: string[] = [];
+  if (summary) lines.push(summary);
+  if (reasons.length > 0) {
+    lines.push("");
+    reasons.forEach((reason, index) => lines.push(`${index + 1}. ${reason}`));
+  }
+  if (recommendation) {
+    lines.push("");
+    lines.push(`Gợi ý tiếp theo: ${recommendation}`);
+  }
+
+  return lines.join("\n").trim();
+}
+
+function isReadableText(text: string): boolean {
+  return text.replace(/\s+/g, " ").trim().length >= 20;
 }

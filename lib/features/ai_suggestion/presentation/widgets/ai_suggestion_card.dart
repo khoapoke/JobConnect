@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_spacing.dart';
 import '../../domain/entities/ai_suggestion.dart';
@@ -27,6 +28,10 @@ class AiSuggestionCard extends StatelessWidget {
         JobCard(
           result: suggestion.result,
           onBookmarkRemoved: onBookmarkRemoved,
+          onTap: () => context.push(
+            '/search/${suggestion.result.jobPost.id}',
+            extra: suggestion,
+          ),
         ),
       ],
     );

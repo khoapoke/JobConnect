@@ -9,18 +9,17 @@ import '../../../recruiter/data/models/job_post_model.dart';
 import '../../../recruiter/data/models/job_required_skill_model.dart';
 import '../../domain/entities/ai_embedding_result.dart';
 import '../../domain/entities/ai_suggestion.dart';
+import '../../domain/entities/match_explanation.dart';
 
-String _extractErrorMessage(dynamic error) {
-  if (error is FunctionException) {
-    final details = error.details;
-    if (details is Map<String, dynamic>) {
-      final msg = details['message'] as String?;
-      final status = details['status'] as String?;
-      if (msg != null) return '[$status] $msg';
-    }
-    return error.toString();
+Failure _extractFunctionFailure(FunctionException error) {
+  final details = error.details;
+  if (details is Map<String, dynamic>) {
+    final message = details['message'] as String? ?? error.toString();
+    final status = details['status'] as String?;
+    return NetworkFailure(message: message, code: status);
   }
-  return error.toString();
+
+  return NetworkFailure(message: error.toString());
 }
 
 abstract class AiSuggestionDatasource {
@@ -28,6 +27,7 @@ abstract class AiSuggestionDatasource {
   Future<Either<Failure, AiEmbeddingResult>> rebuildJobEmbedding(String jobId);
   Future<Either<Failure, List<AiSuggestion>>> getCachedSuggestions();
   Future<Either<Failure, AiEmbeddingResult>> rebuildAiSuggestions();
+  Future<Either<Failure, MatchExplanation>> explainMatch(String suggestionId);
 }
 
 class AiSuggestionDatasourceImpl implements AiSuggestionDatasource {
@@ -45,36 +45,39 @@ class AiSuggestionDatasourceImpl implements AiSuggestionDatasource {
 
       final data = response.data as Map<String, dynamic>?;
       if (data == null) {
-        return const Left(UnexpectedFailure(message: 'Empty response from AI function'));
+        return const Left(
+          UnexpectedFailure(message: 'Empty response from AI function'),
+        );
       }
 
       return Right(_parseResult(data));
     } on FunctionException catch (e) {
-      return Left(NetworkFailure(message: _extractErrorMessage(e)));
+      return Left(_extractFunctionFailure(e));
     } catch (e) {
       return Left(UnexpectedFailure(message: e.toString()));
     }
   }
 
   @override
-  Future<Either<Failure, AiEmbeddingResult>> rebuildJobEmbedding(String jobId) async {
+  Future<Either<Failure, AiEmbeddingResult>> rebuildJobEmbedding(
+    String jobId,
+  ) async {
     try {
       final response = await _supabase.functions.invoke(
         'ai',
-        body: {
-          'action': 'rebuild_job_embedding',
-          'jobId': jobId,
-        },
+        body: {'action': 'rebuild_job_embedding', 'jobId': jobId},
       );
 
       final data = response.data as Map<String, dynamic>?;
       if (data == null) {
-        return const Left(UnexpectedFailure(message: 'Empty response from AI function'));
+        return const Left(
+          UnexpectedFailure(message: 'Empty response from AI function'),
+        );
       }
 
       return Right(_parseResult(data));
     } on FunctionException catch (e) {
-      return Left(NetworkFailure(message: _extractErrorMessage(e)));
+      return Left(_extractFunctionFailure(e));
     } catch (e) {
       return Left(UnexpectedFailure(message: e.toString()));
     }
@@ -132,12 +135,45 @@ class AiSuggestionDatasourceImpl implements AiSuggestionDatasource {
 
       final data = response.data as Map<String, dynamic>?;
       if (data == null) {
-        return const Left(UnexpectedFailure(message: 'Empty response from AI function'));
+        return const Left(
+          UnexpectedFailure(message: 'Empty response from AI function'),
+        );
       }
 
       return Right(_parseResult(data));
     } on FunctionException catch (e) {
-      return Left(NetworkFailure(message: _extractErrorMessage(e)));
+      return Left(_extractFunctionFailure(e));
+    } catch (e) {
+      return Left(UnexpectedFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, MatchExplanation>> explainMatch(
+    String suggestionId,
+  ) async {
+    try {
+      final response = await _supabase.functions.invoke(
+        'ai',
+        body: {'action': 'explain_match', 'suggestionId': suggestionId},
+      );
+
+      final data = response.data as Map<String, dynamic>?;
+      if (data == null) {
+        return const Left(
+          UnexpectedFailure(message: 'Empty response from AI function'),
+        );
+      }
+
+      return Right(
+        MatchExplanation(
+          suggestionId: data['suggestionId'] as String? ?? suggestionId,
+          reason: (data['reason'] as String? ?? '').trim(),
+          isCached: data['cached'] as bool? ?? false,
+        ),
+      );
+    } on FunctionException catch (e) {
+      return Left(_extractFunctionFailure(e));
     } catch (e) {
       return Left(UnexpectedFailure(message: e.toString()));
     }
@@ -152,7 +188,9 @@ class AiSuggestionDatasourceImpl implements AiSuggestionDatasource {
     final message = json['message'] as String? ?? '';
     final sourceHash = json['sourceHash'] as String?;
     final updatedAtRaw = json['updatedAt'] as String?;
-    final updatedAt = updatedAtRaw != null ? DateTime.tryParse(updatedAtRaw) : null;
+    final updatedAt = updatedAtRaw != null
+        ? DateTime.tryParse(updatedAtRaw)
+        : null;
 
     return AiEmbeddingResult(
       status: status,
@@ -190,7 +228,8 @@ class AiSuggestionDatasourceImpl implements AiSuggestionDatasource {
             createdAt: DateTime.now(),
           );
 
-    final skillsData = jobPostData['job_required_skills'] as List<dynamic>? ?? [];
+    final skillsData =
+        jobPostData['job_required_skills'] as List<dynamic>? ?? [];
     final skills = skillsData.map((skillJson) {
       final s = skillJson as Map<String, dynamic>;
       final skillNested = s['skills'] as Map<String, dynamic>?;

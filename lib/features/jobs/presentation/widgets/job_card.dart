@@ -19,10 +19,12 @@ class JobCard extends StatelessWidget {
     super.key,
     required this.result,
     this.onBookmarkRemoved,
+    this.onTap,
   });
 
   final JobSearchResult result;
   final VoidCallback? onBookmarkRemoved;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +41,8 @@ class JobCard extends StatelessWidget {
         children: [
           Expanded(
             child: AnimatedPressable(
-              onTap: () => context.push('/search/${result.jobPost.id}'),
+              onTap:
+                  onTap ?? () => context.push('/search/${result.jobPost.id}'),
               borderRadius: AppRadii.lg,
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(

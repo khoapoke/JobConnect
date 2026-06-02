@@ -284,6 +284,16 @@ class AppStrings {
   static const matchRelevant = 'Phù hợp';
   static const matchPotential = 'Có tiềm năng';
   static const matchExploreMore = 'Khám phá thêm';
+  static const aiMatchExplanationTitle = 'Vì sao việc này phù hợp với bạn?';
+  static const aiMatchExplanationLoading =
+      'AI đang phân tích mức độ phù hợp...';
+  static const aiMatchExplanationFootnote =
+      'AI phân tích từ Profile và yêu cầu Job Post.';
+  static const aiMatchExplanationError = 'Chưa thể tạo giải thích lúc này.';
+  static const aiMatchExplanationRetry = 'Thử lại';
+  static const aiMatchExplanationRateLimited =
+      'Bạn đã xem nhiều giải thích AI. Thử lại sau ít phút.';
+  static const aiNextStep = 'Gợi ý tiếp theo';
   static const applicantsPageTitle = 'Ứng viên';
   static const applicantDetail = 'Chi tiết ứng viên';
   static const internalNote = 'Ghi chú nội bộ';

@@ -6,6 +6,7 @@ import '../../../../core/errors/failure.dart';
 import '../../../../core/utils/either.dart';
 import '../../domain/entities/ai_embedding_result.dart';
 import '../../domain/entities/ai_suggestion.dart';
+import '../../domain/entities/match_explanation.dart';
 import '../../domain/repositories/ai_suggestion_repository.dart';
 import '../datasources/ai_suggestion_datasource.dart';
 
@@ -34,6 +35,11 @@ class AiSuggestionRepositoryImpl implements AiSuggestionRepository {
   @override
   Future<Either<Failure, AiEmbeddingResult>> rebuildAiSuggestions() {
     return _datasource.rebuildAiSuggestions();
+  }
+
+  @override
+  Future<Either<Failure, MatchExplanation>> explainMatch(String suggestionId) {
+    return _datasource.explainMatch(suggestionId);
   }
 }
 

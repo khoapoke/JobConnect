@@ -35,11 +35,18 @@ import '../../features/application/presentation/pages/resume_builder_page.dart';
 import '../../features/application/presentation/pages/resume_preview_page.dart';
 import '../../features/application/presentation/pages/resumes_page.dart';
 import '../../features/application/presentation/pages/schedule_interview_page.dart';
+import '../../features/ai_suggestion/domain/entities/ai_suggestion.dart';
 import 'user_role.dart';
 
 part 'app_router.g.dart';
 
-final publicRoutes = ['/login', '/register', '/forgot-password', '/onboarding', '/splash'];
+final publicRoutes = [
+  '/login',
+  '/register',
+  '/forgot-password',
+  '/onboarding',
+  '/splash',
+];
 
 /// Resolves the current user's role from auth state.
 UserRole _resolveRole(Ref ref) {
@@ -85,10 +92,7 @@ GoRouter appRouter(Ref ref) {
     },
     routes: [
       // ─── Splash ────────────────────────────────────────────────────
-      GoRoute(
-        path: '/splash',
-        builder: (context, state) => const SplashPage(),
-      ),
+      GoRoute(path: '/splash', builder: (context, state) => const SplashPage()),
 
       // ─── Seeker Shell ──────────────────────────────────────────────
       StatefulShellRoute.indexedStack(
@@ -202,7 +206,11 @@ GoRouter appRouter(Ref ref) {
                     path: ':id',
                     builder: (context, state) {
                       final id = state.pathParameters['id']!;
-                      return JobDetailPage(jobPostId: id);
+                      final aiSuggestion = state.extra as AiSuggestion?;
+                      return JobDetailPage(
+                        jobPostId: id,
+                        aiSuggestion: aiSuggestion,
+                      );
                     },
                     routes: [
                       GoRoute(

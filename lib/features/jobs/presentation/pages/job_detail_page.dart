@@ -13,6 +13,8 @@ import '../../../../shared/presentation/widgets/animated_pressable.dart';
 import '../../../../shared/presentation/widgets/app_gradient_background.dart';
 import '../../../../shared/presentation/widgets/premium_button.dart';
 import '../../../../shared/presentation/widgets/status_chip.dart';
+import '../../../ai_suggestion/domain/entities/ai_suggestion.dart';
+import '../../../ai_suggestion/presentation/widgets/ai_match_explanation_card.dart';
 import '../../../application/presentation/providers/application_provider.dart';
 import '../../../recruiter/domain/entities/job_required_skill.dart';
 import '../../domain/entities/job_detail.dart';
@@ -21,9 +23,10 @@ import '../widgets/animated_bookmark_button.dart';
 import '../widgets/job_detail_skeleton.dart';
 
 class JobDetailPage extends ConsumerWidget {
-  const JobDetailPage({super.key, required this.jobPostId});
+  const JobDetailPage({super.key, required this.jobPostId, this.aiSuggestion});
 
   final String jobPostId;
+  final AiSuggestion? aiSuggestion;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -35,15 +38,19 @@ class JobDetailPage extends ConsumerWidget {
         child: state.when(
           data: (detail) {
             if (detail == null) return const _UnavailableJobDetail();
-            return _JobDetailContent(detail: detail);
+            return _JobDetailContent(
+              detail: detail,
+              aiSuggestion: aiSuggestion,
+            );
           },
           loading: () => const JobDetailSkeleton(),
           error: (_, __) => const _UnavailableJobDetail(),
         ),
       ),
       bottomNavigationBar: state.maybeWhen(
-        data: (detail) =>
-            detail == null ? null : _BottomActionBar(jobPostId: detail.jobPost.id),
+        data: (detail) => detail == null
+            ? null
+            : _BottomActionBar(jobPostId: detail.jobPost.id),
         orElse: () => null,
       ),
     );
@@ -51,9 +58,10 @@ class JobDetailPage extends ConsumerWidget {
 }
 
 class _JobDetailContent extends StatelessWidget {
-  const _JobDetailContent({required this.detail});
+  const _JobDetailContent({required this.detail, required this.aiSuggestion});
 
   final JobDetail detail;
+  final AiSuggestion? aiSuggestion;
 
   @override
   Widget build(BuildContext context) {
@@ -79,6 +87,10 @@ class _JobDetailContent extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _HeroSection(detail: detail),
+                if (aiSuggestion != null) ...[
+                  const SizedBox(height: AppSpacing.space4),
+                  AiMatchExplanationCard(suggestion: aiSuggestion!),
+                ],
                 const SizedBox(height: AppSpacing.space4),
                 _OverviewSection(detail: detail),
                 const SizedBox(height: AppSpacing.space4),
@@ -502,9 +514,7 @@ class _InfoRow extends StatelessWidget {
           Expanded(
             child: Text(
               label.isEmpty ? AppStrings.noData : label,
-              style: AppTextStyles.body.copyWith(
-                color: colorScheme.onSurface,
-              ),
+              style: AppTextStyles.body.copyWith(color: colorScheme.onSurface),
             ),
           ),
         ],
