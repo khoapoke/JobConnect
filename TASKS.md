@@ -162,7 +162,7 @@
 
 > Dependency: Phase 6 AI logic is working. Use the Phase 5.5 primitives and the rules in `docs/design/JOB_CONNECT_UI_SYSTEM.md`.
 
-- [ ] **UI-07: AI match + skill gap delightful UI**
+- [X] **UI-07: AI match + skill gap delightful UI**
   Polish AI-facing screens as product-defining experiences: animated match score, violet AI insight cards, match explanation reveal, skill gap owned/missing states, learning suggestion card, premium loading skeletons. Keep Gemini/result errors clear and recoverable.
 
 ---

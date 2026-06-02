@@ -7,6 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../shared/presentation/widgets/app_skeleton.dart';
 import '../../../../shared/presentation/widgets/glass_surface.dart';
 import '../../../../shared/presentation/widgets/premium_button.dart';
 import '../../../jobs/domain/entities/job_search_result.dart';
@@ -428,46 +429,22 @@ class _LoadingState extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        GlassSurface(
+        const GlassSurface(
           borderRadius: AppRadii.xl,
-          padding: const EdgeInsets.all(AppSpacing.space5),
+          padding: EdgeInsets.all(AppSpacing.space5),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 120,
-                height: 20,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                  borderRadius: AppRadii.sm,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.space3),
-              Container(
-                width: double.infinity,
-                height: 14,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                  borderRadius: AppRadii.sm,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.space2),
-              Container(
-                width: 200,
-                height: 14,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                  borderRadius: AppRadii.sm,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.space4),
-              Container(
-                width: double.infinity,
+              AppSkeleton(width: 120, height: 20),
+              SizedBox(height: AppSpacing.space3),
+              AppSkeleton(height: 14, width: double.infinity),
+              SizedBox(height: AppSpacing.space2),
+              AppSkeleton(height: 14, width: 200),
+              SizedBox(height: AppSpacing.space4),
+              AppSkeleton(
                 height: 48,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                  borderRadius: AppRadii.md,
-                ),
+                width: double.infinity,
+                borderRadius: AppRadii.md,
               ),
             ],
           ),

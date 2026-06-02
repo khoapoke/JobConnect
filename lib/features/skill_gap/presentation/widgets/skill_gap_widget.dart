@@ -4,9 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/router/user_role.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_gradients.dart';
 import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../shared/presentation/widgets/glass_surface.dart';
 import '../../../../shared/presentation/widgets/premium_button.dart';
 import '../../../auth/domain/entities/auth_state.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
@@ -15,6 +17,7 @@ import '../../../profile/domain/entities/user_skill.dart';
 import '../../../profile/presentation/providers/profile_provider.dart';
 import '../../../recruiter/domain/entities/job_required_skill.dart';
 import '../../domain/entities/skill_gap.dart';
+import '../../domain/entities/skill_gap_advice.dart';
 import '../../domain/usecases/get_skill_gap_usecase.dart';
 import '../providers/skill_gap_provider.dart';
 
@@ -109,28 +112,33 @@ class _CompletionBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ratio = total == 0 ? 1.0 : owned / total;
-    final percent = (ratio * 100).round();
     final color = ratio >= 0.75
-        ? Colors.green
+        ? AppColors.success
         : ratio >= 0.5
-            ? Colors.orange
+            ? AppColors.warning
             : AppColors.error;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.space3,
-        vertical: AppSpacing.space1,
-      ),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: AppRadii.md,
-      ),
-      child: Text(
-        '$percent%',
-        style: AppTextStyles.label.copyWith(
-          color: color,
-          fontWeight: FontWeight.w700,
-        ),
+    return SizedBox(
+      width: 48,
+      height: 48,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          CircularProgressIndicator(
+            value: ratio,
+            strokeWidth: 4,
+            backgroundColor: color.withValues(alpha: 0.12),
+            valueColor: AlwaysStoppedAnimation<Color>(color),
+            strokeCap: StrokeCap.round,
+          ),
+          Text(
+            '${(ratio * 100).round()}%',
+            style: AppTextStyles.bodySmall.copyWith(
+              color: color,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -154,7 +162,7 @@ class _SkillList extends StatelessWidget {
           Wrap(
             spacing: AppSpacing.space2,
             runSpacing: AppSpacing.space2,
-            children: ownedSkills.map((s) => _OwnedChip(skill: s)).toList(),
+            children: ownedSkills.map((s) => _OwnedPill(skill: s)).toList(),
           ),
         if (ownedSkills.isNotEmpty && missingSkills.isNotEmpty)
           const SizedBox(height: AppSpacing.space2),
@@ -162,52 +170,91 @@ class _SkillList extends StatelessWidget {
           Wrap(
             spacing: AppSpacing.space2,
             runSpacing: AppSpacing.space2,
-            children:
-                missingSkills.map((s) => _MissingChip(skill: s)).toList(),
+            children: missingSkills.map((s) => _MissingPill(skill: s)).toList(),
           ),
       ],
     );
   }
 }
 
-class _OwnedChip extends StatelessWidget {
-  const _OwnedChip({required this.skill});
+class _OwnedPill extends StatelessWidget {
+  const _OwnedPill({required this.skill});
 
   final OwnedSkillInfo skill;
 
   @override
   Widget build(BuildContext context) {
-    return Chip(
-      avatar: const Icon(Icons.check_circle, color: Colors.green, size: 16),
-      label: Text(skill.skillName),
-      labelStyle: AppTextStyles.bodySmall.copyWith(
-        color: Theme.of(context).colorScheme.onSurface,
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.space3,
+        vertical: AppSpacing.space2,
       ),
-      backgroundColor: Colors.green.withValues(alpha: 0.08),
-      side: BorderSide(color: Colors.green.withValues(alpha: 0.3)),
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space1),
+      decoration: BoxDecoration(
+        color: AppColors.success.withValues(alpha: 0.10),
+        borderRadius: AppRadii.md,
+        border: Border.all(
+          color: AppColors.success.withValues(alpha: 0.28),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.check_circle_rounded,
+            color: AppColors.success,
+            size: 14,
+          ),
+          const SizedBox(width: AppSpacing.space2),
+          Text(
+            skill.skillName,
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.success,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
 
-class _MissingChip extends StatelessWidget {
-  const _MissingChip({required this.skill});
+class _MissingPill extends StatelessWidget {
+  const _MissingPill({required this.skill});
 
   final MissingSkillInfo skill;
 
   @override
   Widget build(BuildContext context) {
-    return Chip(
-      avatar: const Icon(Icons.cancel, color: AppColors.error, size: 16),
-      label: Text(
-        skill.skillName.isNotEmpty ? skill.skillName : AppStrings.skills,
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.space3,
+        vertical: AppSpacing.space2,
       ),
-      labelStyle: AppTextStyles.bodySmall.copyWith(
-        color: Theme.of(context).colorScheme.onSurface,
+      decoration: BoxDecoration(
+        color: AppColors.warning.withValues(alpha: 0.10),
+        borderRadius: AppRadii.md,
+        border: Border.all(
+          color: AppColors.warning.withValues(alpha: 0.28),
+        ),
       ),
-      backgroundColor: AppColors.error.withValues(alpha: 0.08),
-      side: BorderSide(color: AppColors.error.withValues(alpha: 0.3)),
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space1),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.add_circle_outline,
+            color: AppColors.warning,
+            size: 14,
+          ),
+          const SizedBox(width: AppSpacing.space2),
+          Text(
+            skill.skillName.isNotEmpty ? skill.skillName : AppStrings.skills,
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.warning,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -256,8 +303,6 @@ class _AdviceSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return state.when(
       data: (adviceState) {
         if (adviceState.hasStaleAdviceFor(contextKey)) {
@@ -295,61 +340,11 @@ class _AdviceSection extends ConsumerWidget {
           );
         }
 
-        return Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(AppSpacing.space3),
-          decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.06),
-            borderRadius: AppRadii.md,
-            border: Border.all(
-              color: AppColors.primary.withValues(alpha: 0.2),
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  const Icon(
-                    Icons.auto_awesome,
-                    size: 16,
-                    color: AppColors.primary,
-                  ),
-                  const SizedBox(width: AppSpacing.space2),
-                  Text(
-                    AppStrings.skillGapAdviceTitle,
-                    style: AppTextStyles.label.copyWith(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.space2),
-              Text(
-                advice.advice,
-                style: AppTextStyles.body.copyWith(
-                  color: colorScheme.onSurface,
-                  height: 1.6,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.space2),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () => ref
-                      .read(skillGapAdviceViewNotifierProvider.notifier)
-                      .hideAdvice(),
-                  child: Text(
-                    AppStrings.skillGapHideAdvice,
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.primary,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+        return _AdviceCard(
+          advice: advice,
+          onHide: () => ref
+              .read(skillGapAdviceViewNotifierProvider.notifier)
+              .hideAdvice(),
         );
       },
       loading: () => const Center(
@@ -375,6 +370,122 @@ class _AdviceSection extends ConsumerWidget {
                 .fetchAdvice(jobId: jobPostId, contextKey: contextKey),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _AdviceCard extends StatefulWidget {
+  const _AdviceCard({required this.advice, required this.onHide});
+
+  final SkillGapAdvice advice;
+  final VoidCallback onHide;
+
+  @override
+  State<_AdviceCard> createState() => _AdviceCardState();
+}
+
+class _AdviceCardState extends State<_AdviceCard>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 520),
+    );
+    _animation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final reducedMotion = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    if (!reducedMotion && _controller.value == 0) {
+      _controller.forward();
+    } else if (reducedMotion) {
+      _controller.value = 1;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        return Opacity(
+          opacity: _animation.value,
+          child: Transform.translate(
+            offset: Offset(0, 12 * (1 - _animation.value)),
+            child: child,
+          ),
+        );
+      },
+      child: Container(
+        decoration: const BoxDecoration(
+          gradient: AppGradients.ai,
+          borderRadius: AppRadii.lg,
+        ),
+        child: GlassSurface(
+          borderRadius: AppRadii.lg,
+          backgroundColor: Colors.white.withValues(alpha: 0.08),
+          borderColor: Colors.white.withValues(alpha: 0.14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(
+                    Icons.auto_awesome,
+                    size: 16,
+                    color: Colors.white,
+                  ),
+                  const SizedBox(width: AppSpacing.space2),
+                  Text(
+                    AppStrings.skillGapAdviceTitle,
+                    style: AppTextStyles.label.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.space2),
+              Text(
+                widget.advice.advice,
+                style: AppTextStyles.body.copyWith(
+                  color: Colors.white.withValues(alpha: 0.92),
+                  height: 1.6,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.space2),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: widget.onHide,
+                  child: Text(
+                    AppStrings.skillGapHideAdvice,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: Colors.white.withValues(alpha: 0.84),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -408,7 +519,7 @@ class _CreateAdviceBlock extends StatelessWidget {
         PremiumButton(
           label: AppStrings.skillGapAskAdvice,
           icon: const Icon(Icons.auto_awesome),
-          variant: PremiumButtonVariant.primary,
+          variant: PremiumButtonVariant.ai,
           isLoading: isLoading,
           onPressed: onPressed,
         ),
@@ -442,11 +553,23 @@ class _EmptySkillGap extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.space3),
-          Text(
-            AppStrings.skillGapEmpty,
-            style: AppTextStyles.body.copyWith(
-              color: colorScheme.onSurfaceVariant,
-            ),
+          Row(
+            children: [
+              Icon(
+                Icons.check_circle_outline,
+                color: AppColors.success.withValues(alpha: 0.7),
+                size: 20,
+              ),
+              const SizedBox(width: AppSpacing.space2),
+              Expanded(
+                child: Text(
+                  AppStrings.skillGapEmpty,
+                  style: AppTextStyles.body.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),

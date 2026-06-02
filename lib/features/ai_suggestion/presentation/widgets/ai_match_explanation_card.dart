@@ -51,8 +51,8 @@ class AiMatchExplanationCard extends ConsumerWidget {
           message: failure?.message.isNotEmpty == true
               ? failure!.message
               : isRateLimited
-              ? AppStrings.aiMatchExplanationRateLimited
-              : AppStrings.aiMatchExplanationError,
+                  ? AppStrings.aiMatchExplanationRateLimited
+                  : AppStrings.aiMatchExplanationError,
           isRateLimited: isRateLimited,
           onRetry: isRateLimited
               ? null
@@ -106,7 +106,7 @@ class _ExplanationLoadingCard extends StatelessWidget {
   }
 }
 
-class _ExplanationSuccessCard extends StatelessWidget {
+class _ExplanationSuccessCard extends StatefulWidget {
   const _ExplanationSuccessCard({
     required this.suggestion,
     required this.explanation,
@@ -116,98 +116,184 @@ class _ExplanationSuccessCard extends StatelessWidget {
   final MatchExplanation explanation;
 
   @override
-  Widget build(BuildContext context) {
-    final parsed = _ParsedExplanation.fromReason(explanation.reason);
+  State<_ExplanationSuccessCard> createState() =>
+      _ExplanationSuccessCardState();
+}
 
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: AppGradients.ai,
-        borderRadius: AppRadii.xl,
-      ),
-      child: GlassSurface(
-        borderRadius: AppRadii.xl,
-        backgroundColor: Colors.white.withValues(alpha: 0.08),
-        borderColor: Colors.white.withValues(alpha: 0.14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
+class _ExplanationSuccessCardState extends State<_ExplanationSuccessCard>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 640),
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final reducedMotion = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    if (!reducedMotion && _controller.value == 0) {
+      _controller.forward();
+    } else if (reducedMotion) {
+      _controller.value = 1;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final parsed = _ParsedExplanation.fromReason(widget.explanation.reason);
+
+    return AnimatedBuilder(
+      animation: _fadeAnimation,
+      builder: (context, child) {
+        return Opacity(
+          opacity: _fadeAnimation.value,
+          child: Transform.scale(
+            scale: 0.98 + (0.02 * _fadeAnimation.value),
+            child: child,
+          ),
+        );
+      },
+      child: Container(
+        decoration: const BoxDecoration(
+          gradient: AppGradients.ai,
+          borderRadius: AppRadii.xl,
+        ),
+        child: GlassSurface(
+          borderRadius: AppRadii.xl,
+          backgroundColor: Colors.white.withValues(alpha: 0.08),
+          borderColor: Colors.white.withValues(alpha: 0.14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          AppStrings.aiMatchExplanationTitle,
+                          style: AppTextStyles.sectionTitle.copyWith(
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.space2),
+                        Text(
+                          parsed.summary,
+                          style: AppTextStyles.body.copyWith(
+                            color: Colors.white.withValues(alpha: 0.92),
+                            height: 1.6,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.space3),
+                  MatchScoreBadge(matchScore: widget.suggestion.matchScore),
+                ],
+              ),
+              if (parsed.reasons.isNotEmpty) ...[
+                const SizedBox(height: AppSpacing.space4),
+                ...parsed.reasons.asMap().entries.map(
+                  (entry) => _AnimatedReasonRow(
+                    index: entry.key,
+                    text: entry.value,
+                  ),
+                ),
+              ],
+              if (parsed.recommendation != null) ...[
+                const SizedBox(height: AppSpacing.space4),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(AppSpacing.space3),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.10),
+                    borderRadius: AppRadii.lg,
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.12),
+                    ),
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        AppStrings.aiMatchExplanationTitle,
-                        style: AppTextStyles.sectionTitle.copyWith(
+                        AppStrings.aiNextStep,
+                        style: AppTextStyles.label.copyWith(
                           color: Colors.white,
                         ),
                       ),
-                      const SizedBox(height: AppSpacing.space2),
+                      const SizedBox(height: AppSpacing.space1),
                       Text(
-                        parsed.summary,
+                        parsed.recommendation!,
                         style: AppTextStyles.body.copyWith(
-                          color: Colors.white.withValues(alpha: 0.92),
-                          height: 1.6,
+                          color: Colors.white.withValues(alpha: 0.88),
+                          height: 1.5,
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: AppSpacing.space3),
-                MatchScoreBadge(matchScore: suggestion.matchScore),
               ],
-            ),
-            if (parsed.reasons.isNotEmpty) ...[
               const SizedBox(height: AppSpacing.space4),
-              ...parsed.reasons.asMap().entries.map(
-                (entry) => Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.space2),
-                  child: _ReasonRow(index: entry.key + 1, text: entry.value),
+              Text(
+                AppStrings.aiMatchExplanationFootnote,
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: Colors.white.withValues(alpha: 0.70),
                 ),
               ),
             ],
-            if (parsed.recommendation != null) ...[
-              const SizedBox(height: AppSpacing.space4),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(AppSpacing.space3),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.10),
-                  borderRadius: AppRadii.lg,
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.12),
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      AppStrings.aiNextStep,
-                      style: AppTextStyles.label.copyWith(color: Colors.white),
-                    ),
-                    const SizedBox(height: AppSpacing.space1),
-                    Text(
-                      parsed.recommendation!,
-                      style: AppTextStyles.body.copyWith(
-                        color: Colors.white.withValues(alpha: 0.88),
-                        height: 1.5,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-            const SizedBox(height: AppSpacing.space4),
-            Text(
-              AppStrings.aiMatchExplanationFootnote,
-              style: AppTextStyles.bodySmall.copyWith(
-                color: Colors.white.withValues(alpha: 0.70),
-              ),
-            ),
-          ],
+          ),
         ),
+      ),
+    );
+  }
+}
+
+class _AnimatedReasonRow extends StatelessWidget {
+  const _AnimatedReasonRow({required this.index, required this.text});
+
+  final int index;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final reducedMotion = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: 1),
+      duration: reducedMotion
+          ? Duration.zero
+          : Duration(milliseconds: 340 + index * 90),
+      curve: Curves.easeOutCubic,
+      builder: (context, value, child) {
+        return Opacity(
+          opacity: value,
+          child: Transform.translate(
+            offset: Offset(0, 10 * (1 - value)),
+            child: child,
+          ),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: AppSpacing.space2),
+        child: _ReasonRow(index: index + 1, text: text),
       ),
     );
   }
