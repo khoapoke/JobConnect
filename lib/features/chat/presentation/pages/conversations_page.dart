@@ -30,7 +30,8 @@ class ConversationsPage extends ConsumerWidget {
     final conversationsAsync = ref.watch(conversationListNotifierProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      extendBody: true,
+      backgroundColor: Colors.transparent,
       body: AppGradientBackground(
         child: SafeArea(
           child: CustomScrollView(

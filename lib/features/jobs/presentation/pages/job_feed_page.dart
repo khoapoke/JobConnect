@@ -40,6 +40,8 @@ class _JobFeedPageState extends ConsumerState<JobFeedPage> {
     final jobsAsync = ref.watch(jobFeedProvider);
 
     return Scaffold(
+      extendBody: true,
+      backgroundColor: Colors.transparent,
       body: AppGradientBackground(
         child: SafeArea(
           child: RefreshIndicator(

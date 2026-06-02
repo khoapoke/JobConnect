@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_durations.dart';
+import 'app_gradient_background.dart';
 
 class ScrollAwareBottomNavScaffold extends StatefulWidget {
   const ScrollAwareBottomNavScaffold({
@@ -89,20 +90,32 @@ class _ScrollAwareBottomNavScaffoldState
     final shouldShow = !_isScrollAware || _isVisible;
 
     return Scaffold(
-      body: NotificationListener<ScrollNotification>(
-        onNotification: _handleScrollNotification,
-        child: widget.body,
+      extendBody: true,
+      backgroundColor: Colors.transparent,
+      body: AppGradientBackground(
+        child: NotificationListener<ScrollNotification>(
+          onNotification: _handleScrollNotification,
+          child: widget.body,
+        ),
       ),
-      bottomNavigationBar: AnimatedSlide(
-        duration: duration,
-        curve: Curves.easeOutCubic,
-        offset: shouldShow ? Offset.zero : const Offset(0, 1),
-        child: AnimatedOpacity(
+      bottomNavigationBar: ClipRect(
+        child: AnimatedAlign(
           duration: duration,
-          opacity: shouldShow ? 1 : 0,
-          child: IgnorePointer(
-            ignoring: !shouldShow,
-            child: widget.bottomNavigationBar,
+          curve: Curves.easeOutCubic,
+          alignment: Alignment.bottomCenter,
+          heightFactor: shouldShow ? 1 : 0,
+          child: AnimatedSlide(
+            duration: duration,
+            curve: Curves.easeOutCubic,
+            offset: shouldShow ? Offset.zero : const Offset(0, 1),
+            child: AnimatedOpacity(
+              duration: duration,
+              opacity: shouldShow ? 1 : 0,
+              child: IgnorePointer(
+                ignoring: !shouldShow,
+                child: widget.bottomNavigationBar,
+              ),
+            ),
           ),
         ),
       ),

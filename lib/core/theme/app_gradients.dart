@@ -11,8 +11,9 @@ class AppGradients {
     colors: [
       AppColors.backgroundElevated,
       AppColors.background,
-      Color(0xFF05070E),
+      AppColors.background,
     ],
+    stops: [0, 0.52, 1],
   );
 
   static const LinearGradient lightBackground = LinearGradient(

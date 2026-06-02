@@ -52,6 +52,8 @@ class _JobSearchPageState extends ConsumerState<JobSearchPage> {
     final state = ref.watch(jobSearchNotifierProvider);
 
     return Scaffold(
+      extendBody: true,
+      backgroundColor: Colors.transparent,
       body: AppGradientBackground(
         child: SafeArea(
           child: Column(

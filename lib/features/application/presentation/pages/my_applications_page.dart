@@ -34,6 +34,8 @@ class _MyApplicationsPageState extends ConsumerState<MyApplicationsPage> {
     final applicationsAsync = ref.watch(myApplicationsProvider(_filter));
 
     return Scaffold(
+      extendBody: true,
+      backgroundColor: Colors.transparent,
       body: AppGradientBackground(
         child: SafeArea(
           child: Column(
