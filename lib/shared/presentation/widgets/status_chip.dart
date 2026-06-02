@@ -22,29 +22,40 @@ class StatusChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final palette = _palette(context, tone);
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.space3,
-        vertical: AppSpacing.space2,
-      ),
-      decoration: BoxDecoration(
-        color: palette.$1,
-        borderRadius: AppRadii.sm,
-        border: Border.all(color: palette.$2),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (icon != null) ...[
-            Icon(icon, size: 14, color: palette.$3),
-            const SizedBox(width: AppSpacing.space2),
-          ],
-          Text(
-            label,
-            style: AppTextStyles.caption.copyWith(color: palette.$3),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: constraints.maxWidth),
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.space3,
+              vertical: AppSpacing.space2,
+            ),
+            decoration: BoxDecoration(
+              color: palette.$1,
+              borderRadius: AppRadii.sm,
+              border: Border.all(color: palette.$2),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (icon != null) ...[
+                  Icon(icon, size: 14, color: palette.$3),
+                  const SizedBox(width: AppSpacing.space2),
+                ],
+                Flexible(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.caption.copyWith(color: palette.$3),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 

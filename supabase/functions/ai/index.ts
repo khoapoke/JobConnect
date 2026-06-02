@@ -32,6 +32,8 @@ interface ApiResult {
   suggestionId?: string;
   reason?: string;
   cached?: boolean;
+  jobId?: string;
+  advice?: string;
 }
 
 interface AiSuggestionRow {
@@ -105,6 +107,13 @@ Deno.serve(async (req) => {
           return jsonResponse({ status: "error", message: "suggestionId is required" }, 400);
         }
         return await handleExplainMatch(supabaseClient, supabaseAdmin, geminiApiKey, suggestionId);
+      }
+      case "skill_gap_advice": {
+        const jobId = body.jobId;
+        if (!jobId) {
+          return jsonResponse({ status: "error", message: "jobId is required" }, 400);
+        }
+        return await handleSkillGapAdvice(supabaseClient, supabaseAdmin, geminiApiKey, jobId);
       }
       default: {
         return jsonResponse({ status: "error", message: `Unknown action: ${action}` }, 400);
@@ -226,7 +235,12 @@ async function callGeminiEmbedding(apiKey: string, text: string): Promise<number
   return embedding;
 }
 
-async function callGeminiFlash(apiKey: string, prompt: string): Promise<string> {
+async function callGeminiFlash(
+  apiKey: string,
+  prompt: string,
+  responseMimeType: string = "application/json",
+  maxOutputTokens: number = 350,
+): Promise<string> {
   const geminiFlashModel = Deno.env.get("GEMINI_FLASH_MODEL") || "gemini-3.1-flash-lite";
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${geminiFlashModel}:generateContent?key=${apiKey}`;
 
@@ -242,8 +256,8 @@ async function callGeminiFlash(apiKey: string, prompt: string): Promise<string> 
       ],
       generationConfig: {
         temperature: 0.4,
-        maxOutputTokens: 350,
-        responseMimeType: "application/json",
+        maxOutputTokens,
+        responseMimeType,
         thinkingConfig: {
           thinkingBudget: 0,
         },
@@ -986,6 +1000,161 @@ async function handleExplainMatch(
     reason,
     cached: false,
   });
+}
+
+/* ─── Skill Gap Advice ─────────────────────────────────────────────── */
+
+async function handleSkillGapAdvice(
+  supabaseClient: any,
+  supabaseAdmin: any,
+  geminiApiKey: string,
+  jobId: string,
+): Promise<Response> {
+  const user = await getAuthUser(supabaseClient);
+  if (!user) {
+    return jsonResponse({ status: "error", message: "Unauthorized" }, 401);
+  }
+
+  const role = await getUserRole(supabaseAdmin, user.id);
+  if (role !== "seeker") {
+    return jsonResponse({ status: "error", message: "Only seekers can request skill gap advice" }, 403);
+  }
+
+  const { data: job, error: jobError } = await supabaseAdmin
+    .from("job_posts")
+    .select("id, title, description, requirements, company_id, type, status")
+    .eq("id", jobId)
+    .eq("status", "active")
+    .single();
+
+  if (jobError || !job) {
+    return jsonResponse({ status: "error", message: "Job Post not found." }, 404);
+  }
+
+  const profileData = await fetchProfileData(supabaseAdmin, user.id);
+
+  const { data: requiredSkills } = await supabaseAdmin
+    .from("job_required_skills")
+    .select("is_required, skills(name)")
+    .eq("job_id", jobId)
+    .order("skills(name)");
+
+  const { data: userSkills } = await supabaseAdmin
+    .from("user_skills")
+    .select("level, skills(name)")
+    .eq("user_id", user.id)
+    .order("skills(name)");
+
+  const jobSkillNames = new Set(
+    (requiredSkills ?? [])
+      .map((s: any) => s.skills?.name || "")
+      .filter(Boolean),
+  );
+  const userSkillNames = new Set(
+    (userSkills ?? [])
+      .map((s: any) => s.skills?.name || "")
+      .filter(Boolean),
+  );
+
+  const missing = Array.from(jobSkillNames).filter((name) => !userSkillNames.has(name));
+
+  if (missing.length === 0) {
+    return jsonResponse({
+      status: "success",
+      message: "Bạn đã đáp ứng đầy đủ kỹ năng yêu cầu.",
+      jobId,
+      advice: "Bạn đã có đầy đủ các kỹ năng cần thiết cho vị trí này. Hãy tập trung hoàn thiện hồ sơ và chuẩn bị phỏng vấn.",
+      cached: false,
+    });
+  }
+
+  const rateOk = await checkRateLimit(supabaseAdmin, user.id, "skill_gap_advice", 10, 3);
+  if (!rateOk) {
+    return jsonResponse({
+      status: "rateLimited",
+      message: "Bạn đã gửi quá nhiều yêu cầu gợi ý. Thử lại sau ít phút.",
+      jobId,
+    }, 429);
+  }
+
+  await insertRequestLog(supabaseAdmin, user.id, "skill_gap_advice");
+
+  const prompt = buildSkillGapAdvicePrompt({
+    profileData,
+    job,
+    requiredSkills: requiredSkills ?? [],
+    userSkills: userSkills ?? [],
+    missing,
+  });
+
+  const rawText = await callGeminiFlash(geminiApiKey, prompt, "text/plain", 500);
+  const advice = rawText.trim();
+
+  if (!advice) {
+    return jsonResponse({
+      status: "error",
+      message: "Không thể tạo gợi ý học tập từ phản hồi hiện tại.",
+      jobId,
+    }, 500);
+  }
+
+  return jsonResponse({
+    status: "success",
+    message: "Skill gap advice generated.",
+    jobId,
+    advice,
+    cached: false,
+  });
+}
+
+function buildSkillGapAdvicePrompt({
+  profileData,
+  job,
+  requiredSkills,
+  userSkills,
+  missing,
+}: {
+  profileData: ProfileData;
+  job: any;
+  requiredSkills: any[];
+  userSkills: any[];
+  missing: string[];
+}): string {
+  const profile = profileData.profile ?? {};
+
+  const userSkillLines = userSkills
+    .map((item) => `- ${item.skills?.name || ""} (${item.level || "unknown"})`)
+    .join("\n");
+
+  const jobSkillLines = requiredSkills
+    .map((item) => {
+      const req = item.is_required ? "bắt buộc" : "ưu tiên";
+      return `- ${item.skills?.name || ""} (${req})`;
+    })
+    .join("\n");
+
+  return [
+    "Bạn là AI của JobConnect.",
+    "Nhiệm vụ: gợi ý lộ trình học tập thực tế để Seeker bù đắp kỹ năng còn thiếu cho Job Post.",
+    "Chỉ dùng dữ liệu được cung cấp. Không được bịa kỹ năng, kinh nghiệm hoặc yêu cầu.",
+    "Giọng điệu: khuyến khích, thực tế, ngắn gọn. Tối đa 5 gạch đầu dòng.",
+    "Trả về văn bản thuần (không JSON), mỗi gợi ý là 1 gạch đầu dòng.",
+    "",
+    `Job Post: ${job.title || ""}`,
+    `Mô tả: ${job.description || ""}`,
+    `Yêu cầu: ${job.requirements || ""}`,
+    "",
+    "=== KỸ NĂNG CỦA SEEKER ===",
+    userSkillLines || "- Chưa có dữ liệu",
+    "",
+    "=== KỸ NĂNG YÊU CẦU ===",
+    jobSkillLines || "- Không có dữ liệu",
+    "",
+    "=== KỸ NĂNG CÒN THIẾU ===",
+    missing.map((name) => `- ${name}`).join("\n") || "- Không có",
+    "",
+    "Hãy gợi ý lộ trình học tập cụ thể, ngắn gọn, ưu tiên kỹ năng bắt buộc trước.",
+  ].join("\n");
 }
 
 function buildMatchExplanationPrompt({

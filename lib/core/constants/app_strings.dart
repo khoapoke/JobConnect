@@ -246,6 +246,20 @@ class AppStrings {
   static const scheduledAt = 'Ngày giờ phỏng vấn';
   static const pickDateTime = 'Chọn ngày giờ';
 
+  // T-27: Skill Gap
+  static const skillGapTitle = 'Kỹ năng yêu cầu';
+  static const skillGapAskAdvice = 'AI gợi ý lộ trình học';
+  static const skillGapAdviceTitle = 'Gợi ý lộ trình học';
+  static const skillGapHideAdvice = 'Ẩn gợi ý';
+  static const skillGapShowAdvice = 'Hiện gợi ý';
+  static const skillGapContextChanged =
+      'Hồ sơ hoặc kỹ năng đã thay đổi. Hãy tạo lại gợi ý để nhận lộ trình phù hợp hơn.';
+  static const skillGapAdviceError = 'Chưa thể lấy gợi ý học tập lúc này.';
+  static const skillGapAdviceRetry = 'Thử lại';
+  static const skillGapEmpty = 'Tin tuyển dụng này chưa liệt kê kỹ năng yêu cầu.';
+  static const skillGapAdviceRateLimited =
+      'Bạn đã gửi quá nhiều yêu cầu gợi ý. Thử lại sau ít phút.';
+
   // T-24: AI Embedding
   static const aiMatchUpdated = 'AI đã cập nhật Profile Embedding.';
   static const aiMatchReady = 'AI Match đã sẵn sàng.';

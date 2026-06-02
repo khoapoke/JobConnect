@@ -15,6 +15,7 @@ import '../../../../shared/presentation/widgets/premium_button.dart';
 import '../../../../shared/presentation/widgets/status_chip.dart';
 import '../../../ai_suggestion/domain/entities/ai_suggestion.dart';
 import '../../../ai_suggestion/presentation/widgets/ai_match_explanation_card.dart';
+import '../../../skill_gap/presentation/widgets/skill_gap_widget.dart';
 import '../../../application/presentation/providers/application_provider.dart';
 import '../../../recruiter/domain/entities/job_required_skill.dart';
 import '../../domain/entities/job_detail.dart';
@@ -91,6 +92,11 @@ class _JobDetailContent extends StatelessWidget {
                   const SizedBox(height: AppSpacing.space4),
                   AiMatchExplanationCard(suggestion: aiSuggestion!),
                 ],
+                const SizedBox(height: AppSpacing.space4),
+                SkillGapWidget(
+                  jobPostId: detail.jobPost.id,
+                  requiredSkills: detail.requiredSkills,
+                ),
                 const SizedBox(height: AppSpacing.space4),
                 _OverviewSection(detail: detail),
                 const SizedBox(height: AppSpacing.space4),
