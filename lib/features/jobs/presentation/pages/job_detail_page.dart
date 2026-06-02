@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../auth/domain/entities/auth_state.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -17,6 +19,7 @@ import '../../../ai_suggestion/domain/entities/ai_suggestion.dart';
 import '../../../ai_suggestion/presentation/widgets/ai_match_explanation_card.dart';
 import '../../../skill_gap/presentation/widgets/skill_gap_widget.dart';
 import '../../../application/presentation/providers/application_provider.dart';
+import '../../../chat/presentation/providers/chat_provider.dart';
 import '../../../recruiter/domain/entities/job_required_skill.dart';
 import '../../domain/entities/job_detail.dart';
 import '../providers/job_detail_provider.dart';
@@ -582,6 +585,11 @@ class _BottomActionBar extends ConsumerWidget {
               padding: const EdgeInsets.all(AppSpacing.space3),
             ),
             const SizedBox(width: AppSpacing.space3),
+            _ChatButton(
+              jobPostId: jobPostId,
+              applicationAsync: existingApplicationAsync,
+            ),
+            const SizedBox(width: AppSpacing.space3),
             Expanded(
               child: existingApplicationAsync.when(
                 data: (application) {
@@ -613,6 +621,81 @@ class _BottomActionBar extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _ChatButton extends ConsumerWidget {
+  const _ChatButton({
+    required this.jobPostId,
+    required this.applicationAsync,
+  });
+
+  final String jobPostId;
+  final AsyncValue<dynamic> applicationAsync;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isLoading =
+        ref.watch(chatActionNotifierProvider).isLoading || applicationAsync.isLoading;
+
+    return AnimatedPressable(
+      onTap: isLoading
+          ? null
+          : () async {
+              final application = applicationAsync.valueOrNull;
+              if (application == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(AppStrings.chatNeedApplyFirst),
+                  ),
+                );
+                return;
+              }
+
+              final auth = ref.read(authProvider);
+              if (auth is! AuthAuthenticated) return;
+
+              final result = await ref
+                  .read(chatActionNotifierProvider.notifier)
+                  .getOrCreateConversation(
+                    seekerId: auth.userId,
+                    jobId: jobPostId,
+                  );
+
+              if (!context.mounted) return;
+
+              result.fold(
+                (failure) => ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(failure.message)),
+                ),
+                (conversation) => context.push(
+                  '/conversations/${conversation.id}',
+                  extra: conversation,
+                ),
+              );
+            },
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.space3),
+        decoration: BoxDecoration(
+          color: AppColors.primary.withAlpha(20),
+          borderRadius: AppRadii.md,
+        ),
+        child: isLoading
+            ? const SizedBox(
+                width: 26,
+                height: 26,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: AppColors.primary,
+                ),
+              )
+            : const Icon(
+                Icons.chat_bubble_outline_rounded,
+                color: AppColors.primary,
+                size: 26,
+              ),
       ),
     );
   }

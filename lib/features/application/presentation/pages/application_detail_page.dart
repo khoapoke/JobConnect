@@ -8,6 +8,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../auth/domain/entities/auth_state.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../chat/presentation/providers/chat_provider.dart';
 import '../providers/application_provider.dart';
 import '../widgets/application_status_chip.dart';
 
@@ -165,14 +166,37 @@ class ApplicationDetailPage extends ConsumerWidget {
                   ),
                 ),
               ],
-              if ((application.canEditSubmission || application.canWithdraw) &&
-                  auth is AuthAuthenticated) ...[
+              if (auth is AuthAuthenticated) ...[
                 const SizedBox(height: 20),
                 Wrap(
                   spacing: 12,
                   runSpacing: 12,
                   alignment: WrapAlignment.end,
                   children: [
+                    OutlinedButton.icon(
+                      onPressed: () async {
+                        final result = await ref
+                            .read(chatActionNotifierProvider.notifier)
+                            .getOrCreateConversation(
+                              seekerId: auth.userId,
+                              jobId: application.jobId,
+                            );
+                        if (!context.mounted) return;
+                        result.fold(
+                          (failure) => ScaffoldMessenger.of(
+                            context,
+                          ).showSnackBar(
+                            SnackBar(content: Text(failure.message)),
+                          ),
+                          (conversation) => context.push(
+                            '/conversations/${conversation.id}',
+                            extra: conversation,
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.chat_bubble_outline_rounded),
+                      label: const Text(AppStrings.chat),
+                    ),
                     if (application.canEditSubmission)
                       OutlinedButton.icon(
                         onPressed: () => context.push(

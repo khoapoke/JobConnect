@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../shared/presentation/widgets/scroll_aware_bottom_nav_scaffold.dart';
 import '../../shared/widgets/placeholder_page.dart';
 import '../../shared/widgets/recruiter_shell.dart';
+import '../../features/chat/presentation/pages/conversations_page.dart';
+import '../../features/chat/presentation/pages/chat_page.dart';
 import '../constants/app_strings.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
@@ -244,8 +246,15 @@ GoRouter appRouter(Ref ref) {
             routes: [
               GoRoute(
                 path: '/conversations',
-                builder: (context, state) =>
-                    const PlaceholderPage(title: AppStrings.conversations),
+                builder: (context, state) => const ConversationsPage(),
+                routes: [
+                  GoRoute(
+                    path: ':id',
+                    builder: (context, state) => ChatPage(
+                      conversationId: state.pathParameters['id']!,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -305,8 +314,15 @@ GoRouter appRouter(Ref ref) {
             routes: [
               GoRoute(
                 path: '/recruiter/conversations',
-                builder: (context, state) =>
-                    const PlaceholderPage(title: AppStrings.conversations),
+                builder: (context, state) => const ConversationsPage(),
+                routes: [
+                  GoRoute(
+                    path: ':id',
+                    builder: (context, state) => ChatPage(
+                      conversationId: state.pathParameters['id']!,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

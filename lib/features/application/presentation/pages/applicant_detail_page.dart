@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../chat/presentation/providers/chat_provider.dart';
 import '../providers/application_provider.dart';
 import '../widgets/application_status_chip.dart';
 
@@ -214,6 +215,32 @@ class _ApplicantDetailPageState extends ConsumerState<ApplicantDetailPage> {
                 spacing: 12,
                 runSpacing: 12,
                 children: [
+                  OutlinedButton.icon(
+                    onPressed: actionState.isLoading
+                        ? null
+                        : () async {
+                            final result = await ref
+                                .read(chatActionNotifierProvider.notifier)
+                                .getOrCreateConversation(
+                                  seekerId: application.seekerId,
+                                  jobId: application.jobId,
+                                );
+                            if (!context.mounted) return;
+                            result.fold(
+                              (failure) => ScaffoldMessenger.of(
+                                context,
+                              ).showSnackBar(
+                                SnackBar(content: Text(failure.message)),
+                              ),
+                              (conversation) => context.push(
+                                '/recruiter/conversations/${conversation.id}',
+                                extra: conversation,
+                              ),
+                            );
+                          },
+                    icon: const Icon(Icons.chat_bubble_outline_rounded),
+                    label: const Text(AppStrings.chat),
+                  ),
                   if (application.canShortlist)
                     FilledButton(
                       onPressed: actionState.isLoading

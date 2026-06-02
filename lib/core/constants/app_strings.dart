@@ -246,6 +246,20 @@ class AppStrings {
   static const scheduledAt = 'Ngày giờ phỏng vấn';
   static const pickDateTime = 'Chọn ngày giờ';
 
+  // T-28 / T-29: Chat
+  static const chat = 'Nhắn tin';
+  static const noConversations = 'Chưa có cuộc trò chuyện nào';
+  static const noConversationsSubtitle =
+      'Bắt đầu trò chuyện từ chi tiết tin tuyển dụng hoặc đơn ứng tuyển.';
+  static const noMessages = 'Chưa có tin nhắn nào';
+  static const chatInputHint = 'Nhập tin nhắn...';
+  static const chatNeedApplyFirst =
+      'Bạn cần ứng tuyển trước khi nhắn tin với Nhà tuyển dụng.';
+  static const chatStatusNotAllowed =
+      'Không thể bắt đầu cuộc trò chuyện ở trạng thái này.';
+  static const chatToday = 'Hôm nay';
+  static const chatYesterday = 'Hôm qua';
+
   // T-27: Skill Gap
   static const skillGapTitle = 'Kỹ năng yêu cầu';
   static const skillGapAskAdvice = 'AI gợi ý lộ trình học';
