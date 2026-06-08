@@ -192,13 +192,13 @@
 
 > Dependency: Auth + FCM setup. Push notification cần device token.
 
-- [ ] **T-30: Notification — FCM setup + device token**
+- [x] **T-30: Notification — FCM setup + device token**
   Cấu hình `firebase_messaging` + `flutter_local_notifications`. Lưu FCM token vào `device_tokens` khi login. Xóa khi logout. Foreground notification banner.
 
-- [ ] **T-31: Notification — In-app notification list**
+- [x] **T-31: Notification — In-app notification list**
   Hiển thị danh sách notifications từ bảng `notifications`. Đánh dấu read. Navigate đến target khi tap. `NotificationsPage`.
 
-- [ ] **T-32: Notification — Triggers (Application status + new applicant)**
+- [x] **T-32: Notification — Triggers (Application status + new applicant)**
   Supabase trigger/Edge Function: khi `applications.status` thay đổi → tạo notification + gửi push cho Seeker. Khi có application mới → push cho Recruiter.
 
 ---
@@ -207,7 +207,7 @@
 
 > Dependency: Phase 8 notification logic is working.
 
-- [ ] **UI-09: Notification center polish**
+- [x] **UI-09: Notification center polish**
   Style in-app notifications with clear priority, read/unread states, target navigation previews, application-status visuals, foreground notification consistency, empty/error states. Keep it minimal and scannable.
 
 ---

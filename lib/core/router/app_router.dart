@@ -38,6 +38,8 @@ import '../../features/application/presentation/pages/resume_preview_page.dart';
 import '../../features/application/presentation/pages/resumes_page.dart';
 import '../../features/application/presentation/pages/schedule_interview_page.dart';
 import '../../features/ai_suggestion/domain/entities/ai_suggestion.dart';
+import '../../features/notification/presentation/pages/notifications_page.dart';
+import '../../features/chat/presentation/providers/chat_provider.dart';
 import 'user_role.dart';
 
 part 'app_router.g.dart';
@@ -104,40 +106,7 @@ GoRouter appRouter(Ref ref) {
             UserRole.seeker => ScrollAwareBottomNavScaffold(
               currentIndex: navigationShell.currentIndex,
               body: navigationShell,
-              bottomNavigationBar: NavigationBar(
-                selectedIndex: navigationShell.currentIndex,
-                onDestinationSelected: (index) => navigationShell.goBranch(
-                  index,
-                  initialLocation: index == navigationShell.currentIndex,
-                ),
-                destinations: const [
-                  NavigationDestination(
-                    icon: Icon(Icons.home_outlined),
-                    selectedIcon: Icon(Icons.home_rounded),
-                    label: AppStrings.home,
-                  ),
-                  NavigationDestination(
-                    icon: Icon(Icons.search_rounded),
-                    selectedIcon: Icon(Icons.search_off_rounded),
-                    label: AppStrings.search,
-                  ),
-                  NavigationDestination(
-                    icon: Icon(Icons.work_outline_rounded),
-                    selectedIcon: Icon(Icons.work_rounded),
-                    label: 'Ứng tuyển',
-                  ),
-                  NavigationDestination(
-                    icon: Icon(Icons.chat_bubble_outline_rounded),
-                    selectedIcon: Icon(Icons.chat_bubble_rounded),
-                    label: AppStrings.conversations,
-                  ),
-                  NavigationDestination(
-                    icon: Icon(Icons.person_outline_rounded),
-                    selectedIcon: Icon(Icons.person_rounded),
-                    label: AppStrings.profile,
-                  ),
-                ],
-              ),
+              bottomNavigationBar: _SeekerBottomNav(navigationShell: navigationShell),
             ),
             // TODO(T-33): Replace with AdminShell when admin feature is built.
             // Admin borrows SeekerShell temporarily — cannot use PlaceholderPage
@@ -145,40 +114,7 @@ GoRouter appRouter(Ref ref) {
             UserRole.admin => ScrollAwareBottomNavScaffold(
               currentIndex: navigationShell.currentIndex,
               body: navigationShell,
-              bottomNavigationBar: NavigationBar(
-                selectedIndex: navigationShell.currentIndex,
-                onDestinationSelected: (index) => navigationShell.goBranch(
-                  index,
-                  initialLocation: index == navigationShell.currentIndex,
-                ),
-                destinations: const [
-                  NavigationDestination(
-                    icon: Icon(Icons.home_outlined),
-                    selectedIcon: Icon(Icons.home_rounded),
-                    label: AppStrings.home,
-                  ),
-                  NavigationDestination(
-                    icon: Icon(Icons.search_rounded),
-                    selectedIcon: Icon(Icons.search_off_rounded),
-                    label: AppStrings.search,
-                  ),
-                  NavigationDestination(
-                    icon: Icon(Icons.work_outline_rounded),
-                    selectedIcon: Icon(Icons.work_rounded),
-                    label: 'Ứng tuyển',
-                  ),
-                  NavigationDestination(
-                    icon: Icon(Icons.chat_bubble_outline_rounded),
-                    selectedIcon: Icon(Icons.chat_bubble_rounded),
-                    label: AppStrings.conversations,
-                  ),
-                  NavigationDestination(
-                    icon: Icon(Icons.person_outline_rounded),
-                    selectedIcon: Icon(Icons.person_rounded),
-                    label: AppStrings.profile,
-                  ),
-                ],
-              ),
+              bottomNavigationBar: _SeekerBottomNav(navigationShell: navigationShell),
             ),
             UserRole.recruiter => RecruiterShell(
               navigationShell: navigationShell,
@@ -354,6 +290,10 @@ GoRouter appRouter(Ref ref) {
 
       // ─── Seeker push routes ─────────────────────────────────────
       GoRoute(
+        path: '/notifications',
+        builder: (context, state) => const NotificationsPage(),
+      ),
+      GoRoute(
         path: '/profile/edit',
         builder: (context, state) => const EditProfilePage(),
       ),
@@ -415,4 +355,73 @@ GoRouter appRouter(Ref ref) {
       ),
     ],
   );
+}
+
+// ─── Bottom nav with notification badge ───────────────────────────────────
+
+class _SeekerBottomNav extends ConsumerWidget {
+  const _SeekerBottomNav({required this.navigationShell});
+
+  final StatefulNavigationShell navigationShell;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final unreadCountAsync = ref.watch(conversationUnreadCountProvider);
+    final unreadCount = unreadCountAsync.valueOrNull ?? 0;
+
+    return NavigationBar(
+      selectedIndex: navigationShell.currentIndex,
+      onDestinationSelected: (index) => navigationShell.goBranch(
+        index,
+        initialLocation: index == navigationShell.currentIndex,
+      ),
+      destinations: [
+        const NavigationDestination(
+          icon: Icon(Icons.home_outlined),
+          selectedIcon: Icon(Icons.home_rounded),
+          label: AppStrings.home,
+        ),
+        const NavigationDestination(
+          icon: Icon(Icons.search_rounded),
+          selectedIcon: Icon(Icons.search_off_rounded),
+          label: AppStrings.search,
+        ),
+        const NavigationDestination(
+          icon: Icon(Icons.work_outline_rounded),
+          selectedIcon: Icon(Icons.work_rounded),
+          label: 'Ứng tuyển',
+        ),
+        NavigationDestination(
+          icon: _BadgedIcon(
+            icon: Icons.chat_bubble_outline_rounded,
+            hasBadge: unreadCount > 0,
+          ),
+          selectedIcon: const Icon(Icons.chat_bubble_rounded),
+          label: AppStrings.conversations,
+        ),
+        const NavigationDestination(
+          icon: Icon(Icons.person_outline_rounded),
+          selectedIcon: Icon(Icons.person_rounded),
+          label: AppStrings.profile,
+        ),
+      ],
+    );
+  }
+}
+
+class _BadgedIcon extends StatelessWidget {
+  const _BadgedIcon({required this.icon, required this.hasBadge});
+
+  final IconData icon;
+  final bool hasBadge;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!hasBadge) return Icon(icon);
+    return Badge(
+      smallSize: 8,
+      backgroundColor: Colors.red,
+      child: Icon(icon),
+    );
+  }
 }

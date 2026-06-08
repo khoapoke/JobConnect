@@ -43,16 +43,17 @@ class _ChatPageState extends ConsumerState<ChatPage> {
   @override
   void dispose() {
     _scrollController.dispose();
-    ref.invalidate(conversationListNotifierProvider);
     super.dispose();
   }
 
   Future<void> _markAsRead() async {
+    if (!mounted) return;
     final auth = ref.read(authProvider);
     if (auth is AuthAuthenticated) {
       final result = await ref
           .read(chatNotifierProvider(widget.conversationId).notifier)
           .markAsRead(userId: auth.userId);
+      if (!mounted) return;
       result.fold(
         (_) {},
         (_) => ref.invalidate(conversationListNotifierProvider),
@@ -88,11 +89,14 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     ref.listen<AsyncValue<dynamic>>(
       chatNotifierProvider(widget.conversationId),
       (_, next) {
+        if (!mounted) return;
         if (next.hasValue) {
           WidgetsBinding.instance.addPostFrameCallback(
             (_) => _scrollToBottom(),
           );
-          _markAsRead();
+          WidgetsBinding.instance.addPostFrameCallback(
+            (_) => _markAsRead(),
+          );
         }
       },
     );

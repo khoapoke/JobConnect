@@ -174,6 +174,15 @@ class ChatNotifier extends _$ChatNotifier {
 }
 
 @riverpod
+class ConversationUnreadCount extends _$ConversationUnreadCount {
+  @override
+  Future<int> build() async {
+    final conversations = await ref.watch(conversationListNotifierProvider.future);
+    return conversations.fold<int>(0, (sum, c) => sum + c.unreadCount);
+  }
+}
+
+@riverpod
 class ChatActionNotifier extends _$ChatActionNotifier {
   @override
   AsyncValue<void> build() => const AsyncData(null);

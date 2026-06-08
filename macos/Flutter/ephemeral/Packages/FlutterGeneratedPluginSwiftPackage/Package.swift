@@ -19,6 +19,9 @@ let package = Package(
         .package(name: "shared_preferences_foundation", path: "../.packages/shared_preferences_foundation-2.5.6"),
         .package(name: "app_links", path: "../.packages/app_links-7.0.0"),
         .package(name: "file_selector_macos", path: "../.packages/file_selector_macos-0.9.5"),
+        .package(name: "firebase_messaging", path: "../.packages/firebase_messaging-16.3.0"),
+        .package(name: "firebase_core", path: "../.packages/firebase_core-4.10.0"),
+        .package(name: "file_picker", path: "../.packages/file_picker-8.3.7"),
         .package(name: "sqflite_darwin", path: "../.packages/sqflite_darwin-2.4.2"),
         .package(name: "FlutterFramework", path: "../.packages/FlutterFramework")
     ],
@@ -30,6 +33,9 @@ let package = Package(
                 .product(name: "shared-preferences-foundation", package: "shared_preferences_foundation"),
                 .product(name: "app-links", package: "app_links"),
                 .product(name: "file-selector-macos", package: "file_selector_macos"),
+                .product(name: "firebase-messaging", package: "firebase_messaging"),
+                .product(name: "firebase-core", package: "firebase_core"),
+                .product(name: "file-picker", package: "file_picker"),
                 .product(name: "sqflite-darwin", package: "sqflite_darwin"),
                 .product(name: "FlutterFramework", package: "FlutterFramework")
             ]

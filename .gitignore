@@ -57,3 +57,7 @@ nul
 process.exit(0)
 supabase/.temp/
 **/flutter/ephemeral/
+
+# Agent workspace
+.pi/
+.mcp.json

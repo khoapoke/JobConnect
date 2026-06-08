@@ -260,6 +260,12 @@ class AppStrings {
   static const chatToday = 'Hôm nay';
   static const chatYesterday = 'Hôm qua';
 
+  // T-30 / T-31 / T-32: Notifications
+  static const notifications = 'Thông báo';
+  static const noNotifications = 'Chưa có thông báo';
+  static const noNotificationsSubtitle = 'Thông báo sẽ xuất hiện tại đây.';
+  static const markAllRead = 'Đánh dấu đã đọc';
+
   // T-27: Skill Gap
   static const skillGapTitle = 'Kỹ năng yêu cầu';
   static const skillGapAskAdvice = 'AI gợi ý lộ trình học';

@@ -15,6 +15,7 @@ import '../../../auth/domain/usecases/logout_usecase.dart';
 import '../../../auth/data/datasources/auth_datasource.dart';
 import '../../../auth/data/repositories/auth_repository_impl.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../notification/presentation/providers/notification_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../domain/entities/user_skill.dart';
@@ -264,6 +265,17 @@ class _ProfileContent extends ConsumerWidget {
   }
 
   Future<void> _handleLogout(BuildContext context, WidgetRef ref) async {
+    final auth = ref.read(authProvider);
+    if (auth is AuthAuthenticated) {
+      // Delete FCM token before logout
+      await ref.read(notificationRepositoryProvider).deleteFcmToken(
+        userId: auth.userId,
+        fcmToken: (await ref.read(notificationRepositoryProvider).getFcmToken()).fold(
+          (_) => null,
+          (token) => token,
+        ) ?? '',
+      );
+    }
     final logoutUseCase = LogoutUseCase(
       AuthRepositoryImpl(
         AuthDatasourceImpl(Supabase.instance.client),

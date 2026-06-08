@@ -44,7 +44,7 @@ final getOrCreateConversationUseCaseProvider =
 typedef GetOrCreateConversationUseCaseRef =
     AutoDisposeProviderRef<GetOrCreateConversationUseCase>;
 String _$conversationListNotifierHash() =>
-    r'e7c0dad40477880660484c3489aa49c2d204d624';
+    r'741d548044362d3a338bbe2122cc5999195497bb';
 
 /// See also [ConversationListNotifier].
 @ProviderFor(ConversationListNotifier)
@@ -64,7 +64,7 @@ final conversationListNotifierProvider =
 
 typedef _$ConversationListNotifier =
     AutoDisposeAsyncNotifier<List<Conversation>>;
-String _$chatNotifierHash() => r'79a6fbdbeb4cb8818c47048ff1934aa7f063e667';
+String _$chatNotifierHash() => r'593985cf370bea6ac050bba8db86e94d28dc0e22';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -218,6 +218,23 @@ class _ChatNotifierProviderElement
   String get conversationId => (origin as ChatNotifierProvider).conversationId;
 }
 
+String _$conversationUnreadCountHash() =>
+    r'f53dd3413b95898b5e2acf308bfd9aabe890a93e';
+
+/// See also [ConversationUnreadCount].
+@ProviderFor(ConversationUnreadCount)
+final conversationUnreadCountProvider =
+    AutoDisposeAsyncNotifierProvider<ConversationUnreadCount, int>.internal(
+      ConversationUnreadCount.new,
+      name: r'conversationUnreadCountProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$conversationUnreadCountHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+typedef _$ConversationUnreadCount = AutoDisposeAsyncNotifier<int>;
 String _$chatActionNotifierHash() =>
     r'40b205c2344df372dba6dd469524fe0dfa466d07';
 
