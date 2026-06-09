@@ -216,13 +216,15 @@
 
 > Dependency: Toàn bộ Phase 1–5. Admin quản lý data do các role khác tạo.
 
-- [ ] **T-33: Admin — Dashboard thống kê**
+- [X] **T-33: Admin — Dashboard thống kê**
   Tổng users, tổng Job Posts, lượt ứng tuyển theo thời gian (chart). `AdminDashboardPage`. Query aggregate trực tiếp hoặc Supabase RPC.
 
-- [ ] **T-34: Admin — Quản lý người dùng + duyệt tin**
+- [X] **T-34: Admin — Quản lý người dùng + duyệt tin**
+  > User management: list, search, filter, ban/unban, soft delete, create via invite codes ✅
+  > Job review page (pending_review → active/rejected): NOT YET — admin can close job posts via report detail only
   Xem danh sách users, tìm kiếm, khóa/mở khóa tài khoản. Xem Job Posts `pending_review`, duyệt (→ `active`) hoặc từ chối (→ `rejected`). `AdminUsersPage` + `AdminJobReviewPage`.
 
-- [ ] **T-35: Admin — Xử lý báo cáo vi phạm**
+- [X] **T-35: Admin — Xử lý báo cáo vi phạm**
   Xem danh sách reports. Xử lý: dismiss hoặc take action (khóa user/ẩn post). `AdminReportsPage`. Bảng: `reports`.
 
 ---
