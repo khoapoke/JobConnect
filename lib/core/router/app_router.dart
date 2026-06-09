@@ -3,11 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:go_router/go_router.dart';
 import '../../shared/presentation/widgets/scroll_aware_bottom_nav_scaffold.dart';
-import '../../shared/widgets/placeholder_page.dart';
+import '../../shared/widgets/admin_shell.dart';
 import '../../shared/widgets/recruiter_shell.dart';
 import '../../features/chat/presentation/pages/conversations_page.dart';
 import '../../features/chat/presentation/pages/chat_page.dart';
 import '../constants/app_strings.dart';
+import '../../features/auth/presentation/pages/banned_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/forgot_password_page.dart';
@@ -22,6 +23,7 @@ import '../../features/recruiter/presentation/pages/edit_company_page.dart';
 import '../../features/recruiter/presentation/pages/create_job_post_page.dart';
 import '../../features/recruiter/presentation/pages/my_job_posts_page.dart';
 import '../../features/recruiter/presentation/pages/edit_job_post_page.dart';
+import '../../features/recruiter/presentation/pages/recruiter_home_page.dart';
 import '../../features/recruiter/presentation/providers/company_provider.dart';
 import '../../features/jobs/presentation/pages/job_feed_page.dart';
 import '../../features/jobs/presentation/pages/job_search_page.dart';
@@ -40,6 +42,12 @@ import '../../features/application/presentation/pages/schedule_interview_page.da
 import '../../features/ai_suggestion/domain/entities/ai_suggestion.dart';
 import '../../features/notification/presentation/pages/notifications_page.dart';
 import '../../features/chat/presentation/providers/chat_provider.dart';
+import '../../features/admin/presentation/pages/admin_dashboard_page.dart';
+import '../../features/admin/presentation/pages/admin_users_page.dart';
+import '../../features/admin/presentation/pages/admin_user_detail_page.dart';
+import '../../features/admin/presentation/pages/admin_reports_page.dart';
+import '../../features/admin/presentation/pages/admin_report_detail_page.dart';
+import '../../features/admin/presentation/pages/admin_profile_page.dart';
 import 'user_role.dart';
 
 part 'app_router.g.dart';
@@ -50,14 +58,8 @@ final publicRoutes = [
   '/forgot-password',
   '/onboarding',
   '/splash',
+  '/banned',
 ];
-
-/// Resolves the current user's role from auth state.
-UserRole _resolveRole(Ref ref) {
-  final authState = ref.read(authProvider);
-  if (authState is AuthAuthenticated) return authState.role;
-  return UserRole.seeker; // fallback
-}
 
 @riverpod
 GoRouter appRouter(Ref ref) {
@@ -76,16 +78,23 @@ GoRouter appRouter(Ref ref) {
         return '/login';
       }
       if (authState is AuthAuthenticated) {
+        // Ban check
+        if (authState.isBanned) {
+          if (state.matchedLocation == '/banned') return null;
+          return '/banned';
+        }
         if (!authState.isOnboardingComplete) return '/onboarding';
         if (publicRoutes.contains(state.matchedLocation)) {
           // Redirect to role-appropriate home
-          return authState.role == UserRole.recruiter ? '/recruiter/home' : '/';
+          return switch (authState.role) {
+            UserRole.recruiter => '/recruiter/home',
+            UserRole.admin => '/admin/dashboard',
+            _ => '/',
+          };
         }
         // Company guard for job post creation
         if (state.matchedLocation == '/recruiter/posts/new') {
           final companyAsync = ref.read(currentCompanyProvider);
-          // Only redirect if we have confirmed data that company is null
-          // Don't redirect while loading (valueOrNull is null during loading)
           if (companyAsync.hasValue && companyAsync.valueOrNull == null) {
             return '/recruiter/company/edit?onboarding=true';
           }
@@ -98,28 +107,17 @@ GoRouter appRouter(Ref ref) {
       // ─── Splash ────────────────────────────────────────────────────
       GoRoute(path: '/splash', builder: (context, state) => const SplashPage()),
 
+      // ─── Banned ──────────────────────────────────────────────────────
+      GoRoute(path: '/banned', builder: (context, state) => const BannedPage()),
+
       // ─── Seeker Shell ──────────────────────────────────────────────
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
-          final role = _resolveRole(ref);
-          return switch (role) {
-            UserRole.seeker => ScrollAwareBottomNavScaffold(
-              currentIndex: navigationShell.currentIndex,
-              body: navigationShell,
-              bottomNavigationBar: _SeekerBottomNav(navigationShell: navigationShell),
-            ),
-            // TODO(T-33): Replace with AdminShell when admin feature is built.
-            // Admin borrows SeekerShell temporarily — cannot use PlaceholderPage
-            // here because StatefulShellRoute builder expects a shell widget.
-            UserRole.admin => ScrollAwareBottomNavScaffold(
-              currentIndex: navigationShell.currentIndex,
-              body: navigationShell,
-              bottomNavigationBar: _SeekerBottomNav(navigationShell: navigationShell),
-            ),
-            UserRole.recruiter => RecruiterShell(
-              navigationShell: navigationShell,
-            ),
-          };
+          return ScrollAwareBottomNavScaffold(
+            currentIndex: navigationShell.currentIndex,
+            body: navigationShell,
+            bottomNavigationBar: _SeekerBottomNav(navigationShell: navigationShell),
+          );
         },
         branches: [
           StatefulShellBranch(
@@ -215,8 +213,7 @@ GoRouter appRouter(Ref ref) {
             routes: [
               GoRoute(
                 path: '/recruiter/home',
-                builder: (context, state) =>
-                    const PlaceholderPage(title: AppStrings.recruiterHome),
+                builder: (context, state) => const RecruiterHomePage(),
               ),
             ],
           ),
@@ -271,6 +268,61 @@ GoRouter appRouter(Ref ref) {
             ],
           ),
         ],
+      ),
+
+      // ─── Admin Shell ───────────────────────────────────────────────
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) {
+          return AdminShell(navigationShell: navigationShell);
+        },
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/admin/dashboard',
+                builder: (context, state) => const AdminDashboardPage(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/admin/users',
+                builder: (context, state) => const AdminUsersPage(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/admin/reports',
+                builder: (context, state) => const AdminReportsPage(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/admin/profile',
+                builder: (context, state) => const AdminProfilePage(),
+              ),
+            ],
+          ),
+        ],
+      ),
+
+      // ─── Admin push routes ─────────────────────────────────────────
+      GoRoute(
+        path: '/admin/users/:id',
+        builder: (context, state) => AdminUserDetailPage(
+          userId: state.pathParameters['id']!,
+        ),
+      ),
+      GoRoute(
+        path: '/admin/reports/:id',
+        builder: (context, state) => AdminReportDetailPage(
+          reportId: state.pathParameters['id']!,
+        ),
       ),
 
       // ─── Auth routes (outside shell) ─────────────────────────────

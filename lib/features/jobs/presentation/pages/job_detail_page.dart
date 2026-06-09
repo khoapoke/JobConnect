@@ -20,6 +20,7 @@ import '../../../ai_suggestion/presentation/widgets/ai_match_explanation_card.da
 import '../../../skill_gap/presentation/widgets/skill_gap_widget.dart';
 import '../../../application/presentation/providers/application_provider.dart';
 import '../../../chat/presentation/providers/chat_provider.dart';
+import '../../../report/presentation/widgets/report_bottom_sheet.dart';
 import '../../../recruiter/domain/entities/job_required_skill.dart';
 import '../../domain/entities/job_detail.dart';
 import '../providers/job_detail_provider.dart';
@@ -71,13 +72,45 @@ class _JobDetailContent extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomScrollView(
       slivers: [
-        const SliverAppBar(
-          title: Text(AppStrings.jobDetail),
+        SliverAppBar(
+          title: const Text(AppStrings.jobDetail),
           backgroundColor: Colors.transparent,
           foregroundColor: AppColors.textPrimary,
           pinned: true,
           elevation: 0,
           scrolledUnderElevation: 0,
+          actions: [
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.more_vert, color: AppColors.textPrimary),
+              color: AppColors.surface,
+              onSelected: (value) {
+                if (value == 'report') {
+                  ReportBottomSheet.show(
+                    context: context,
+                    targetType: 'job_post',
+                    targetId: detail.jobPost.id,
+                    targetSnapshot: {
+                      'title': detail.jobPost.title,
+                      'company': detail.company.name,
+                      'description': detail.jobPost.description,
+                    },
+                  );
+                }
+              },
+              itemBuilder: (_) => [
+                const PopupMenuItem(
+                  value: 'report',
+                  child: Row(
+                    children: [
+                      Icon(Icons.flag_outlined, color: AppColors.error, size: 20),
+                      SizedBox(width: 12),
+                      Text('Báo cáo tin tuyển dụng'),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
         SliverToBoxAdapter(
           child: Padding(

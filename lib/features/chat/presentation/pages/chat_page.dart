@@ -18,6 +18,7 @@ import '../../../auth/domain/entities/auth_state.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../domain/entities/conversation.dart';
 import '../../domain/entities/message.dart';
+import '../../../report/presentation/widgets/report_bottom_sheet.dart';
 import '../providers/chat_provider.dart';
 import '../widgets/chat_input_bar.dart';
 import '../widgets/message_bubble.dart';
@@ -132,6 +133,47 @@ class _ChatPageState extends ConsumerState<ChatPage> {
             _ChatAppBar(
               title: appBarTitle,
               subtitle: appBarSubtitle,
+              actions: [
+                PopupMenuButton<String>(
+                  icon: const Icon(
+                    Icons.more_vert,
+                    color: AppColors.textPrimary,
+                    size: 20,
+                  ),
+                  color: AppColors.surface,
+                  onSelected: (value) {
+                    if (value == 'report') {
+                      final otherId = extraConversation != null
+                          ? (isSeeker
+                              ? extraConversation.recruiterId
+                              : extraConversation.seekerId)
+                          : '';
+                      ReportBottomSheet.show(
+                        context: context,
+                        targetType: 'user',
+                        targetId: otherId,
+                        targetSnapshot: {
+                          'name': otherName,
+                          'conversation_id': widget.conversationId,
+                        },
+                      );
+                    }
+                  },
+                  itemBuilder: (_) => [
+                    const PopupMenuItem(
+                      value: 'report',
+                      child: Row(
+                        children: [
+                          Icon(Icons.flag_outlined,
+                              color: AppColors.error, size: 20),
+                          SizedBox(width: 12),
+                          Text('Báo cáo người dùng'),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
             Expanded(
               child: messagesAsync.when(
@@ -177,10 +219,11 @@ class _ChatPageState extends ConsumerState<ChatPage> {
 }
 
 class _ChatAppBar extends StatelessWidget {
-  const _ChatAppBar({required this.title, this.subtitle});
+  const _ChatAppBar({required this.title, this.subtitle, this.actions});
 
   final String title;
   final String? subtitle;
+  final List<Widget>? actions;
 
   @override
   Widget build(BuildContext context) {
@@ -247,7 +290,7 @@ class _ChatAppBar extends StatelessWidget {
                         ],
                       ),
                     ),
-                    const SizedBox(width: AppSpacing.space6),
+                    if (actions != null) ...actions!,
                   ],
                 ),
               ),
