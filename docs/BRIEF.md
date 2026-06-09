@@ -280,7 +280,11 @@ ai_request_logs      (id, user_id, request_type, created_at)
 bookmarks            (id, seeker_id, job_id, created_at)
 saved_searches       (id, user_id, filter_json, name, notify_new BOOLEAN, created_at)
 company_reviews      (id, company_id, reviewer_id, rating SMALLINT, content, created_at)
-reports              (id, reporter_id, target_type, target_id, reason, status, created_at)
+reports              (id, reporter_id, target_type, target_id, reason, details, target_snapshot JSONB, status, created_at, resolved_at, resolved_by, action)
+
+-- NHÓM 9: Admin
+admin_invites        (id, code UNIQUE, created_by, used_by, expires_at, created_at)
+profiles.banned_until (TIMESTAMPTZ) -- replaces is_banned with time-based ban
 ```
 
 > Tổng: **22 bảng** (profiles + 21 bảng) — RLS bật trên tất cả.
