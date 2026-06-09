@@ -30,38 +30,7 @@ class AuthDatasourceImpl implements AuthDatasource {
     required String fullName,
     String? inviteCode,
   }) async {
-    // Validate invite code if provided
-    if (inviteCode != null && inviteCode.isNotEmpty) {
-      final inviteRes = await _supabase
-          .from('admin_invites')
-          .select('id, used_by, expires_at, role')
-          .eq('code', inviteCode)
-          .maybeSingle();
-
-      if (inviteRes == null) {
-        throw Exception('Mã mời không hợp lệ');
-      }
-
-      if (inviteRes['used_by'] != null) {
-        throw Exception('Mã mời đã được sử dụng');
-      }
-
-      final expiresAt = DateTime.parse(inviteRes['expires_at'] as String);
-      if (DateTime.now().isAfter(expiresAt)) {
-        throw Exception('Mã mời đã hết hạn');
-      }
-
-      // Use role from invite code if provided
-      final inviteRole = inviteRes['role'] as String?;
-      if (inviteRole != null) {
-        role = UserRole.values.firstWhere(
-          (r) => r.name == inviteRole,
-          orElse: () => role,
-        );
-      }
-    }
-
-    final response = await _supabase.auth.signUp(
+    await _supabase.auth.signUp(
       email: email,
       password: password,
       data: {
@@ -69,13 +38,6 @@ class AuthDatasourceImpl implements AuthDatasource {
         'full_name': fullName,
       },
     );
-
-    // Mark invite code as used after successful registration
-    if (inviteCode != null && inviteCode.isNotEmpty && response.user != null) {
-      await _supabase.from('admin_invites').update({
-        'used_by': response.user!.id,
-      }).eq('code', inviteCode);
-    }
   }
 
   @override

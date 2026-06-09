@@ -70,33 +70,49 @@ class AdminReportsPage extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           Expanded(
-            child: reportsAsync.when(
-              data: (reports) {
-                if (reports.isEmpty) {
-                  return const Center(
-                    child: Text(
-                      'Không có báo cáo nào',
-                      style: TextStyle(color: AppColors.textSecondary),
-                    ),
-                  );
-                }
-                return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  itemCount: reports.length,
-                  itemBuilder: (context, index) {
-                    final report = reports[index];
-                    return ReportCard(
-                      report: report,
-                      onTap: () => context.push('/admin/reports/${report['id']}'),
-                    );
-                  },
-                );
+            child: RefreshIndicator(
+              onRefresh: () async {
+                ref.invalidate(adminReportsProvider);
+                ref.invalidate(adminReportStatsProvider);
               },
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(
-                child: Text(
-                  'Lỗi: $e',
-                  style: const TextStyle(color: AppColors.error),
+              color: AppColors.primary,
+              backgroundColor: AppColors.surface,
+              child: reportsAsync.when(
+                data: (reports) {
+                  if (reports.isEmpty) {
+                    return LayoutBuilder(
+                      builder: (context, constraints) => ListView(
+                        children: [
+                          SizedBox(height: constraints.maxHeight / 2),
+                          const Center(
+                            child: Text(
+                              'Không có báo cáo nào',
+                              style: TextStyle(color: AppColors.textSecondary),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                  return ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    itemCount: reports.length,
+                    itemBuilder: (context, index) {
+                      final report = reports[index];
+                      return ReportCard(
+                        report: report,
+                        onTap: () => context.push('/admin/reports/${report['id']}'),
+                      );
+                    },
+                  );
+                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (e, _) => Center(
+                  child: Text(
+                    'Lỗi: $e',
+                    style: const TextStyle(color: AppColors.error),
+                  ),
                 ),
               ),
             ),

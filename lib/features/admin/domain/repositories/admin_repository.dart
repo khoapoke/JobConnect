@@ -26,6 +26,10 @@ abstract class AdminRepository {
   });
   Future<Either<Failure, void>> sendWarning(String userId, String message);
   Future<Either<Failure, void>> closeJobPost(String jobPostId);
+  Future<Either<Failure, void>> changeUserRole({
+    required String userId,
+    required String role,
+  });
   Future<Either<Failure, String>> createInviteCode({String role});
   Future<Either<Failure, List<Map<String, dynamic>>>> getInviteCodes();
 }

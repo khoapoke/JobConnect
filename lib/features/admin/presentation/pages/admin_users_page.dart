@@ -82,36 +82,49 @@ class AdminUsersPage extends ConsumerWidget {
           const SizedBox(height: 8),
           // User list
           Expanded(
-            child: usersAsync.when(
-              data: (users) {
-                if (users.isEmpty) {
-                  return const Center(
-                    child: Text(
-                      'Không tìm thấy người dùng',
-                      style: TextStyle(color: AppColors.textSecondary),
-                    ),
-                  );
-                }
-                return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  itemCount: users.length,
-                  itemBuilder: (context, index) {
-                    final user = users[index];
-                    return UserCard(
-                      user: user,
-                      onTap: () => context.push(
-                        '/admin/users/${user['id']}',
-                        extra: user,
+            child: RefreshIndicator(
+              onRefresh: () async => ref.invalidate(adminUsersProvider),
+              color: AppColors.primary,
+              backgroundColor: AppColors.surface,
+              child: usersAsync.when(
+                data: (users) {
+                  if (users.isEmpty) {
+                    return LayoutBuilder(
+                      builder: (context, constraints) => ListView(
+                        children: [
+                          SizedBox(height: constraints.maxHeight / 2),
+                          const Center(
+                            child: Text(
+                              'Không tìm thấy người dùng',
+                              style: TextStyle(color: AppColors.textSecondary),
+                            ),
+                          ),
+                        ],
                       ),
                     );
-                  },
-                );
-              },
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(
-                child: Text(
-                  'Lỗi: $e',
-                  style: const TextStyle(color: AppColors.error),
+                  }
+                  return ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    itemCount: users.length,
+                    itemBuilder: (context, index) {
+                      final user = users[index];
+                      return UserCard(
+                        user: user,
+                        onTap: () => context.push(
+                          '/admin/users/${user['id']}',
+                          extra: user,
+                        ),
+                      );
+                    },
+                  );
+                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (e, _) => Center(
+                  child: Text(
+                    'Lỗi: $e',
+                    style: const TextStyle(color: AppColors.error),
+                  ),
                 ),
               ),
             ),

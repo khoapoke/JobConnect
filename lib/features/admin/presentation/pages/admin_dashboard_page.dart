@@ -40,16 +40,16 @@ class AdminDashboardPage extends ConsumerWidget {
   }
 }
 
-class _DashboardContent extends StatelessWidget {
+class _DashboardContent extends ConsumerWidget {
   const _DashboardContent({required this.stats});
 
   final dynamic stats;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final s = stats;
     return RefreshIndicator(
-      onRefresh: () async {}, // triggers rebuild via Riverpod if needed
+      onRefresh: () async => ref.invalidate(adminDashboardStatsProvider),
       color: AppColors.primary,
       backgroundColor: AppColors.surface,
       child: CustomScrollView(

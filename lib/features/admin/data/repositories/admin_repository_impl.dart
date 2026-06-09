@@ -144,6 +144,21 @@ class AdminRepositoryImpl implements AdminRepository {
   }
 
   @override
+  Future<Either<Failure, void>> changeUserRole({
+    required String userId,
+    required String role,
+  }) async {
+    try {
+      await _datasource.changeUserRole(userId: userId, role: role);
+      return const Right(null);
+    } on PostgrestException catch (e) {
+      return Left(DatabaseFailure(message: e.message));
+    } catch (e) {
+      return Left(UnexpectedFailure(message: e.toString()));
+    }
+  }
+
+  @override
   Future<Either<Failure, String>> createInviteCode({String role = 'admin'}) async {
     try {
       final code = await _datasource.createInviteCode(role: role);

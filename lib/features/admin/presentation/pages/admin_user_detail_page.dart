@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -258,6 +259,49 @@ class _UserDetailContent extends ConsumerWidget {
             onTap: () => _showBanDialog(context, ref, permanent: true),
           ),
           const SizedBox(height: 8),
+          _ActionButton(
+            icon: Icons.switch_account,
+            label: 'Thay đổi vai trò',
+            color: AppColors.aiAccent,
+            onTap: () async {
+              final currentRole = user['role'] as String? ?? 'seeker';
+              final newRole = await showDialog<String>(
+                context: context,
+                builder: (_) => _RoleChangeDialog(currentRole: currentRole),
+              );
+              if (newRole == null || newRole == currentRole) return;
+
+              final repo = ref.read(adminRepositoryProvider);
+              final result = await repo.changeUserRole(
+                userId: user['id'] as String,
+                role: newRole,
+              );
+              if (!context.mounted) return;
+
+              result.fold(
+                (failure) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(failure.message)),
+                  );
+                },
+                (_) {
+                  ref.invalidate(adminUsersProvider);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Đã đổi vai trò thành ${switch (newRole) {
+                          'admin' => 'Quản trị viên',
+                          'recruiter' => 'Nhà tuyển dụng',
+                          _ => 'Người kiếm việc',
+                        }}',
+                      ),
+                    ),
+                  );
+                  context.pop();
+                },
+              );
+            },
+          ),
           if (isBanned)
             _ActionButton(
               icon: Icons.lock_open,
@@ -325,6 +369,59 @@ class _DurationOption extends StatelessWidget {
     return ListTile(
       title: Text(label),
       onTap: () => Navigator.pop(context, hours),
+    );
+  }
+}
+
+class _RoleChangeDialog extends StatefulWidget {
+  const _RoleChangeDialog({required this.currentRole});
+
+  final String currentRole;
+
+  @override
+  State<_RoleChangeDialog> createState() => _RoleChangeDialogState();
+}
+
+class _RoleChangeDialogState extends State<_RoleChangeDialog> {
+  late String _selected = widget.currentRole;
+
+  final _roles = [
+    ('seeker', 'Người kiếm việc', Icons.person_search),
+    ('recruiter', 'Nhà tuyển dụng', Icons.business),
+    ('admin', 'Quản trị viên', Icons.admin_panel_settings),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: AppColors.surface,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      title: const Text('Thay đổi vai trò'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: _roles.map((r) {
+          final isSelected = _selected == r.$1;
+          return ListTile(
+            leading: Icon(r.$3, color: isSelected ? AppColors.primary : AppColors.textSecondary),
+            title: Text(r.$2),
+            trailing: isSelected ? const Icon(Icons.check, color: AppColors.primary) : null,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            tileColor: isSelected ? AppColors.primary.withValues(alpha: 0.1) : null,
+            onTap: () => setState(() => _selected = r.$1),
+          );
+        }).toList(),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Hủy'),
+        ),
+        ElevatedButton(
+          onPressed: () => Navigator.pop(context, _selected),
+          style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+          child: const Text('Lưu'),
+        ),
+      ],
     );
   }
 }

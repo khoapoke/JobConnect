@@ -22,7 +22,6 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
-  final _inviteController = TextEditingController();
 
   @override
   void dispose() {
@@ -30,7 +29,6 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     _emailController.dispose();
     _passwordController.dispose();
     _confirmController.dispose();
-    _inviteController.dispose();
     super.dispose();
   }
 
@@ -45,9 +43,6 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
           password: _passwordController.text,
           role: selectedRole,
           fullName: _nameController.text.trim(),
-          inviteCode: _inviteController.text.trim().isNotEmpty
-              ? _inviteController.text.trim()
-              : null,
         );
 
     ref.read(registerIsLoadingProvider.notifier).setLoading(false);
@@ -119,7 +114,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 children: [
                   Expanded(
                     child: _RoleCard(
-                      title: 'Ứng viên',
+                      title: 'Người kiếm việc',
                       icon: Icons.person_search,
                       isSelected: selectedRole == UserRole.seeker,
                       onTap: () => ref.read(registerRoleProvider.notifier).setRole(UserRole.seeker),
@@ -136,17 +131,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   ),
                 ],
               ),
-              Padding(
-                padding: const EdgeInsets.only(top: 16),
-                child: AuthTextField(
-                  label: 'Mã mời (nếu có)',
-                  controller: _inviteController,
-                  validator: (val) {
-                    // Optional field
-                    return null;
-                  },
-                ),
-              ),
+
               const SizedBox(height: 32),
               ElevatedButton(
                 onPressed: selectedRole == null || isLoading ? null : _submit,

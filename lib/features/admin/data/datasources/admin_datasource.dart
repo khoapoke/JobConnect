@@ -135,6 +135,16 @@ class AdminDatasource {
     }).eq('id', jobPostId);
   }
 
+  Future<void> changeUserRole({
+    required String userId,
+    required String role,
+  }) async {
+    await _supabase.rpc('change_user_role', params: {
+      'target_user_id': userId,
+      'new_role': role,
+    });
+  }
+
   Future<String> createInviteCode({String role = 'admin'}) async {
     final code = _generateCode();
     await _supabase.from('admin_invites').insert({
