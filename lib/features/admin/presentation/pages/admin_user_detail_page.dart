@@ -1,0 +1,330 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'package:intl/intl.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../providers/admin_dashboard_provider.dart';
+import '../providers/admin_users_provider.dart';
+
+class AdminUserDetailPage extends ConsumerWidget {
+  const AdminUserDetailPage({super.key, required this.userId});
+
+  final String userId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final usersAsync = ref.watch(adminUsersProvider);
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: const Text('Chi tiết người dùng'),
+        backgroundColor: AppColors.background,
+        foregroundColor: AppColors.textPrimary,
+        elevation: 0,
+      ),
+      body: usersAsync.when(
+        data: (users) {
+          final user = users.firstWhere(
+            (u) => u['id'] == userId,
+            orElse: () => <String, dynamic>{},
+          );
+          if (user.isEmpty) {
+            return const Center(
+              child: Text(
+                'Không tìm thấy người dùng',
+                style: TextStyle(color: AppColors.textSecondary),
+              ),
+            );
+          }
+          return _UserDetailContent(user: user);
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(
+          child: Text('Lỗi: $e', style: const TextStyle(color: AppColors.error)),
+        ),
+      ),
+    );
+  }
+}
+
+class _UserDetailContent extends ConsumerWidget {
+  const _UserDetailContent({required this.user});
+
+  final Map<String, dynamic> user;
+
+  Future<void> _showBanDialog(BuildContext context, WidgetRef ref, {bool permanent = false}) async {
+    if (permanent) {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (_) => AlertDialog(
+          backgroundColor: AppColors.surface,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text('Xóa tài khoản?'),
+          content: Text('Tài khoản ${user['full_name'] ?? 'này'} sẽ bị khóa vĩnh viễn (xóa mềm). Bạn có chắc?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Hủy'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
+              child: const Text('Xóa'),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true) return;
+
+      final repo = ref.read(adminRepositoryProvider);
+      await repo.banUser(
+        userId: user['id'] as String,
+        bannedUntil: DateTime(2099, 12, 31),
+      );
+    } else {
+      final hours = await showDialog<int>(
+        context: context,
+        builder: (_) => AlertDialog(
+          backgroundColor: AppColors.surface,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text('Tạm khóa'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _DurationOption(label: '1 giờ', hours: 1),
+              _DurationOption(label: '24 giờ', hours: 24),
+              _DurationOption(label: '7 ngày', hours: 168),
+            ],
+          ),
+        ),
+      );
+      if (hours == null) return;
+
+      final repo = ref.read(adminRepositoryProvider);
+      await repo.banUser(
+        userId: user['id'] as String,
+        bannedUntil: DateTime.now().add(Duration(hours: hours)),
+      );
+    }
+
+    if (context.mounted) {
+      ref.invalidate(adminUsersProvider);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Đã cập nhật trạng thái người dùng')),
+      );
+    }
+  }
+
+  Future<void> _sendWarning(BuildContext context, WidgetRef ref) async {
+    final controller = TextEditingController();
+    final message = await showDialog<String>(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Cảnh cáo'),
+        content: TextField(
+          controller: controller,
+          maxLines: 3,
+          decoration: const InputDecoration(
+            hintText: 'Nội dung cảnh cáo...',
+            filled: true,
+            fillColor: AppColors.surfaceVariant,
+            border: InputBorder.none,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Hủy'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, controller.text),
+            child: const Text('Gửi'),
+          ),
+        ],
+      ),
+    );
+    if (message == null || message.isEmpty) return;
+
+    final repo = ref.read(adminRepositoryProvider);
+    await repo.sendWarning(user['id'] as String, message);
+
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Đã gửi cảnh cáo')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final role = user['role'] as String? ?? 'seeker';
+    final bannedUntil = user['banned_until'] != null
+        ? DateTime.tryParse(user['banned_until'].toString())
+        : null;
+    final isBanned = bannedUntil != null && DateTime.now().isBefore(bannedUntil);
+    final isPermanent = isBanned && bannedUntil.year >= 2099;
+
+    final createdAt = user['created_at'] != null
+        ? DateTime.tryParse(user['created_at'].toString())
+        : null;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Center(
+            child: CircleAvatar(
+              radius: 48,
+              backgroundImage: user['avatar_url'] != null
+                  ? CachedNetworkImageProvider(user['avatar_url'] as String)
+                  : null,
+              backgroundColor: AppColors.surfaceVariant,
+              child: user['avatar_url'] == null
+                  ? const Icon(Icons.person, size: 48, color: AppColors.textSecondary)
+                  : null,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            user['full_name'] ?? 'Không tên',
+            textAlign: TextAlign.center,
+            style: AppTextStyles.headline,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            user['email'] ?? '',
+            textAlign: TextAlign.center,
+            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: 16),
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 8,
+            children: [
+              Chip(
+                label: Text(switch (role) {
+                  'admin' => 'Admin',
+                  'recruiter' => 'Nhà tuyển dụng',
+                  _ => 'Người kiếm việc',
+                }),
+                backgroundColor: AppColors.primary.withValues(alpha: 0.15),
+                labelStyle: const TextStyle(color: AppColors.primary, fontSize: 12),
+              ),
+              if (isBanned)
+                Chip(
+                  label: Text(isPermanent ? 'Đã xóa' : 'Tạm khóa'),
+                  backgroundColor: AppColors.error.withValues(alpha: 0.15),
+                  labelStyle: const TextStyle(color: AppColors.error, fontSize: 12),
+                ),
+            ],
+          ),
+          if (createdAt != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              'Tham gia: ${DateFormat('dd/MM/yyyy').format(createdAt)}',
+              textAlign: TextAlign.center,
+              style: AppTextStyles.bodySmall.copyWith(color: AppColors.textTertiary),
+            ),
+          ],
+          const SizedBox(height: 32),
+          const Divider(color: AppColors.outline),
+          const SizedBox(height: 16),
+          Text('Hành động', style: AppTextStyles.sectionTitle),
+          const SizedBox(height: 12),
+          _ActionButton(
+            icon: Icons.warning_amber,
+            label: 'Cảnh cáo',
+            color: AppColors.warning,
+            onTap: () => _sendWarning(context, ref),
+          ),
+          const SizedBox(height: 8),
+          _ActionButton(
+            icon: Icons.timer_off,
+            label: 'Tạm khóa',
+            color: AppColors.aiAccent,
+            onTap: () => _showBanDialog(context, ref),
+          ),
+          const SizedBox(height: 8),
+          _ActionButton(
+            icon: Icons.delete_forever,
+            label: 'Xóa tài khoản',
+            color: AppColors.error,
+            onTap: () => _showBanDialog(context, ref, permanent: true),
+          ),
+          const SizedBox(height: 8),
+          if (isBanned)
+            _ActionButton(
+              icon: Icons.lock_open,
+              label: 'Mở khóa',
+              color: AppColors.success,
+              onTap: () async {
+                final repo = ref.read(adminRepositoryProvider);
+                await repo.banUser(
+                  userId: user['id'] as String,
+                  bannedUntil: DateTime(2000, 1, 1),
+                );
+                if (context.mounted) {
+                  ref.invalidate(adminUsersProvider);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Đã mở khóa người dùng')),
+                  );
+                }
+              },
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ActionButton extends StatelessWidget {
+  const _ActionButton({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton.icon(
+      onPressed: onTap,
+      icon: Icon(icon, color: color),
+      label: Text(label, style: TextStyle(color: color)),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: color.withValues(alpha: 0.1),
+        foregroundColor: color,
+        elevation: 0,
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+        alignment: Alignment.centerLeft,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
+}
+
+class _DurationOption extends StatelessWidget {
+  const _DurationOption({required this.label, required this.hours});
+
+  final String label;
+  final int hours;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      title: Text(label),
+      onTap: () => Navigator.pop(context, hours),
+    );
+  }
+}

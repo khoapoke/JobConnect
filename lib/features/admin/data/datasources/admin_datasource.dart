@@ -1,0 +1,167 @@
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+class AdminDatasource {
+  const AdminDatasource(this._supabase);
+
+  final SupabaseClient _supabase;
+
+  Future<Map<String, dynamic>> getDashboardStats() async {
+    final res = await _supabase.rpc('get_admin_dashboard_stats');
+    return res as Map<String, dynamic>;
+  }
+
+  Future<List<Map<String, dynamic>>> getUsers({
+    String? role,
+    String? search,
+    bool bannedOnly = false,
+  }) async {
+    var query = _supabase.from('profiles').select('*, companies(id)');
+
+    if (role != null && role != 'all') {
+      query = query.eq('role', role);
+    }
+
+    if (bannedOnly) {
+      query = query.not('banned_until', 'is', null).gt('banned_until', 'now()');
+    }
+
+    if (search != null && search.isNotEmpty) {
+      query = query.or('full_name.ilike.%$search%,email.ilike.%$search%');
+    }
+
+    final res = await query.order('created_at', ascending: false);
+    return (res as List).cast<Map<String, dynamic>>();
+  }
+
+  Future<Map<String, dynamic>> getReportStats() async {
+    final res = await _supabase
+        .from('reports')
+        .select('status, target_type')
+        .order('created_at', ascending: false);
+    final reports = (res as List).cast<Map<String, dynamic>>();
+
+    final statusCounts = <String, int>{};
+    final typeCounts = <String, int>{};
+
+    for (final r in reports) {
+      final s = r['status'] as String? ?? 'pending';
+      final t = r['target_type'] as String? ?? 'unknown';
+      statusCounts[s] = (statusCounts[s] ?? 0) + 1;
+      typeCounts[t] = (typeCounts[t] ?? 0) + 1;
+    }
+
+    return {
+      'total': reports.length,
+      'byStatus': statusCounts,
+      'byType': typeCounts,
+    };
+  }
+
+  Future<List<Map<String, dynamic>>> getReports({
+    String? status,
+  }) async {
+    var query = _supabase
+        .from('reports')
+        .select('*, reporter:profiles!reports_reporter_id_fkey(full_name, avatar_url)');
+
+    if (status != null) {
+      query = query.eq('status', status);
+    }
+
+    final res = await query.order('created_at', ascending: false);
+    return (res as List).cast<Map<String, dynamic>>();
+  }
+
+  Future<Map<String, dynamic>?> getReportById(String id) async {
+    final report = await _supabase
+        .from('reports')
+        .select('*, reporter:profiles!reports_reporter_id_fkey(*)')
+        .eq('id', id)
+        .maybeSingle();
+
+    if (report == null) return null;
+
+    // target_id is polymorphic; fetch target user only when target_type == 'user'
+    if (report['target_type'] == 'user' && report['target_id'] != null) {
+      final targetUser = await _supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', report['target_id'] as String)
+          .maybeSingle();
+      if (targetUser != null) {
+        report['target_user'] = targetUser;
+      }
+    }
+
+    return report;
+  }
+
+  Future<void> updateReportStatus({
+    required String reportId,
+    required String status,
+    String? action,
+    String? resolvedBy,
+  }) async {
+    await _supabase.from('reports').update({
+      'status': status,
+      'action': action,
+      'resolved_by': resolvedBy,
+      'resolved_at': DateTime.now().toIso8601String(),
+    }).eq('id', reportId);
+  }
+
+  Future<void> banUser({
+    required String userId,
+    required DateTime bannedUntil,
+  }) async {
+    await _supabase.from('profiles').update({
+      'banned_until': bannedUntil.toIso8601String(),
+    }).eq('id', userId);
+  }
+
+  Future<void> sendWarning(String userId, String message) async {
+    await _supabase.from('notifications').insert({
+      'user_id': userId,
+      'type': 'warning',
+      'title': 'Cảnh cáo từ Quản trị viên',
+      'body': message,
+      'data_json': {},
+    });
+  }
+
+  Future<void> closeJobPost(String jobPostId) async {
+    await _supabase.from('job_posts').update({
+      'status': 'closed',
+    }).eq('id', jobPostId);
+  }
+
+  Future<String> createInviteCode({String role = 'admin'}) async {
+    final code = _generateCode();
+    await _supabase.from('admin_invites').insert({
+      'code': code,
+      'created_by': _supabase.auth.currentUser!.id,
+      'role': role,
+      'expires_at': DateTime.now().add(const Duration(hours: 24)).toIso8601String(),
+    });
+    return code;
+  }
+
+  Future<List<Map<String, dynamic>>> getInviteCodes() async {
+    final res = await _supabase
+        .from('admin_invites')
+        .select('*')
+        .eq('created_by', _supabase.auth.currentUser!.id)
+        .order('created_at', ascending: false);
+    return (res as List).cast<Map<String, dynamic>>();
+  }
+
+  String _generateCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    final sb = StringBuffer();
+    final rand = DateTime.now().millisecondsSinceEpoch;
+    for (var i = 0; i < 8; i++) {
+      sb.write(chars[(rand + i * 17) % chars.length]);
+    }
+    return sb.toString();
+  }
+}
