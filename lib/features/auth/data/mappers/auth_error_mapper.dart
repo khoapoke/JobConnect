@@ -5,11 +5,25 @@ import '../../../../core/errors/failure.dart';
 class AuthErrorMapper {
   const AuthErrorMapper._();
 
-  static AuthFailure fromAuthException(AuthException e) =>
-      AuthFailure(message: _toVietnamese(e.message), code: e.statusCode);
+  static AuthFailure fromAuthException(AuthException e) {
+    final mapped = _toVietnamese(e.message);
+    // If we don't recognize the message, show the raw one
+    final message = mapped == AppStrings.errorGeneral
+        ? '${AppStrings.errorGeneral}\nRaw: ${e.message}'
+        : mapped;
+    return AuthFailure(message: message, code: e.statusCode);
+  }
 
-  static NetworkFailure fromUnknown(Object e, StackTrace st) =>
-      NetworkFailure(message: AppStrings.errorGeneral, stackTrace: st);
+  static NetworkFailure fromUnknown(Object e, StackTrace st) {
+    final detail = e.toString();
+    final msg = detail.length > 300
+        ? '${detail.substring(0, 300)}...'
+        : detail;
+    return NetworkFailure(
+      message: '${AppStrings.errorGeneral}\nRaw: $msg',
+      stackTrace: st,
+    );
+  }
 
   static String _toVietnamese(String message) {
     if (message.contains('already registered')) return 'Email đã được sử dụng';

@@ -6,6 +6,13 @@ import '../../../../shared/domain/entities/user_profile.dart';
 part 'profile_model.freezed.dart';
 part 'profile_model.g.dart';
 
+DateTime? _dateTimeFromJson(dynamic value) {
+  if (value == null) return null;
+  if (value is DateTime) return value;
+  if (value is String) return DateTime.tryParse(value);
+  return null;
+}
+
 @freezed
 class ProfileModel with _$ProfileModel {
   const factory ProfileModel({
@@ -18,6 +25,8 @@ class ProfileModel with _$ProfileModel {
     String? bio,
     String? location,
     @JsonKey(name: 'is_banned') @Default(false) bool isBanned,
+    @JsonKey(name: 'banned_until', fromJson: _dateTimeFromJson)
+    DateTime? bannedUntil,
   }) = _ProfileModel;
 
   factory ProfileModel.fromJson(Map<String, dynamic> json) =>
@@ -35,5 +44,6 @@ class ProfileModel with _$ProfileModel {
         bio: bio,
         location: location,
         isBanned: isBanned,
+        bannedUntil: bannedUntil,
       );
 }

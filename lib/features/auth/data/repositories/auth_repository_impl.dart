@@ -17,6 +17,7 @@ class AuthRepositoryImpl implements AuthRepository {
     required String password,
     required UserRole role,
     required String fullName,
+    String? inviteCode,
   }) async {
     try {
       await _datasource.register(
@@ -24,6 +25,7 @@ class AuthRepositoryImpl implements AuthRepository {
         password: password,
         role: role,
         fullName: fullName,
+        inviteCode: inviteCode,
       );
       return const Right(null);
     } on AuthException catch (e) {

@@ -34,6 +34,8 @@ mixin _$ProfileModel {
   String? get location => throw _privateConstructorUsedError;
   @JsonKey(name: 'is_banned')
   bool get isBanned => throw _privateConstructorUsedError;
+  @JsonKey(name: 'banned_until', fromJson: _dateTimeFromJson)
+  DateTime? get bannedUntil => throw _privateConstructorUsedError;
 
   /// Serializes this ProfileModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -62,6 +64,8 @@ abstract class $ProfileModelCopyWith<$Res> {
     String? bio,
     String? location,
     @JsonKey(name: 'is_banned') bool isBanned,
+    @JsonKey(name: 'banned_until', fromJson: _dateTimeFromJson)
+    DateTime? bannedUntil,
   });
 }
 
@@ -89,6 +93,7 @@ class _$ProfileModelCopyWithImpl<$Res, $Val extends ProfileModel>
     Object? bio = freezed,
     Object? location = freezed,
     Object? isBanned = null,
+    Object? bannedUntil = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -128,6 +133,10 @@ class _$ProfileModelCopyWithImpl<$Res, $Val extends ProfileModel>
                 ? _value.isBanned
                 : isBanned // ignore: cast_nullable_to_non_nullable
                       as bool,
+            bannedUntil: freezed == bannedUntil
+                ? _value.bannedUntil
+                : bannedUntil // ignore: cast_nullable_to_non_nullable
+                      as DateTime?,
           )
           as $Val,
     );
@@ -153,6 +162,8 @@ abstract class _$$ProfileModelImplCopyWith<$Res>
     String? bio,
     String? location,
     @JsonKey(name: 'is_banned') bool isBanned,
+    @JsonKey(name: 'banned_until', fromJson: _dateTimeFromJson)
+    DateTime? bannedUntil,
   });
 }
 
@@ -179,6 +190,7 @@ class __$$ProfileModelImplCopyWithImpl<$Res>
     Object? bio = freezed,
     Object? location = freezed,
     Object? isBanned = null,
+    Object? bannedUntil = freezed,
   }) {
     return _then(
       _$ProfileModelImpl(
@@ -218,6 +230,10 @@ class __$$ProfileModelImplCopyWithImpl<$Res>
             ? _value.isBanned
             : isBanned // ignore: cast_nullable_to_non_nullable
                   as bool,
+        bannedUntil: freezed == bannedUntil
+            ? _value.bannedUntil
+            : bannedUntil // ignore: cast_nullable_to_non_nullable
+                  as DateTime?,
       ),
     );
   }
@@ -236,6 +252,8 @@ class _$ProfileModelImpl extends _ProfileModel {
     this.bio,
     this.location,
     @JsonKey(name: 'is_banned') this.isBanned = false,
+    @JsonKey(name: 'banned_until', fromJson: _dateTimeFromJson)
+    this.bannedUntil,
   }) : super._();
 
   factory _$ProfileModelImpl.fromJson(Map<String, dynamic> json) =>
@@ -263,10 +281,13 @@ class _$ProfileModelImpl extends _ProfileModel {
   @override
   @JsonKey(name: 'is_banned')
   final bool isBanned;
+  @override
+  @JsonKey(name: 'banned_until', fromJson: _dateTimeFromJson)
+  final DateTime? bannedUntil;
 
   @override
   String toString() {
-    return 'ProfileModel(id: $id, role: $role, fullName: $fullName, isOnboardingComplete: $isOnboardingComplete, avatarUrl: $avatarUrl, headline: $headline, bio: $bio, location: $location, isBanned: $isBanned)';
+    return 'ProfileModel(id: $id, role: $role, fullName: $fullName, isOnboardingComplete: $isOnboardingComplete, avatarUrl: $avatarUrl, headline: $headline, bio: $bio, location: $location, isBanned: $isBanned, bannedUntil: $bannedUntil)';
   }
 
   @override
@@ -288,7 +309,9 @@ class _$ProfileModelImpl extends _ProfileModel {
             (identical(other.location, location) ||
                 other.location == location) &&
             (identical(other.isBanned, isBanned) ||
-                other.isBanned == isBanned));
+                other.isBanned == isBanned) &&
+            (identical(other.bannedUntil, bannedUntil) ||
+                other.bannedUntil == bannedUntil));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -304,6 +327,7 @@ class _$ProfileModelImpl extends _ProfileModel {
     bio,
     location,
     isBanned,
+    bannedUntil,
   );
 
   /// Create a copy of ProfileModel
@@ -332,6 +356,8 @@ abstract class _ProfileModel extends ProfileModel {
     final String? bio,
     final String? location,
     @JsonKey(name: 'is_banned') final bool isBanned,
+    @JsonKey(name: 'banned_until', fromJson: _dateTimeFromJson)
+    final DateTime? bannedUntil,
   }) = _$ProfileModelImpl;
   const _ProfileModel._() : super._();
 
@@ -360,6 +386,9 @@ abstract class _ProfileModel extends ProfileModel {
   @override
   @JsonKey(name: 'is_banned')
   bool get isBanned;
+  @override
+  @JsonKey(name: 'banned_until', fromJson: _dateTimeFromJson)
+  DateTime? get bannedUntil;
 
   /// Create a copy of ProfileModel
   /// with the given fields replaced by the non-null parameter values.

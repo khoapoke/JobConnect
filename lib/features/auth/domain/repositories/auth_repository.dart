@@ -8,6 +8,7 @@ abstract class AuthRepository {
     required String password,
     required UserRole role,
     required String fullName,
+    String? inviteCode,
   });
 
   Future<Either<Failure, void>> login({

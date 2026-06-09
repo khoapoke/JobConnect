@@ -19,7 +19,7 @@ class Validators {
   static String? email(String? value) {
     final req = required(value, 'Email');
     if (req != null) return req;
-    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value!)) {
+    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,}$').hasMatch(value!)) {
       return 'Email không hợp lệ';
     }
     return null;

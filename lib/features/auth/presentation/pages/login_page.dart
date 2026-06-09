@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/utils/validators.dart';
 import '../providers/auth_deps.dart';
+import '../providers/auth_provider.dart';
 import '../providers/login_state.dart';
+import '../../domain/entities/auth_state.dart';
 import '../widgets/auth_text_field.dart';
 import '../widgets/social_login_button.dart';
 
@@ -47,7 +49,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         );
       },
       (_) {
-        // Router will handle navigation based on auth state change
+        if (!mounted) return;
+        // Login API succeeded — wait for profile fetch + router redirect
       },
     );
   }
@@ -75,6 +78,17 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final isLoading = ref.watch(loginIsLoadingProvider);
+    final authState = ref.watch(authProvider);
+
+    // Show auth errors (e.g. profile fetch failed after login)
+    if (authState is AuthError) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(authState.message)),
+        );
+      });
+    }
 
     return Scaffold(
       appBar: AppBar(title: const Text(AppStrings.login)),

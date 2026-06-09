@@ -11,6 +11,7 @@ class UserProfile {
     this.bio,
     this.location,
     this.isBanned = false,
+    this.bannedUntil,
   });
 
   final String id;
@@ -22,4 +23,5 @@ class UserProfile {
   final String? bio;
   final String? location;
   final bool isBanned;
+  final DateTime? bannedUntil;
 }

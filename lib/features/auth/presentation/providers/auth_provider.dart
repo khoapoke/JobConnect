@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 import '../../data/models/profile_model.dart';
@@ -34,6 +35,11 @@ class Auth extends _$Auth {
     }
   }
 
+  Future<void> signOut() async {
+    await Supabase.instance.client.auth.signOut();
+    state = const AuthUnauthenticated();
+  }
+
   Future<void> _fetchProfile(String userId) async {
     try {
       final response = await Supabase.instance.client
@@ -43,18 +49,27 @@ class Auth extends _$Auth {
           .maybeSingle();
 
       if (response == null) {
-        state = const AuthError(message: 'Không tìm thấy thông tin hồ sơ');
+        debugPrint('AUTH ERROR: Profile not found for user $userId — treating as unauthenticated');
+        // Don't error — force logout so user can try again or re-register
+        await Supabase.instance.client.auth.signOut();
+        state = const AuthUnauthenticated();
         return;
       }
 
+      debugPrint('AUTH: Profile raw response: $response');
       final profile = ProfileModel.fromJson(response).toEntity();
+      debugPrint('AUTH: Parsed profile — role=${profile.role}, onboarding=${profile.isOnboardingComplete}, bannedUntil=${profile.bannedUntil}');
       state = AuthAuthenticated(
         userId: profile.id,
         role: profile.role,
         isOnboardingComplete: profile.isOnboardingComplete,
+        bannedUntil: profile.bannedUntil,
       );
-    } catch (e) {
-      state = const AuthError(message: 'Lỗi khi tải thông tin hồ sơ');
+    } catch (e, st) {
+      debugPrint('AUTH ERROR in _fetchProfile: $e');
+      debugPrint('Stack trace: $st');
+      await Supabase.instance.client.auth.signOut();
+      state = AuthError(message: 'Lỗi khi tải thông tin hồ sơ: $e');
     }
   }
 }

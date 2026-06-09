@@ -17,6 +17,7 @@ _$ProfileModelImpl _$$ProfileModelImplFromJson(Map<String, dynamic> json) =>
       bio: json['bio'] as String?,
       location: json['location'] as String?,
       isBanned: json['is_banned'] as bool? ?? false,
+      bannedUntil: _dateTimeFromJson(json['banned_until']),
     );
 
 Map<String, dynamic> _$$ProfileModelImplToJson(_$ProfileModelImpl instance) =>
@@ -30,6 +31,7 @@ Map<String, dynamic> _$$ProfileModelImplToJson(_$ProfileModelImpl instance) =>
       'bio': instance.bio,
       'location': instance.location,
       'is_banned': instance.isBanned,
+      'banned_until': instance.bannedUntil?.toIso8601String(),
     };
 
 const _$UserRoleEnumMap = {

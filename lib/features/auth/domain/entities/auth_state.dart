@@ -13,10 +13,17 @@ class AuthAuthenticated extends AuthState {
     required this.userId,
     required this.role,
     required this.isOnboardingComplete,
+    this.bannedUntil,
   });
   final String userId;
   final UserRole role;
   final bool isOnboardingComplete;
+  final DateTime? bannedUntil;
+
+  bool get isBanned {
+    if (bannedUntil == null) return false;
+    return DateTime.now().isBefore(bannedUntil!);
+  }
 }
 
 class AuthUnauthenticated extends AuthState {

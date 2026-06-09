@@ -13,12 +13,14 @@ class RegisterUseCase {
     required String password,
     required UserRole role,
     required String fullName,
+    String? inviteCode,
   }) async {
     return _repository.register(
       email: email,
       password: password,
       role: role,
       fullName: fullName,
+      inviteCode: inviteCode,
     );
   }
 }
