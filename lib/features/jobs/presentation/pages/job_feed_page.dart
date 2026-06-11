@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart' show CupertinoSliverRefreshControl;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -34,10 +35,8 @@ enum _FeedTab { forYou, remote, internship, recent }
 
 class _JobFeedPageState extends ConsumerState<JobFeedPage> {
   _FeedTab _selectedTab = _FeedTab.forYou;
-  bool _isRefreshing = false;
 
   Future<void> _onRefresh() async {
-    setState(() => _isRefreshing = true);
     ref.invalidate(jobFeedProvider);
     final futures = <Future<void>>[ref.read(jobFeedProvider.future)];
     if (_selectedTab == _FeedTab.forYou) {
@@ -49,7 +48,6 @@ class _JobFeedPageState extends ConsumerState<JobFeedPage> {
     } catch (_) {
       // Errors surface through the AsyncValue states below.
     }
-    if (mounted) setState(() => _isRefreshing = false);
   }
 
   @override
@@ -62,23 +60,48 @@ class _JobFeedPageState extends ConsumerState<JobFeedPage> {
       backgroundColor: Colors.transparent,
       body: AppGradientBackground(
         child: SafeArea(
-          child: Stack(
-            children: [
-              // Stock indicator is transparent — the loop spinner overlay
-              // below is the signature pull-to-refresh moment (§9 #4).
-              RefreshIndicator(
-                color: Colors.transparent,
-                backgroundColor: Colors.transparent,
+          // Bouncing physics let the Cupertino refresh control overscroll on
+          // both platforms — the branded loop spinner *is* the pull indicator
+          // (§9 #4), so there is no stock Material blob/shadow to fight.
+          child: CustomScrollView(
+            physics: const BouncingScrollPhysics(
+              parent: AlwaysScrollableScrollPhysics(),
+            ),
+            slivers: [
+              CupertinoSliverRefreshControl(
+                refreshTriggerPullDistance: 100,
+                refreshIndicatorExtent: 64,
                 onRefresh: _onRefresh,
-                child: ListView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.space4,
-                    AppSpacing.space3,
-                    AppSpacing.space4,
-                    AppSpacing.space8,
-                  ),
-                  children: [
+                builder: (
+                  context,
+                  refreshState,
+                  pulledExtent,
+                  refreshTriggerPullDistance,
+                  refreshIndicatorExtent,
+                ) {
+                  if (pulledExtent <= 0) return const SizedBox.shrink();
+                  final opacity =
+                      (pulledExtent / refreshTriggerPullDistance).clamp(0.0, 1.0);
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: AppSpacing.space3),
+                      child: Opacity(
+                        opacity: opacity,
+                        child: const ConnectionLoopSpinner(size: 32),
+                      ),
+                    ),
+                  );
+                },
+              ),
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.space4,
+                  AppSpacing.space3,
+                  AppSpacing.space4,
+                  AppSpacing.space8,
+                ),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
                     _FeedHeader(profileAsync: profileAsync),
                     const SizedBox(height: AppSpacing.space5),
                     SpotlightSearchBar(
@@ -102,16 +125,9 @@ class _JobFeedPageState extends ConsumerState<JobFeedPage> {
                         onRetry: () => ref.invalidate(jobFeedProvider),
                       ),
                     ),
-                  ],
+                  ]),
                 ),
               ),
-              if (_isRefreshing)
-                const Positioned(
-                  top: AppSpacing.space3,
-                  left: 0,
-                  right: 0,
-                  child: Center(child: ConnectionLoopSpinner(size: 32)),
-                ),
             ],
           ),
         ),
