@@ -21,77 +21,52 @@ class StatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = _palette(context, tone);
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: constraints.maxWidth),
-          child: Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.space3,
-              vertical: AppSpacing.space2,
-            ),
+    final brightness = Theme.of(context).brightness;
+    final dotColor = _dotColorFor(brightness, tone);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.space3,
+        vertical: AppSpacing.space2,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceVariantFor(brightness),
+        borderRadius: AppRadii.pill,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 6,
+            height: 6,
             decoration: BoxDecoration(
-              color: palette.$1,
-              borderRadius: AppRadii.sm,
-              border: Border.all(color: palette.$2),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (icon != null) ...[
-                  Icon(icon, size: 14, color: palette.$3),
-                  const SizedBox(width: AppSpacing.space2),
-                ],
-                Flexible(
-                  child: Text(
-                    label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.caption.copyWith(color: palette.$3),
-                  ),
-                ),
-              ],
+              color: dotColor,
+              shape: BoxShape.circle,
             ),
           ),
-        );
-      },
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.caption.copyWith(
+                color: AppColors.gray600For(brightness),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  (Color, Color, Color) _palette(BuildContext context, StatusChipTone tone) {
-    final scheme = Theme.of(context).colorScheme;
+  Color _dotColorFor(Brightness brightness, StatusChipTone tone) {
     return switch (tone) {
-      StatusChipTone.primary => (
-        AppColors.primary.withValues(alpha: 0.14),
-        AppColors.primary.withValues(alpha: 0.24),
-        AppColors.primary,
-      ),
-      StatusChipTone.success => (
-        AppColors.success.withValues(alpha: 0.14),
-        AppColors.success.withValues(alpha: 0.24),
-        AppColors.success,
-      ),
-      StatusChipTone.warning => (
-        AppColors.warning.withValues(alpha: 0.16),
-        AppColors.warning.withValues(alpha: 0.28),
-        AppColors.warning,
-      ),
-      StatusChipTone.error => (
-        AppColors.error.withValues(alpha: 0.14),
-        AppColors.error.withValues(alpha: 0.24),
-        AppColors.error,
-      ),
-      StatusChipTone.ai => (
-        AppColors.aiAccent.withValues(alpha: 0.16),
-        AppColors.aiAccent.withValues(alpha: 0.24),
-        AppColors.aiAccent,
-      ),
-      StatusChipTone.neutral => (
-        scheme.surfaceContainerHighest,
-        scheme.outline,
-        scheme.onSurfaceVariant,
-      ),
+      StatusChipTone.success => AppColors.successFor(brightness),
+      StatusChipTone.warning => AppColors.warningFor(brightness),
+      StatusChipTone.error => AppColors.errorFor(brightness),
+      StatusChipTone.primary || StatusChipTone.ai => AppColors.accent,
+      StatusChipTone.neutral => AppColors.gray400For(brightness),
     };
   }
 }

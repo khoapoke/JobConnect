@@ -14,10 +14,6 @@ class AppTextStyles {
   static const String inter = 'Inter';
   static const String lora = 'Lora';
 
-  /// Retired display family — kept only so pre-redesign widgets compile.
-  /// Removed once `connection_loop_logo` is redrawn in UI-11.
-  static const String spaceGrotesk = 'SpaceGrotesk';
-
   // ---------------------------------------------------------------------------
   // Display / hero — Lora serif, the only two hero moments (§3).
   // ---------------------------------------------------------------------------

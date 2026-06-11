@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -227,15 +225,15 @@ class _ChatAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRect(
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-        child: Container(
+    return Builder(
+      builder: (context) {
+        final brightness = Theme.of(context).brightness;
+        return Container(
           decoration: BoxDecoration(
-            color: AppColors.surface.withAlpha(160),
+            color: AppColors.surfaceFor(brightness),
             border: Border(
               bottom: BorderSide(
-                color: AppColors.divider.withAlpha(80),
+                color: AppColors.hairlineFor(brightness),
               ),
             ),
           ),
@@ -296,8 +294,8 @@ class _ChatAppBar extends StatelessWidget {
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

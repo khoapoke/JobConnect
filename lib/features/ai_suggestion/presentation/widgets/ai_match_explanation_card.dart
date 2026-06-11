@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/errors/failure.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_gradients.dart';
 import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -68,39 +67,44 @@ class _ExplanationLoadingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: AppGradients.ai,
-        borderRadius: AppRadii.xl,
-      ),
-      child: GlassSurface(
-        borderRadius: AppRadii.xl,
-        backgroundColor: Colors.white.withValues(alpha: 0.08),
-        borderColor: Colors.white.withValues(alpha: 0.16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              AppStrings.aiMatchExplanationTitle,
-              style: AppTextStyles.sectionTitle.copyWith(color: Colors.white),
-            ),
-            const SizedBox(height: AppSpacing.space2),
-            Text(
-              AppStrings.aiMatchExplanationLoading,
-              style: AppTextStyles.body.copyWith(
-                color: Colors.white.withValues(alpha: 0.84),
+    final brightness = Theme.of(context).brightness;
+    return GlassSurface(
+      borderRadius: AppRadii.xl,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.auto_awesome_outlined,
+                color: AppColors.accent,
+                size: 16,
               ),
+              const SizedBox(width: AppSpacing.space2),
+              Text(
+                AppStrings.aiMatchExplanationTitle,
+                style: AppTextStyles.sectionTitle.copyWith(
+                  color: AppColors.inkFor(brightness),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.space2),
+          Text(
+            AppStrings.aiMatchExplanationLoading,
+            style: AppTextStyles.body.copyWith(
+              color: AppColors.gray600For(brightness),
             ),
-            const SizedBox(height: AppSpacing.space4),
-            const AppSkeleton(height: 18, width: double.infinity),
-            const SizedBox(height: AppSpacing.space2),
-            const AppSkeleton(height: 14, width: double.infinity),
-            const SizedBox(height: AppSpacing.space2),
-            const AppSkeleton(height: 14, width: double.infinity),
-            const SizedBox(height: AppSpacing.space2),
-            const AppSkeleton(height: 14, width: 220),
-          ],
-        ),
+          ),
+          const SizedBox(height: AppSpacing.space4),
+          const AppSkeleton(height: 18, width: double.infinity),
+          const SizedBox(height: AppSpacing.space2),
+          const AppSkeleton(height: 14, width: double.infinity),
+          const SizedBox(height: AppSpacing.space2),
+          const AppSkeleton(height: 14, width: double.infinity),
+          const SizedBox(height: AppSpacing.space2),
+          const AppSkeleton(height: 14, width: 220),
+        ],
       ),
     );
   }
@@ -141,7 +145,8 @@ class _ExplanationSuccessCardState extends State<_ExplanationSuccessCard>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final reducedMotion = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final reducedMotion =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
     if (!reducedMotion && _controller.value == 0) {
       _controller.forward();
     } else if (reducedMotion) {
@@ -157,6 +162,7 @@ class _ExplanationSuccessCardState extends State<_ExplanationSuccessCard>
 
   @override
   Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
     final parsed = _ParsedExplanation.fromReason(widget.explanation.reason);
 
     return AnimatedBuilder(
@@ -170,97 +176,99 @@ class _ExplanationSuccessCardState extends State<_ExplanationSuccessCard>
           ),
         );
       },
-      child: Container(
-        decoration: const BoxDecoration(
-          gradient: AppGradients.ai,
-          borderRadius: AppRadii.xl,
-        ),
-        child: GlassSurface(
-          borderRadius: AppRadii.xl,
-          backgroundColor: Colors.white.withValues(alpha: 0.08),
-          borderColor: Colors.white.withValues(alpha: 0.14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          AppStrings.aiMatchExplanationTitle,
-                          style: AppTextStyles.sectionTitle.copyWith(
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(height: AppSpacing.space2),
-                        Text(
-                          parsed.summary,
-                          style: AppTextStyles.body.copyWith(
-                            color: Colors.white.withValues(alpha: 0.92),
-                            height: 1.6,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.space3),
-                  MatchScoreBadge(matchScore: widget.suggestion.matchScore),
-                ],
-              ),
-              if (parsed.reasons.isNotEmpty) ...[
-                const SizedBox(height: AppSpacing.space4),
-                ...parsed.reasons.asMap().entries.map(
-                  (entry) => _AnimatedReasonRow(
-                    index: entry.key,
-                    text: entry.value,
-                  ),
-                ),
-              ],
-              if (parsed.recommendation != null) ...[
-                const SizedBox(height: AppSpacing.space4),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(AppSpacing.space3),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.10),
-                    borderRadius: AppRadii.lg,
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.12),
-                    ),
-                  ),
+      child: GlassSurface(
+        borderRadius: AppRadii.xl,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        AppStrings.aiNextStep,
-                        style: AppTextStyles.label.copyWith(
-                          color: Colors.white,
-                        ),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.auto_awesome_outlined,
+                            color: AppColors.accent,
+                            size: 16,
+                          ),
+                          const SizedBox(width: AppSpacing.space2),
+                          Text(
+                            AppStrings.aiMatchExplanationTitle,
+                            style: AppTextStyles.sectionTitle.copyWith(
+                              color: AppColors.inkFor(brightness),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: AppSpacing.space1),
+                      const SizedBox(height: AppSpacing.space2),
                       Text(
-                        parsed.recommendation!,
+                        parsed.summary,
                         style: AppTextStyles.body.copyWith(
-                          color: Colors.white.withValues(alpha: 0.88),
-                          height: 1.5,
+                          color: AppColors.gray600For(brightness),
+                          height: 1.6,
                         ),
                       ),
                     ],
                   ),
                 ),
+                const SizedBox(width: AppSpacing.space3),
+                MatchScoreBadge(matchScore: widget.suggestion.matchScore),
               ],
+            ),
+            if (parsed.reasons.isNotEmpty) ...[
               const SizedBox(height: AppSpacing.space4),
-              Text(
-                AppStrings.aiMatchExplanationFootnote,
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: Colors.white.withValues(alpha: 0.70),
+              ...parsed.reasons.asMap().entries.map(
+                (entry) => _AnimatedReasonRow(
+                  index: entry.key,
+                  text: entry.value,
                 ),
               ),
             ],
-          ),
+            if (parsed.recommendation != null) ...[
+              const SizedBox(height: AppSpacing.space4),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(AppSpacing.space3),
+                decoration: BoxDecoration(
+                  color: AppColors.accentSoftFor(brightness),
+                  borderRadius: AppRadii.lg,
+                  border: Border.all(
+                    color: AppColors.accent.withValues(alpha: 0.16),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      AppStrings.aiNextStep,
+                      style: AppTextStyles.label.copyWith(
+                        color: AppColors.accent,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.space1),
+                    Text(
+                      parsed.recommendation!,
+                      style: AppTextStyles.body.copyWith(
+                        color: AppColors.gray600For(brightness),
+                        height: 1.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            const SizedBox(height: AppSpacing.space4),
+            Text(
+              AppStrings.aiMatchExplanationFootnote,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.gray400For(brightness),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -275,7 +283,8 @@ class _AnimatedReasonRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final reducedMotion = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final reducedMotion =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),
       duration: reducedMotion
@@ -307,6 +316,7 @@ class _ReasonRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -314,14 +324,14 @@ class _ReasonRow extends StatelessWidget {
           width: 24,
           height: 24,
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.16),
+            color: AppColors.accentSoftFor(brightness),
             borderRadius: BorderRadius.circular(999),
           ),
           alignment: Alignment.center,
           child: Text(
             '$index',
             style: AppTextStyles.bodySmall.copyWith(
-              color: Colors.white,
+              color: AppColors.accent,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -331,7 +341,7 @@ class _ReasonRow extends StatelessWidget {
           child: Text(
             text,
             style: AppTextStyles.body.copyWith(
-              color: Colors.white.withValues(alpha: 0.90),
+              color: AppColors.gray600For(brightness),
               height: 1.55,
             ),
           ),
@@ -354,20 +364,26 @@ class _ExplanationErrorCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
     return GlassSurface(
       borderRadius: AppRadii.xl,
-      backgroundColor: AppColors.surfaceVariant,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(Icons.auto_awesome_outlined, color: AppColors.aiAccent),
-              SizedBox(width: AppSpacing.space2),
+              const Icon(
+                Icons.auto_awesome_outlined,
+                color: AppColors.accent,
+                size: 16,
+              ),
+              const SizedBox(width: AppSpacing.space2),
               Expanded(
                 child: Text(
                   AppStrings.aiMatchExplanationTitle,
-                  style: AppTextStyles.sectionTitle,
+                  style: AppTextStyles.sectionTitle.copyWith(
+                    color: AppColors.inkFor(brightness),
+                  ),
                 ),
               ),
             ],
@@ -376,7 +392,7 @@ class _ExplanationErrorCard extends StatelessWidget {
           Text(
             message,
             style: AppTextStyles.body.copyWith(
-              color: AppColors.textSecondary,
+              color: AppColors.gray600For(brightness),
               height: 1.5,
             ),
           ),

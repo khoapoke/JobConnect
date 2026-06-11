@@ -234,10 +234,10 @@
 > The old "Modern Social Productivity" system was replaced. Contract: `docs/design/jobconnect_light_minimal_prototype.html` + rewritten `docs/design/JOB_CONNECT_UI_SYSTEM.md`.
 > Rollout: tokens → primitives → screens by tier. The old UI-10 (admin/recruiter utility polish) is absorbed into UI-14.
 
-- [ ] **UI-10: Theme tokens + font swap**
+- [x] **UI-10: Theme tokens + font swap**
   Re-token `core/theme/` to light-first monochrome + orange `#F97316` (dark = pure derivation, not dimmed). Bundle Lora (verify Vietnamese diacritics), move display roles Space Grotesk → Lora, type scale per §3. Theme mode: system-follow + manual override.
 
-- [ ] **UI-11: Shared primitives restyle**
+- [x] **UI-11: Shared primitives restyle**
   Rework `lib/shared/presentation/widgets/`: 4-tier button set (from `PremiumButton`), dot-pill `StatusChip`, plain bordered cards (retire `GlassSurface`, `AppGradients`, glow shadows), simplified search bar, pinned bottom nav (retire scroll-hide), `ConnectionLoopLogo` redrawn as single orange stroke.
 
 - [ ] **UI-12: Signature screens + 4 signature animations**

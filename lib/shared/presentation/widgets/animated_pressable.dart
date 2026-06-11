@@ -40,7 +40,7 @@ class _AnimatedPressableState extends State<AnimatedPressable> {
     }
 
     return AnimatedScale(
-      duration: reducedMotion ? Duration.zero : AppDurations.fast,
+      duration: reducedMotion ? Duration.zero : AppDurations.press,
       curve: Curves.easeOutCubic,
       scale: _pressed ? widget.scaleDown : 1,
       child: Material(

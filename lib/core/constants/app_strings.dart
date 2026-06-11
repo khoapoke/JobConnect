@@ -235,6 +235,7 @@ class AppStrings {
   static const statusInterview = 'Phỏng vấn';
   static const statusRejectedApplication = 'Đã từ chối';
   static const statusWithdrawn = 'Đã rút';
+  static const statusAccepted = 'Đã nhận';
   static const all = 'Tất cả';
   static const interviewSchedule = 'Lịch phỏng vấn';
   static const scheduleInterview = 'Đặt lịch phỏng vấn';

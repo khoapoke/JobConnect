@@ -2,13 +2,12 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_durations.dart';
-import '../../../core/theme/app_gradients.dart';
 import '../../../core/theme/app_radii.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
 import 'animated_pressable.dart';
 
-enum PremiumButtonVariant { primary, secondary, ai, destructive }
+enum PremiumButtonVariant { primary, secondary, ai, ghost, destructive }
 
 class PremiumButton extends StatelessWidget {
   const PremiumButton({
@@ -30,92 +29,78 @@ class PremiumButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
     final isEnabled = onPressed != null && !isLoading;
-    final foregroundColor = switch (variant) {
-      PremiumButtonVariant.secondary => Theme.of(context).colorScheme.onSurface,
-      _ => Colors.white,
-    };
-    final background = _backgroundFor(context);
+    final fg = _foregroundFor(brightness);
+    final bg = _backgroundFor(brightness);
 
-    final child = AnimatedOpacity(
-      duration: AppDurations.fast,
-      opacity: isEnabled ? 1 : 0.64,
-      child: DecoratedBox(
+    final content = AnimatedOpacity(
+      duration: AppDurations.state,
+      opacity: isEnabled ? 1 : 0.48,
+      child: Container(
         decoration: BoxDecoration(
-          gradient: background,
-          color: background == null ? _solidColorFor(context) : null,
-          borderRadius: AppRadii.md,
-          border: Border.all(color: _borderColorFor(context)),
+          color: bg,
+          borderRadius: AppRadii.button,
         ),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: AppSpacing.buttonHeight),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.space4,
-              vertical: AppSpacing.space3,
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: expand ? MainAxisSize.max : MainAxisSize.min,
-              children: [
-                if (isLoading) ...[
-                  SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(foregroundColor),
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.space3),
-                ] else if (icon != null) ...[
-                  IconTheme(
-                    data: IconThemeData(color: foregroundColor, size: 18),
-                    child: icon!,
-                  ),
-                  const SizedBox(width: AppSpacing.space2),
-                ],
-                Text(
-                  label,
-                  style: AppTextStyles.label.copyWith(color: foregroundColor),
+        constraints:
+            const BoxConstraints(minHeight: AppSpacing.buttonHeight),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.space4,
+          vertical: AppSpacing.space3,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: expand ? MainAxisSize.max : MainAxisSize.min,
+          children: [
+            if (isLoading) ...[
+              SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(fg),
                 ),
-              ],
-            ),
-          ),
+              ),
+              const SizedBox(width: AppSpacing.space3),
+            ] else if (icon != null) ...[
+              IconTheme(
+                data: IconThemeData(color: fg, size: 18),
+                child: icon!,
+              ),
+              const SizedBox(width: AppSpacing.space2),
+            ],
+            Text(label, style: AppTextStyles.label.copyWith(color: fg)),
+          ],
         ),
       ),
     );
 
     return AnimatedPressable(
       onTap: isEnabled ? onPressed : null,
-      borderRadius: AppRadii.md,
+      borderRadius: AppRadii.button,
       enabled: isEnabled,
-      child: child,
+      child: content,
     );
   }
 
-  Gradient? _backgroundFor(BuildContext context) {
+  Color _foregroundFor(Brightness brightness) {
     return switch (variant) {
-      PremiumButtonVariant.primary => AppGradients.primary,
-      PremiumButtonVariant.ai => AppGradients.ai,
-      PremiumButtonVariant.secondary || PremiumButtonVariant.destructive => null,
+      PremiumButtonVariant.primary || PremiumButtonVariant.ai =>
+        AppColors.onAccent,
+      PremiumButtonVariant.secondary => AppColors.inkFor(brightness),
+      PremiumButtonVariant.ghost => AppColors.accent,
+      PremiumButtonVariant.destructive => AppColors.errorFor(brightness),
     };
   }
 
-  Color _solidColorFor(BuildContext context) {
+  Color _backgroundFor(Brightness brightness) {
     return switch (variant) {
+      PremiumButtonVariant.primary || PremiumButtonVariant.ai =>
+        AppColors.accent,
       PremiumButtonVariant.secondary =>
-        Theme.of(context).colorScheme.surfaceContainerHighest,
-      PremiumButtonVariant.destructive => AppColors.error,
-      _ => Colors.transparent,
-    };
-  }
-
-  Color _borderColorFor(BuildContext context) {
-    return switch (variant) {
-      PremiumButtonVariant.secondary => Theme.of(context).colorScheme.outline,
-      PremiumButtonVariant.destructive => AppColors.error.withValues(alpha: 0.7),
-      _ => Colors.transparent,
+        AppColors.surfaceVariantFor(brightness),
+      PremiumButtonVariant.ghost || PremiumButtonVariant.destructive =>
+        Colors.transparent,
     };
   }
 }

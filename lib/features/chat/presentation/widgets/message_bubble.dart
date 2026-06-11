@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_gradients.dart';
 import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -24,6 +23,7 @@ class MessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
     return Padding(
       padding: const EdgeInsets.symmetric(
         vertical: AppSpacing.space1,
@@ -48,8 +48,9 @@ class MessageBubble extends StatelessWidget {
                 horizontal: AppSpacing.space4,
               ),
               decoration: BoxDecoration(
-                gradient: isMine ? AppGradients.primary : null,
-                color: isMine ? null : AppColors.surface,
+                color: isMine
+                    ? AppColors.inkFor(brightness)
+                    : AppColors.surfaceFor(brightness),
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(AppRadii.radiusLg),
                   topRight: const Radius.circular(AppRadii.radiusLg),
@@ -63,23 +64,8 @@ class MessageBubble extends StatelessWidget {
                 border: isMine
                     ? null
                     : Border.all(
-                        color: AppColors.divider.withAlpha(80),
+                        color: AppColors.hairlineFor(brightness),
                       ),
-                boxShadow: isMine
-                    ? [
-                        BoxShadow(
-                          color: AppColors.primary.withAlpha(40),
-                          blurRadius: 16,
-                          offset: const Offset(0, 6),
-                        ),
-                      ]
-                    : [
-                        BoxShadow(
-                          color: Colors.black.withAlpha(30),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -87,7 +73,9 @@ class MessageBubble extends StatelessWidget {
                   Text(
                     message.content,
                     style: AppTextStyles.body.copyWith(
-                      color: isMine ? Colors.white : AppColors.textPrimary,
+                      color: isMine
+                          ? AppColors.canvasFor(brightness)
+                          : AppColors.inkFor(brightness),
                       height: 1.45,
                     ),
                   ),
@@ -99,15 +87,19 @@ class MessageBubble extends StatelessWidget {
                         DateFormat('HH:mm').format(message.createdAt),
                         style: AppTextStyles.bodySmall.copyWith(
                           color: isMine
-                              ? Colors.white.withAlpha(180)
-                              : AppColors.textSecondary,
+                              ? AppColors.canvasFor(brightness)
+                                  .withValues(alpha: 0.6)
+                              : AppColors.gray400For(brightness),
                           fontSize: 10,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                       if (isMine) ...[
                         const SizedBox(width: 4),
-                        _ReadStatus(readAt: message.readAt),
+                        _ReadStatus(
+                          readAt: message.readAt,
+                          brightness: brightness,
+                        ),
                       ],
                     ],
                   ),
@@ -129,12 +121,13 @@ class _OtherAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
     final initial = (name?.isNotEmpty == true) ? name![0].toUpperCase() : '?';
 
     if (url != null && url!.isNotEmpty) {
       return CircleAvatar(
         radius: 14,
-        backgroundColor: AppColors.surfaceVariant,
+        backgroundColor: AppColors.surfaceVariantFor(brightness),
         backgroundImage: NetworkImage(url!),
         onBackgroundImageError: (_, __) {},
         child: const SizedBox.shrink(),
@@ -143,11 +136,11 @@ class _OtherAvatar extends StatelessWidget {
 
     return CircleAvatar(
       radius: 14,
-      backgroundColor: AppColors.primary.withAlpha(40),
+      backgroundColor: AppColors.surfaceVariantFor(brightness),
       child: Text(
         initial,
         style: AppTextStyles.caption.copyWith(
-          color: AppColors.primary,
+          color: AppColors.gray600For(brightness),
           fontSize: 11,
         ),
       ),
@@ -156,9 +149,10 @@ class _OtherAvatar extends StatelessWidget {
 }
 
 class _ReadStatus extends StatelessWidget {
-  const _ReadStatus({this.readAt});
+  const _ReadStatus({this.readAt, required this.brightness});
 
   final DateTime? readAt;
+  final Brightness brightness;
 
   @override
   Widget build(BuildContext context) {
@@ -168,8 +162,8 @@ class _ReadStatus extends StatelessWidget {
       isRead ? Icons.done_all_rounded : Icons.done_rounded,
       size: 13,
       color: isRead
-          ? AppColors.success.withAlpha(220)
-          : Colors.white.withAlpha(160),
+          ? AppColors.successFor(brightness)
+          : AppColors.canvasFor(brightness).withValues(alpha: 0.5),
     );
   }
 }
