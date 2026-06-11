@@ -287,7 +287,8 @@ Currently: `UserProfile`
 
 ## Bottom Sheet Styling
 
-Bottom sheets: always set `backgroundColor: AppColors.surfaceVariant`. Never use default.
+Bottom sheets: always set `backgroundColor: AppColors.surface` with hairline border per
+`docs/design/JOB_CONNECT_UI_SYSTEM.md` §5 (Light Minimal system, ratified 2026-06-11). Never use default.
 
 ---
 
@@ -309,7 +310,8 @@ In these cases, providers call profileRepositoryProvider directly.
 ## Dialog Styling
 Dialogs: always wrap AlertDialog in Theme override with
 `backgroundColor: AppColors.surface` and `cardBorderRadius` for shape.
-Never use default dialog styling.
+Never use default dialog styling. Destructive choices are red TEXT (never filled red);
+the safe action is the bolder default — see `docs/design/JOB_CONNECT_UI_SYSTEM.md` §6.
 
 ---
 

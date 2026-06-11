@@ -190,13 +190,16 @@ class _MyApplicationsPageState extends ConsumerState<MyApplicationsPage> {
           title: const Text(AppStrings.withdrawConfirmTitle),
           content: const Text(AppStrings.withdrawConfirmMessage),
           actions: [
+            // Destructive choice = red text; the safe action (Cancel) is the
+            // bolder default per §6 / CLAUDE.md dialog rule.
             TextButton(
-              onPressed: () => dialogContext.pop(false),
-              child: const Text(AppStrings.cancel),
+              onPressed: () => dialogContext.pop(true),
+              style: TextButton.styleFrom(foregroundColor: AppColors.error),
+              child: const Text(AppStrings.withdrawApplication),
             ),
             FilledButton(
-              onPressed: () => dialogContext.pop(true),
-              child: const Text(AppStrings.withdrawApplication),
+              onPressed: () => dialogContext.pop(false),
+              child: const Text(AppStrings.cancel),
             ),
           ],
         ),
@@ -325,7 +328,7 @@ class _ApplicationCard extends StatelessWidget {
                   alignment: Alignment.centerRight,
                   child: PremiumButton(
                     label: AppStrings.withdrawApplication,
-                    variant: PremiumButtonVariant.secondary,
+                    variant: PremiumButtonVariant.destructive,
                     expand: false,
                     onPressed: onWithdraw,
                   ),

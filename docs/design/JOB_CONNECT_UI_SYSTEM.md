@@ -1,421 +1,202 @@
-# JobConnect UI System
+# JobConnect UI System — Light Minimal
+
+> **Ratified 2026-06-11.** This document supersedes the previous "Modern Social Productivity" system (dark-default, Blue × Violet, cinematic glow). The visual contract is the approved prototype: `docs/design/jobconnect_light_minimal_prototype.html` — when this doc and the prototype disagree, the prototype wins.
+>
+> Old explorations (`jobconnect_social_productivity_exploration.html`, `jobconnect_style_exploration.html`, `jobconnect_seeker_bright_prototypes.html`) are historical and must not be used as reference.
 
 ## 1. Design North Star
 
-**Modern Social Productivity Design**
+**Light Minimalism, typography-first.**
 
-JobConnect should feel like a premium mobile social feed built for career progress: **Instagram / Threads familiarity**, **Linear clarity**, and **Raycast speed**, wrapped in **Cinematic Minimalism**.
+JobConnect feels like a calm, confident editorial product: off-white canvas, ink typography, generous whitespace, hairline borders — and exactly **one** color. The app is quiet so the opportunities are loud.
 
-The app is **Job Seeker-first**. The emotional goal is not “corporate recruiting software”; it is:
+Keywords: modern, minimalism, typography, smooth, light-first, harmonious.
 
-> “I open this app and immediately feel that new opportunities are moving toward me.”
+Anti-keywords (banned): glow, glassmorphism, gradients, cinematic, neon, shimmer-as-decoration.
 
-## 2. Style Keywords
+### Core principle
 
-- Modern Social Productivity Design
-- Cinematic Minimalism UI/UX
-- Hybrid Social-Productivity Interface
-- Instagram × Linear × Raycast inspired
-- Clean Cinematic Recruiter Experience
-- Sophisticated minimalism with cinematic touch
-- Social-inspired yet productivity-focused UI
-- Premium dark/light career discovery
-- Fluid, immersive, fast, lightweight
+> **Harmony over highlights.** No screen is "the cool one" while others are boring. Everything shares one language; only four signature animations are allowed to perform.
 
-## 3. Product Personality
+## 2. Color System
 
-### Social-first
-- Vertical feed like Threads / Instagram.
-- Familiar scrolling rhythm.
-- Cards feel human, not database-like.
-- Quick save, apply, share, and follow actions.
+### Light palette (default)
 
-### Productivity-focused
-- Search behaves like Spotlight / Raycast.
-- Filters are quick, lightweight, and always near the user.
-- Information hierarchy is sharp and functional.
-- No decorative complexity inside forms or utility flows.
-
-### Professional
-- Hiring content remains credible.
-- Salary, company, role, skills, and status are always readable.
-- Recruiter-facing screens use the same system with less glow and more structure.
-
-## 4. Core Interaction Model
-
-**Feed-first + Spotlight search**
-
-The home experience:
-
-1. Cinematic greeting/header.
-2. Raycast-style spotlight search.
-3. Social category tabs: For You, Following, Remote, Intern, Recent.
-4. Compact AI insight capsule.
-5. Mixed vertical job feed.
-6. Bottom navigation.
-
-Recommended bottom navigation:
-
-- Jobs
-- Saved
-- Applications
-- Messages
-- Profile
-
-## 5. Color System
-
-### Chosen direction
-
-**Blue × Violet Hybrid**
-
-Blue provides trust and productivity. Violet provides AI/cinematic emotion. Cyan is a rare focus/glow accent.
-
-### Dark default palette
-
-| Token | Color | Use |
+| Token | Value | Use |
 |---|---:|---|
-| `background` | `#070A12` | Main dark canvas |
-| `backgroundElevated` | `#0A0F1D` | Layered dark gradient base |
-| `surface` | `#101522` | Cards, app bars, bottom nav |
-| `surfaceGlass` | `rgba(255,255,255,0.065)` | Glass panels/cards |
-| `outline` | `rgba(255,255,255,0.105)` | Borders/dividers |
-| `textPrimary` | `#F8FAFC` | Main text |
-| `textSecondary` | `rgba(248,250,252,0.66)` | Supporting text |
-| `textTertiary` | `rgba(248,250,252,0.43)` | Metadata |
-| `primary` | `#3B82F6` | Primary CTA, search, selected states |
-| `primarySoft` | `#38BDF8` | Blue glow/highlight |
-| `aiAccent` | `#8B5CF6` | AI insights, match explanation |
-| `aiAccentStrong` | `#D946EF` | Rare cinematic AI gradient |
-| `focusGlow` | `#22D3EE` | Search focus, command glow, shimmer |
-| `success` | `#34D399` | Positive status |
-| `warning` | `#FBBF24` | Missing skill, warning |
-| `error` | `#FB7185` | Error/destructive state |
+| `canvas` | `#FAFAFA` | Main background |
+| `surface` | `#FFFFFF` | Cards, sheets, app bars, bottom nav |
+| `surfaceVariant` | `#F4F4F5` | Secondary buttons, input fills, tags |
+| `ink` | `#111113` | Primary text, sent chat bubbles, selected filter chips |
+| `gray600` | `#52525B` | Supporting text |
+| `gray400` | `#A1A1AA` | Metadata, placeholders, inactive nav |
+| `hairline` | `#E4E4E7` | All borders and dividers (1px) |
+| `accent` | `#F97316` | THE brand color — see usage rules |
+| `accentSoft` | `#FFF4EA` | Rare tinted fill (AI icon background) |
+| `success` | `#059669` | Status dot only |
+| `error` | `#DC2626` | Status dot + destructive text |
+| `warning` | `#D97706` | Amber — text only, never filled |
 
-### Light refresh palette
+### Dark palette (pure derivation — "lights off, not energy off")
 
-Light mode is not a fallback. It is a **refreshing premium mode**.
+| Token | Value |
+|---|---:|
+| `canvas` | `#0F0F0F` (warm near-black, NOT blue-black) |
+| `surface` | `#1A1A1A` |
+| `surfaceVariant` | `#242427` |
+| `ink` | `#F5F5F5` |
+| `gray600` | `#B0B0B8` |
+| `gray400` | `#6E6E76` |
+| `hairline` | `rgba(255,255,255,0.09)` |
+| `accent` | `#F97316` — **identical**, full saturation |
+| `success` / `error` / `warning` | `#10B981` / `#F87171` / `#F59E0B` (lifted brightness) |
 
-| Token | Color | Use |
-|---|---:|---|
-| `backgroundLight` | `#F8FAFC` | Main light canvas |
-| `backgroundLightTint` | `#EEF2FF` | Blue/violet atmospheric tint |
-| `surfaceLight` | `#FFFFFF` | Cards and sheets |
-| `surfaceLightSoft` | `#F1F5F9` | Secondary surfaces |
-| `outlineLight` | `#E2E8F0` | Borders/dividers |
-| `textPrimaryLight` | `#0F172A` | Main text |
-| `textSecondaryLight` | `#475569` | Supporting text |
-| `primaryLight` | `#2563EB` | Primary CTA |
-| `aiAccentLight` | `#7C3AED` | AI moments |
-| `focusGlowLight` | `#0891B2` | Search/focus accent |
+Dark mode rules:
+- Zero new design decisions. Dark is the same app with the lights off.
+- The brand must NOT feel dimmed: orange stays full-saturation, text stays high-contrast, surfaces stay clearly layered.
+- Behavior: follow system setting by default + manual override in Profile/Settings.
 
-### Color usage rules
+### The orange rule (most important rule in the system)
 
-- Blue is the only normal primary action color.
-- Violet is reserved for AI/recommendation moments.
-- Cyan is rare: search focus, active command, hero shimmer.
-- 80-90% of each screen should be neutral surface and readable text.
-- If everything glows, nothing feels premium.
-- Status colors must include icon/text, never color alone.
+`accent` orange may appear ONLY as:
 
-## 6. Typography
+1. **Primary action** — filled primary button (max one per screen), send button, FAB-equivalent
+2. **Active navigation** — selected bottom-nav icon + label
+3. **AI / match moments** — match score, ✦ AI insight accents, match ring
+4. **Brand** — logo stroke, unread dots, links/ghost actions
 
-### Chosen pairing
+Everything else is ink/gray. Status is never orange. Warnings are never orange (amber text only). If a screen has orange in more than ~3 places, it is wrong.
 
-**Space Grotesk display + Inter UI/body**
+## 3. Typography
 
-Use Space Grotesk as cinematic spice, not the whole meal. Most UI remains Inter.
+**Inter (UI/body) + Lora (display serif)** — bundled `.ttf` under `assets/fonts/`, no `google_fonts` package. Both files MUST include Vietnamese diacritics (verify "Chào buổi sáng", "Dành cho bạn" render natively before locking assets). Space Grotesk is retired.
 
-| Role | Font | Weight | Size guidance | Use |
+Lora is reserved for exactly **two hero moments** — never body copy, never buttons, never nav:
+1. Launch wordmark + auth screen titles
+2. Hero greetings & identity ("Chào buổi sáng, Khoa", profile name)
+
+| Role | Font | Weight | Size | Notes |
 |---|---|---:|---:|---|
-| Display | Space Grotesk | 700 | 36-48sp mobile hero | Splash, onboarding, hero moments |
-| Screen title | Inter | 800/900 | 28-34sp | Main page title |
-| Section title | Inter | 800 | 20-24sp | Feed sections, form sections |
-| Card title | Inter | 700 | 16-18sp | Job title, company title |
-| Body | Inter | 400/500 | 14-16sp | Descriptions, details |
-| Metadata | Inter | 500/600 | 12-13sp | Salary, location, tags |
-| Button/chip | Inter | 700 | 12-14sp | Actions and labels |
+| Display / hero | Lora | 600 | 27–38sp | The two hero moments only |
+| Page title | Inter | 800 | 24sp | letter-spacing −2% |
+| Section title | Inter | 700 | 16sp | |
+| Card title | Inter | 700 | 16–17sp | Job titles |
+| Body | Inter | 400/500 | 14–15sp | line-height 1.5–1.6 |
+| Metadata | Inter | 500 | 12–13sp | gray600/gray400 |
+| Button | Inter | 700 | 13–15sp | |
+| Numbers | Inter | 700/800 | — | **tabular numerals** (salary, stats, match %) |
 
-Flutter note: because adding packages should be controlled, prefer bundling `.ttf` font files as assets unless the team approves `google_fonts`.
+Numbers are a typographic feature: match scores and dashboard stats are big, bold, tabular — that is their "decoration".
 
-## 7. Spacing System
+## 4. Spacing
 
-Use a 4/8dp rhythm.
+Unchanged 4/8dp rhythm: 4, 8, 12, 16, 20, 24, 32, 40, 48. Screen horizontal padding: 20dp. Touch targets ≥ 48dp.
+
+## 5. Surfaces, Radius & Elevation
+
+- Cards: `surface` + 1px `hairline` border + radius **18** + shadow `0 1px 2px rgba(17,17,19,.04)` — that is the maximum elevation for persistent UI.
+- Buttons/inputs: radius **14**. Pills/tags: radius **999/8**. Sheets: radius **28** top corners.
+- Bottom sheets and dialogs: plain `surface`, hairline border, no blur, no glass. (Supersedes old `surfaceVariant` bottom-sheet rule — token names are reused with new values, see §12.)
+- **Retired:** glassmorphism, gradient backgrounds, glow shadows, blur overlays.
+
+## 6. Buttons & Actions — 4 tiers
+
+| Tier | Style | Use | Rule |
+|---|---|---|---|
+| Primary | Filled `accent`, white text | The screen's single purpose: Ứng tuyển, Gửi, Lưu, Đăng tin | **Max one per screen** |
+| Secondary | `surfaceVariant` fill, ink text, no border | Coexisting actions: Nhắn tin, Chỉnh sửa, Xem CV | |
+| Ghost | Plain `accent` text | Low-commitment: Xem tất cả, +Thêm, dialog cancel | |
+| Destructive | Plain `error` text — **never filled red** | Rút đơn, Xóa, Khóa, Từ chối | Always behind a confirm dialog; in dialogs the safe action is the bolder default |
+
+Placement rules (mapped to features):
+- **Job card (feed/search):** whole card → detail; bookmark icon top-right; **no Apply button on cards**.
+- **Job detail:** sticky bottom bar = full-width primary Apply + message/bookmark icon buttons.
+- **Applicant management:** horizontal row Secondary (Xem CV) · Secondary (Shortlist/Mời PV) · Destructive text (Từ chối) — mirrors the domain flow Shortlist → Invite → Reject.
+- **Admin tables:** row actions are ghost/destructive text only, never filled chips.
+
+## 7. Status System
+
+Statuses are **quiet pills**: `surfaceVariant` pill + 6px colored dot + gray600 label. Never filled color chips, never color-alone (dot + text always together).
+
+| Dot | Statuses |
+|---|---|
+| gray | pending (Đang chờ), draft, withdrawn, Mới |
+| amber | reviewing (Đang xem xét) |
+| ink | interview (Phỏng vấn) |
+| green | accepted (Đã nhận), active (Hoạt động) |
+| red | rejected (Từ chối), banned (Đã khóa), closed |
+
+Skill gap uses the same language: owned skill = pill + green dot, missing = pill + amber dot, plus an amber text summary line ("2 kỹ năng còn thiếu").
+
+## 8. Navigation
+
+Tab structure is unchanged for all three roles (Seeker 5 / Recruiter 4 / Admin 4).
+
+Style:
+- `surface` bar, 1px hairline top border, **pinned** — the scroll-hide behavior is retired.
+- Outline icons, gray400 inactive; active = `accent` icon + label. Labels always visible.
+- Only Inter on the bar. 150–200ms color transition on switch.
+- Notifications stay off-tab: bell in app header with orange unread dot.
+
+## 9. Motion System
+
+**One harmonized language** (everything responds, nothing performs):
 
 | Token | Value | Use |
 |---|---:|---|
-| `space1` | 4dp | Tiny alignment, dense icon gaps |
-| `space2` | 8dp | Label/icon gaps, compact padding |
-| `space3` | 12dp | Chip padding, small card internals |
-| `space4` | 16dp | Default card padding |
-| `space5` | 20dp | Feed card internal rhythm |
-| `space6` | 24dp | Screen horizontal padding, section spacing |
-| `space8` | 32dp | Major vertical rhythm |
-| `space10` | 40dp | Hero/large separation |
-| `space12` | 48dp | Onboarding/splash composition |
-
-Touch target minimum: **48dp** for important controls.
-
-## 8. Radius & Elevation
-
-### Radius
-
-| Token | Value | Use |
-|---|---:|---|
-| `radiusSm` | 12dp | Small chips, badges |
-| `radiusMd` | 16dp | Buttons, avatars |
-| `radiusLg` | 24dp | Cards, search fields |
-| `radiusXl` | 32dp | Featured cards, sheets |
-| `radius2xl` | 40dp | Phone mockups, hero panels |
-
-### Elevation
-
-- Persistent lists: subtle surface separation and border.
-- Featured cards: soft cinematic shadow.
-- Search overlay/sheets: stronger blur + elevation.
-- Forms: minimal shadows, prioritize readability.
-
-Recommended shadow examples:
-
-- Card: `0 16 50 rgba(0,0,0,.18)`
-- Featured card: `0 28 90 rgba(59,130,246,.14)`
-- Overlay: `0 34 100 rgba(0,0,0,.46)`
-
-## 9. Expressiveness System
-
-**Premium Expressive, Strictly Curated**
-
-Use A-level cinematic ingredients with B-level discipline.
-
-### Signature moments, expressive allowed
-
-- Splash / launch animation
-- Onboarding hero
-- Job Seeker home header
-- AI match insight
-- Skill gap analysis
-- Application success
-- Profile completion milestone
-- Empty states
-
-Allowed:
-- richer gradients
-- glow
-- glassmorphism
-- subtle parallax
-- shimmer
-- cinematic shadows
-
-### Core browsing, controlled
-
-- Job feed
-- Search results
-- Saved jobs
-- Applications list
-- Company cards
-
-Allowed:
-- subtle glass
-- light shadow
-- tiny press lift
-- match score glow only
+| `press` | 120ms, scale 0.97 | Every pressable: cards, buttons, chips |
+| `state` | 200ms ease-out | Tab switch, toggle, chip select, theme change |
+| `stagger` | 30ms | List item fade-up, first load only |
+| `route` | 300ms slide-fade | Page transitions, consistent direction |
 
-Avoid:
-- every card glowing
-- animated backgrounds behind long lists
-- excessive gradient text
+Easing everywhere: `cubic-bezier(.25,.8,.35,1)`.
 
-### Utility/forms, minimal
+**Exactly four signature animations** — all built from the loop mark, nothing else gets to perform:
 
-- Login/register
-- Resume builder
-- Apply form
-- Profile edit
-- Recruiter job creation
+1. **Launch** — loop draws itself in orange (~750ms), nodes pop with spring, Lora wordmark fades up. Total ≤ 1.4s.
+2. **Match score reveal** — orange ring draws around the score while the number counts 0→N% in tabular numerals (~1.1s, ease-out cubic).
+3. **Apply success** — the loop draws and closes at the moment the Application is created: "connection made". No confetti.
+4. **Pull-to-refresh** — the loop spins in place of the stock spinner.
 
-Allowed:
-- clean surfaces
-- focused blue border
-- subtle elevation
-- one accent CTA
+Reduced motion: static logo + fade for launch; ring renders at final state; numbers appear without count-up; stagger/spin disabled.
 
-Avoid:
-- shimmer everywhere
-- glass inputs if readability suffers
-- decorative animation
+## 10. Logo & Launch
 
-## 10. Motion System
+- Mark: the **connection loop** — a single circle stroke with two nodes (Seeker ↔ Recruiter). Redrawn as one clean `accent` orange stroke, one weight, no gradient, no glow. Works single-color at any size (app icon, app bar, empty states).
+- Launch screen: Threads-style — blank canvas, mark center, draw-in animation, Lora "JobConnect" wordmark, small gray caption bottom ("Kết nối cơ hội của bạn").
+- Flutter: `CustomPainter` + `AnimationController` + `PathMetric.extractPath`, flat orange paint.
 
-Follow Material Motion principles: continuity, responsiveness, clarity.
+## 11. Screen Tiers
 
-| Token | Duration | Use |
-|---|---:|---|
-| `instant` | 80-120ms | Tap feedback |
-| `fast` | 150-180ms | Button/chip state change |
-| `base` | 220-260ms | Card lift, small reveal |
-| `route` | 320-400ms | Card-to-detail transition |
-| `splash` | 900-1400ms | Launch identity |
-| `stagger` | 30-45ms | Feed item entrance |
+**Signature** (the 4 animations live here, still on the same quiet canvas): Launch, Seeker Home feed, Job Detail (match ring + skill gap), Apply success.
 
-### Motion rules
+**Core** (daily use, calm): Search/filters, My Applications, Chat, Profile, Notifications, Bookmarks.
 
-- Animate transform and opacity only where possible.
-- Shared element transition from job card to job detail.
-- Apply button: compress, glow, haptic, loading, success.
-- Feed reveal: opacity + translateY, staggered lightly.
-- Spotlight search: fade/scale from search field, instant results.
-- Reduced motion: disable parallax, shimmer, particles, and stagger.
+**Utility** (maximum restraint): Auth, CV builder, all forms, Recruiter screens, Admin screens. Admin charts: gray bars + one orange highlight bar, hairline tables, text row-actions.
 
-## 11. Mixed Feed Card System
+Chat specifics: sent bubble = ink fill (inverts in dark), received = `surfaceVariant`. Orange appears only on the send button.
 
-### Feed composition
+## 12. Flutter Migration Map
 
-- First 1-2 roles: large cinematic/featured cards.
-- Normal feed: clean social job cards.
-- AI recommendation: violet insight card inserted naturally.
-- Company highlight: editorial card, occasional.
-- Saved/applied status: small badges, not large blocks.
+The redesign rolls out as TASKS.md Phase 9.5 (UI-10 → UI-14). Because UI-01→09 funneled styling through `core/theme/` and shared primitives, most of the look arrives via token + primitive swaps.
 
-### Job card content hierarchy
+| Existing | Fate |
+|---|---|
+| `AppColors` | Re-tokened: light-first values from §2, dark derivation |
+| `AppTextStyles` | Inter roles from §3; display roles move Space Grotesk → Lora |
+| `AppGradients` | **Retired** (delete usages) |
+| `AppShadows` | Single card shadow + overlay shadow only |
+| `GlassSurface` | **Retired** → plain bordered `surface` card |
+| `PremiumButton` | Rework into the 4-tier button set |
+| `StatusChip` | Rework into dot-pill (§7) |
+| `SpotlightSearchBar` | Simplify: filled field, orange focus border, no glow |
+| `ScrollAwareBottomNavScaffold` | Replace with pinned nav bar |
+| `ConnectionLoopLogo` | Redraw: single orange stroke, new draw-in timing |
+| `AppSkeleton`, `AnimatedPressable` | Keep; retune to §9 tokens |
+| Fonts | Add Lora (Vietnamese subset verified); Space Grotesk may be removed once no references remain |
 
-1. Company logo/avatar.
-2. Match score or status badge.
-3. Job title.
-4. Company, location, work mode.
-5. Salary if visible.
-6. Skill tags / skill gap.
-7. Save + Apply quick actions.
+## 13. Accessibility & Performance
 
-### Card rules
-
-- Job title must be readable before visual effects.
-- Match score glow is allowed, but only one glowing element per card.
-- Cards can lift on press, but must not shift surrounding layout.
-- Long descriptions belong on detail page, not feed card.
-
-## 12. Spotlight Search
-
-Search is the productivity layer.
-
-### Behavior
-
-- Accessible from home header and optionally bottom nav/search affordance.
-- Opens fast overlay from the search field.
-- Supports jobs, skills, companies, locations, filters.
-- Shows recent searches and suggested commands.
-
-### Visual style
-
-- Glass/dark overlay in dark mode.
-- Clean white/blur panel in light mode.
-- Cyan focus glow used here more than anywhere else.
-- Results are dense but readable.
-
-## 13. Logo & Splash System
-
-### Chosen logo direction
-
-**Dual-mode logo: minimal static, cinematic animated**
-
-### Static logo
-
-- Minimal geometric connection-loop mark.
-- Works as app icon, app bar mark, profile/avatar placeholder.
-- Works in single color.
-- No heavy glow.
-
-### Animated splash
-
-**Connection-loop symbol + JobConnect wordmark reveal**
-
-Concept:
-
-> A glowing blue-violet career path draws itself into a loop, connects two nodes, then reveals the JobConnect wordmark.
-
-Meaning:
-
-- Job Seeker ↔ Recruiter
-- Career path
-- AI matching
-- Connection
-- Forward motion
-
-Sequence:
-
-1. Background appears in current theme.
-2. Thin cyan/blue stroke begins drawing a circular path.
-3. Violet connection node pulses.
-4. Loop completes with spring easing.
-5. `JobConnect` wordmark fades/slides in.
-6. Symbol scales down or dissolves into the home feed header/search glow.
-
-Implementation note for Flutter:
-
-- Use `CustomPainter` for the loop stroke.
-- Animate with `AnimationController` and `PathMetric.extractPath`.
-- Use `ShaderMask` or gradient paint for blue/violet/cyan stroke.
-- Respect reduced motion: show static logo + fade only.
-
-## 14. Component Principles
-
-### Buttons
-
-- One primary CTA per screen.
-- Primary: blue gradient or solid blue depending on screen expressiveness.
-- Secondary: neutral glass/surface.
-- Destructive: red, visually separated.
-- Loading state always visible.
-
-### Chips
-
-- Blue chips: filters/selected states.
-- Violet chips: AI tags.
-- Cyan chips: search/focus rare states.
-- Neutral chips: metadata.
-
-### Bottom navigation
-
-- 5 items maximum.
-- Icon + label.
-- Active state uses blue surface highlight.
-- Keep reachable above safe area.
-
-### Sheets/dialogs
-
-- Dark: glass/surface elevated.
-- Light: clean white surface with subtle border.
-- Forms in sheets should prioritize clarity over glass.
-
-## 15. Accessibility & Performance Rules
-
-- Text contrast: at least WCAG AA.
-- Touch targets: minimum 48dp for core actions.
-- Do not rely on color alone for status.
-- Support system text scaling.
-- Respect reduced motion.
-- Avoid heavy blur behind long scrolling lists.
-- Shimmer/skeleton only during loading, not as ambient decoration.
-- Keep animations interruptible and under 400ms except splash.
-
-## 16. Implementation Roadmap
-
-1. Create Flutter theme tokens:
-   - `AppColors`
-   - `AppTextStyles`
-   - `AppSpacing`
-   - `AppRadii`
-   - `AppDurations`
-2. Add bundled fonts:
-   - Inter
-   - Space Grotesk
-3. Build reusable primitives:
-   - `JobConnectScaffold`
-   - `GlassSurface`
-   - `SpotlightSearchBar`
-   - `JobFeedCard`
-   - `FeaturedJobCard`
-   - `AiInsightCard`
-   - `ConnectionLoopLogo`
-4. Implement splash animation.
-5. Redesign Job Seeker home/feed first.
-6. Apply system to job detail and apply flow.
-7. Reduce effects for recruiter/admin utility screens.
+- Text contrast ≥ WCAG AA in both modes (verify orange-on-white for small text; use ink for small text, orange for ≥14sp bold/large elements).
+- Touch targets ≥ 48dp. Status never color-alone (dot + label). Support system text scaling.
+- Respect reduced motion (§9). Animate transform/opacity only. No blur behind scrolling lists. Skeletons only while loading.

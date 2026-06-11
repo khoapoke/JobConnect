@@ -4,20 +4,21 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_text_styles.dart';
 
-/// Displays a Match Score badge with an encouraging label.
+/// Match Score badge — signature animation #2 (§9).
 ///
-/// Thresholds (handoff decision):
-/// - >= 0.75: "Rất phù hợp"
-/// - 0.60–0.74: "Phù hợp"
-/// - 0.45–0.59: "Có tiềm năng"
-/// - < 0.45: "Khám phá thêm"
+/// An orange ring draws around the score while the number counts 0→N% in
+/// tabular numerals (~1.1s, ease-out cubic). No glow — the Light Minimal
+/// system retires decorative shadows; the ring + count-up is the moment.
 ///
-/// High scores receive a subtle pulsing glow.
-class MatchScoreBadge extends StatefulWidget {
+/// Ring color by score (handoff thresholds):
+/// - >= 0.75: success — "Rất phù hợp"
+/// - 0.60–0.74: accent (orange) — "Phù hợp"
+/// - 0.45–0.59: warning (amber) — "Có tiềm năng"
+/// - < 0.45: gray400 — "Khám phá thêm"
+class MatchScoreBadge extends StatelessWidget {
   const MatchScoreBadge({
     super.key,
     required this.matchScore,
@@ -28,126 +29,61 @@ class MatchScoreBadge extends StatefulWidget {
   final MatchScoreBadgeSize size;
 
   @override
-  State<MatchScoreBadge> createState() => _MatchScoreBadgeState();
-}
-
-class _MatchScoreBadgeState extends State<MatchScoreBadge>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _glowController;
-
-  @override
-  void initState() {
-    super.initState();
-    _glowController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2200),
-    );
-    if (widget.matchScore >= 0.75) {
-      _glowController.repeat(reverse: true);
-    }
-  }
-
-  @override
-  void didUpdateWidget(covariant MatchScoreBadge oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.matchScore >= 0.75 && !_glowController.isAnimating) {
-      _glowController.repeat(reverse: true);
-    } else if (widget.matchScore < 0.75 && _glowController.isAnimating) {
-      _glowController.stop();
-      _glowController.value = 0;
-    }
-  }
-
-  @override
-  void dispose() {
-    _glowController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final percentage = (widget.matchScore * 100).round();
-    final label = _labelForScore(widget.matchScore);
-    final color = _colorForScore(widget.matchScore);
-    final reducedMotion = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final brightness = Theme.of(context).brightness;
+    final reducedMotion =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final score = matchScore.clamp(0.0, 1.0);
+    final color = ringColorFor(score, brightness);
+    final diameter = size == MatchScoreBadgeSize.small ? 48.0 : 64.0;
+    final numberStyle = (size == MatchScoreBadgeSize.small
+            ? AppTextStyles.bodyMedium
+            : AppTextStyles.title)
+        .copyWith(
+      fontFamily: AppTextStyles.inter,
+      fontFeatures: const [FontFeature.tabularFigures()],
+      fontWeight: FontWeight.w800,
+      color: AppColors.inkFor(brightness),
+    );
 
-    final padding = widget.size == MatchScoreBadgeSize.small
-        ? const EdgeInsets.symmetric(
-            horizontal: AppSpacing.space2,
-            vertical: AppSpacing.space1,
-          )
-        : const EdgeInsets.symmetric(
-            horizontal: AppSpacing.space3,
-            vertical: AppSpacing.space2,
+    final ring = SizedBox(
+      width: diameter,
+      height: diameter,
+      child: TweenAnimationBuilder<double>(
+        tween: Tween(begin: reducedMotion ? score : 0.0, end: score),
+        duration: reducedMotion
+            ? Duration.zero
+            : const Duration(milliseconds: 1100),
+        curve: Curves.easeOutCubic,
+        builder: (context, value, _) {
+          return CustomPaint(
+            painter: _MatchRingPainter(
+              progress: value,
+              color: color,
+              trackColor: AppColors.surfaceVariantFor(brightness),
+            ),
+            child: Center(
+              child: Text('${(value * 100).round()}%', style: numberStyle),
+            ),
           );
-
-    final textStyle = widget.size == MatchScoreBadgeSize.small
-        ? AppTextStyles.bodySmall
-        : AppTextStyles.label.copyWith(fontWeight: FontWeight.w700);
-
-    final child = Container(
-      padding: padding,
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
-        borderRadius: AppRadii.md,
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (!reducedMotion)
-            TweenAnimationBuilder<int>(
-              tween: IntTween(begin: 0, end: percentage),
-              duration: const Duration(milliseconds: 900),
-              curve: Curves.easeOutCubic,
-              builder: (context, value, _) => Text(
-                '$value%',
-                style: textStyle.copyWith(
-                  color: color,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            )
-          else
-            Text(
-              '$percentage%',
-              style: textStyle.copyWith(
-                color: color,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          if (widget.size != MatchScoreBadgeSize.small) ...[
-            const SizedBox(width: AppSpacing.space1),
-            Text(
-              label,
-              style: textStyle.copyWith(color: color),
-            ),
-          ],
-        ],
+        },
       ),
     );
 
-    if (reducedMotion || widget.matchScore < 0.75) return child;
+    if (size == MatchScoreBadgeSize.small) return ring;
 
-    return AnimatedBuilder(
-      animation: _glowController,
-      builder: (context, child) {
-        final intensity = math.sin(_glowController.value * math.pi);
-        return Container(
-          decoration: BoxDecoration(
-            borderRadius: AppRadii.md,
-            boxShadow: [
-              BoxShadow(
-                color: color.withValues(alpha: 0.28 * intensity),
-                blurRadius: 10 + (10 * intensity),
-                spreadRadius: 1 + (3 * intensity),
-              ),
-            ],
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ring,
+        const SizedBox(height: AppSpacing.space2),
+        Text(
+          _labelForScore(score),
+          style: AppTextStyles.caption.copyWith(
+            color: AppColors.gray600For(brightness),
           ),
-          child: child,
-        );
-      },
-      child: child,
+        ),
+      ],
     );
   }
 
@@ -158,12 +94,69 @@ class _MatchScoreBadgeState extends State<MatchScoreBadge>
     return AppStrings.matchExploreMore;
   }
 
-  Color _colorForScore(double score) {
-    if (score >= 0.75) return AppColors.success;
-    if (score >= 0.60) return AppColors.primary;
-    if (score >= 0.45) return AppColors.warning;
-    return AppColors.textSecondary;
+  /// Ring color by score band (§7 thresholds). Exposed for widget tests.
+  @visibleForTesting
+  static Color ringColorFor(double score, Brightness brightness) {
+    if (score >= 0.75) return AppColors.successFor(brightness);
+    if (score >= 0.60) return AppColors.accent;
+    if (score >= 0.45) return AppColors.warningFor(brightness);
+    return AppColors.gray400For(brightness);
   }
+}
+
+class _MatchRingPainter extends CustomPainter {
+  const _MatchRingPainter({
+    required this.progress,
+    required this.color,
+    required this.trackColor,
+  });
+
+  final double progress;
+  final Color color;
+  final Color trackColor;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final strokeWidth = size.width * 0.1;
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = (size.width - strokeWidth * 2) / 2;
+
+    canvas.drawCircle(
+      center,
+      radius,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeWidth
+        ..color = trackColor,
+    );
+
+    final clamped = progress.clamp(0.0, 1.0);
+    if (clamped <= 0) return;
+
+    final path = Path()
+      ..addArc(
+        Rect.fromCircle(center: center, radius: radius),
+        -math.pi / 2,
+        2 * math.pi,
+      );
+    final metric = path.computeMetrics().first;
+    final arc = metric.extractPath(0, metric.length * clamped);
+
+    canvas.drawPath(
+      arc,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round
+        ..strokeWidth = strokeWidth
+        ..color = color,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _MatchRingPainter old) =>
+      old.progress != progress ||
+      old.color != color ||
+      old.trackColor != trackColor;
 }
 
 enum MatchScoreBadgeSize { small, medium }

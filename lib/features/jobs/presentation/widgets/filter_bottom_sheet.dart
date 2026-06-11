@@ -47,7 +47,7 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
 
     return Material(
       color: Theme.of(context).bottomSheetTheme.backgroundColor,
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(AppRadii.radiusXl)),
+      borderRadius: AppRadii.sheet,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(
           AppSpacing.space4,

@@ -235,6 +235,7 @@ class AppStrings {
   static const statusInterview = 'Phỏng vấn';
   static const statusRejectedApplication = 'Đã từ chối';
   static const statusWithdrawn = 'Đã rút';
+  static const statusAccepted = 'Đã nhận';
   static const all = 'Tất cả';
   static const interviewSchedule = 'Lịch phỏng vấn';
   static const scheduleInterview = 'Đặt lịch phỏng vấn';
@@ -314,6 +315,11 @@ class AppStrings {
       'Hãy thử lại để tiếp tục khám phá cơ hội phù hợp.';
   static const latestJobs = 'Việc mới nhất';
   static const noJobPostsYet = 'Chưa có tin tuyển dụng nào.';
+  static const splashTagline = 'Kết nối cơ hội của bạn';
+  static const themeAppearance = 'Giao diện';
+  static const themeSystem = 'Theo hệ thống';
+  static const themeLight = 'Sáng';
+  static const themeDark = 'Tối';
   static const matchVeryRelevant = 'Rất phù hợp';
   static const matchRelevant = 'Phù hợp';
   static const matchPotential = 'Có tiềm năng';
