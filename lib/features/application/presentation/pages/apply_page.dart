@@ -236,8 +236,10 @@ class _ApplyPageState extends ConsumerState<ApplyPage> {
       builder: (_) => _ApplySuccessDialog(message: message),
     );
 
+    // Hold until the loop has fully drawn and "closed" (signature #3) plus a
+    // beat to read the message — the draw runs for AppDurations.launch.
     Future.delayed(
-      AppDurations.base + AppDurations.fast,
+      AppDurations.launch + AppDurations.route,
       () {
         if (!mounted) return;
         Navigator.of(context, rootNavigator: true).pop();
