@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_gradients.dart';
 import '../../../core/theme/app_radii.dart';
 
 class AppSkeleton extends StatefulWidget {
@@ -38,7 +37,8 @@ class _AppSkeletonState extends State<AppSkeleton>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final reducedMotion = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final reducedMotion =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
     if (reducedMotion) {
       _controller.stop();
     } else if (!_controller.isAnimating) {
@@ -54,11 +54,11 @@ class _AppSkeletonState extends State<AppSkeleton>
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final baseColor = isDark
-        ? AppColors.surfaceVariant
-        : AppColors.surfaceLightSoft;
-    final reducedMotion = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final brightness = Theme.of(context).brightness;
+    final baseColor = AppColors.surfaceVariantFor(brightness);
+    final highlightColor = AppColors.surfaceFor(brightness);
+    final reducedMotion =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
 
     final child = Container(
       width: widget.width,
@@ -66,7 +66,8 @@ class _AppSkeletonState extends State<AppSkeleton>
       decoration: BoxDecoration(
         color: baseColor,
         shape: widget.shape,
-        borderRadius: widget.shape == BoxShape.circle ? null : widget.borderRadius,
+        borderRadius:
+            widget.shape == BoxShape.circle ? null : widget.borderRadius,
       ),
     );
 
@@ -75,10 +76,15 @@ class _AppSkeletonState extends State<AppSkeleton>
     return AnimatedBuilder(
       animation: _controller,
       child: child,
-      builder: (context, child) {
+      builder: (context, innerChild) {
         return ShaderMask(
           shaderCallback: (bounds) {
-            return AppGradients.skeleton.createShader(
+            return LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: [baseColor, highlightColor, baseColor],
+              stops: const [0.0, 0.5, 1.0],
+            ).createShader(
               Rect.fromLTWH(
                 bounds.width * (_controller.value * 2 - 1),
                 0,
@@ -88,7 +94,7 @@ class _AppSkeletonState extends State<AppSkeleton>
             );
           },
           blendMode: BlendMode.srcATop,
-          child: child,
+          child: innerChild,
         );
       },
     );

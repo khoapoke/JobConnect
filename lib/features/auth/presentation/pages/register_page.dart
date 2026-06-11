@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/router/user_role.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/validators.dart';
+import '../../../../shared/presentation/widgets/premium_button.dart';
 import '../providers/auth_deps.dart';
 import '../providers/register_state.dart';
 import '../widgets/auth_text_field.dart';
@@ -70,34 +72,48 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     final selectedRole = ref.watch(registerRoleProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text(AppStrings.register)),
+      backgroundColor: AppColors.canvas,
+      appBar: AppBar(
+        backgroundColor: AppColors.canvas,
+        foregroundColor: AppColors.textPrimary,
+        elevation: 0,
+      ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              const Text(AppStrings.register, style: AppTextStyles.display),
+              const SizedBox(height: 6),
+              Text(
+                'Tạo tài khoản để bắt đầu với JobConnect',
+                style: AppTextStyles.body.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 24),
               AuthTextField(
                 label: 'Họ và tên',
                 controller: _nameController,
                 validator: Validators.fullName,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               AuthTextField(
                 label: 'Email',
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
                 validator: Validators.email,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               AuthTextField(
                 label: 'Mật khẩu',
                 controller: _passwordController,
                 obscureText: true,
                 validator: Validators.password,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               AuthTextField(
                 label: 'Xác nhận mật khẩu',
                 controller: _confirmController,
@@ -105,10 +121,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 validator: (val) => Validators.confirmPassword(val, _passwordController.text),
               ),
               const SizedBox(height: 24),
-              Text(
-                'Bạn là:',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
+              const Text('Bạn là:', style: AppTextStyles.sectionTitle),
               const SizedBox(height: 8),
               Row(
                 children: [
@@ -133,15 +146,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               ),
 
               const SizedBox(height: 32),
-              ElevatedButton(
+              PremiumButton(
+                label: AppStrings.register,
+                isLoading: isLoading,
                 onPressed: selectedRole == null || isLoading ? null : _submit,
-                child: isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Text(AppStrings.register),
               ),
             ],
           ),

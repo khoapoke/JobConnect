@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_gradients.dart';
 import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_shadows.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -25,9 +24,9 @@ class FeaturedJobCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        gradient: AppGradients.primary,
+        color: AppColors.accent,
         borderRadius: AppRadii.xl,
-        boxShadow: AppShadows.featured,
+        boxShadow: AppShadows.card,
       ),
       child: Material(
         color: Colors.transparent,
@@ -47,16 +46,13 @@ class FeaturedJobCard extends StatelessWidget {
                         vertical: AppSpacing.space2,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.16),
+                        color: AppColors.onAccent.withValues(alpha: 0.16),
                         borderRadius: AppRadii.sm,
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.16),
-                        ),
                       ),
                       child: Text(
                         badgeLabel,
                         style: AppTextStyles.caption.copyWith(
-                          color: Colors.white,
+                          color: AppColors.onAccent,
                         ),
                       ),
                     ),
@@ -71,7 +67,9 @@ class FeaturedJobCard extends StatelessWidget {
                 const SizedBox(height: AppSpacing.space5),
                 Text(
                   result.jobPost.title,
-                  style: AppTextStyles.display.copyWith(color: Colors.white),
+                  style: AppTextStyles.display.copyWith(
+                    color: AppColors.onAccent,
+                  ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -79,7 +77,7 @@ class FeaturedJobCard extends StatelessWidget {
                 Text(
                   '${result.company.name} · ${result.location.isRemote ? AppStrings.remoteWork : result.location.province ?? 'Không xác định'}',
                   style: AppTextStyles.body.copyWith(
-                    color: Colors.white.withValues(alpha: 0.82),
+                    color: AppColors.onAccent.withValues(alpha: 0.82),
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -92,7 +90,9 @@ class FeaturedJobCard extends StatelessWidget {
                     _MetaPill(label: _salaryDisplay()),
                     _MetaPill(label: _jobTypeLabel(result.jobPost.type)),
                     if (result.skills.isNotEmpty)
-                      _MetaPill(label: result.skills.first.skillName ?? 'Skill'),
+                      _MetaPill(
+                        label: result.skills.first.skillName ?? 'Skill',
+                      ),
                   ],
                 ),
                 const SizedBox(height: AppSpacing.space5),
@@ -100,10 +100,11 @@ class FeaturedJobCard extends StatelessWidget {
                   children: [
                     Expanded(
                       child: FilledButton(
-                        onPressed: () => context.push('/search/${result.jobPost.id}/apply'),
+                        onPressed: () =>
+                            context.push('/search/${result.jobPost.id}/apply'),
                         style: FilledButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: AppColors.primary,
+                          backgroundColor: AppColors.onAccent,
+                          foregroundColor: AppColors.accent,
                         ),
                         child: const Text(AppStrings.apply),
                       ),
@@ -111,11 +112,12 @@ class FeaturedJobCard extends StatelessWidget {
                     const SizedBox(width: AppSpacing.space3),
                     Expanded(
                       child: OutlinedButton(
-                        onPressed: () => context.push('/search/${result.jobPost.id}'),
+                        onPressed: () =>
+                            context.push('/search/${result.jobPost.id}'),
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.white,
+                          foregroundColor: AppColors.onAccent,
                           side: BorderSide(
-                            color: Colors.white.withValues(alpha: 0.4),
+                            color: AppColors.onAccent.withValues(alpha: 0.4),
                           ),
                         ),
                         child: const Text('Xem chi tiết'),
@@ -166,12 +168,12 @@ class _MetaPill extends StatelessWidget {
         vertical: AppSpacing.space2,
       ),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.12),
+        color: AppColors.onAccent.withValues(alpha: 0.12),
         borderRadius: AppRadii.sm,
       ),
       child: Text(
         label,
-        style: AppTextStyles.caption.copyWith(color: Colors.white),
+        style: AppTextStyles.caption.copyWith(color: AppColors.onAccent),
       ),
     );
   }

@@ -1,39 +1,30 @@
 import 'package:flutter/material.dart';
 
-import 'app_colors.dart';
-
+/// Light Minimal elevation (§5): a single hairline-soft card shadow is the
+/// maximum elevation for persistent UI, plus a slightly deeper shadow for
+/// transient overlays (sheets, menus). Glow/featured shadows are retired —
+/// `featured`/`focusGlow` remain only so pre-redesign widgets compile and are
+/// removed in UI-11.
 class AppShadows {
   const AppShadows._();
 
-  static final List<BoxShadow> card = [
+  static const List<BoxShadow> card = [
     BoxShadow(
-      color: Colors.black.withValues(alpha: 0.18),
-      blurRadius: 50,
-      offset: const Offset(0, 16),
+      color: Color(0x0A111113), // rgba(17,17,19,.04)
+      blurRadius: 2,
+      offset: Offset(0, 1),
     ),
   ];
 
-  static final List<BoxShadow> featured = [
+  static const List<BoxShadow> overlay = [
     BoxShadow(
-      color: AppColors.primary.withValues(alpha: 0.14),
-      blurRadius: 90,
-      offset: const Offset(0, 28),
-    ),
-  ];
-
-  static final List<BoxShadow> overlay = [
-    BoxShadow(
-      color: Colors.black.withValues(alpha: 0.46),
-      blurRadius: 100,
-      offset: const Offset(0, 34),
-    ),
-  ];
-
-  static final List<BoxShadow> focusGlow = [
-    BoxShadow(
-      color: AppColors.focusGlow.withValues(alpha: 0.24),
+      color: Color(0x1F111113), // rgba(17,17,19,.12)
       blurRadius: 24,
-      spreadRadius: 1,
+      offset: Offset(0, 8),
     ),
   ];
+
+  // Retired (UI-11) — kept so legacy widgets compile.
+  static const List<BoxShadow> featured = card;
+  static const List<BoxShadow> focusGlow = <BoxShadow>[];
 }

@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light" data-font="lora" data-motion="on">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JobConnect — Light Minimal Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lora:wght@500;600;700&family=Playfair+Display:wght@500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap&subset=vietnamese" rel="stylesheet">
+<style>
+/* ========================================================================
+   JobConnect — Light Minimal Design System (ratification prototype)
+   Locked 2026-06-11: monochrome + orange #F97316, Inter + Lora,
+   quiet status dots, 4 signature animations, dark = lights off not energy off
+   ======================================================================== */
+:root{
+  --canvas:#FAFAFA; --surface:#FFFFFF; --surface-2:#F4F4F5;
+  --ink:#111113; --gray-600:#52525B; --gray-400:#A1A1AA;
+  --hairline:#E4E4E7;
+  --accent:#F97316; --accent-soft:#FFF4EA; --on-accent:#FFFFFF;
+  --green:#059669; --red:#DC2626; --amber:#D97706; --blue-dot:#111113;
+  --bubble-sent:#111113; --bubble-sent-ink:#FAFAFA;
+  --font-ui:'Inter',system-ui,sans-serif;
+  --font-display:'Lora',serif;
+  --t-press:120ms; --t-state:200ms; --ease:cubic-bezier(.25,.8,.35,1);
+  --shadow-card:0 1px 2px rgba(17,17,19,.04);
+}
+[data-theme="dark"]{
+  --canvas:#0F0F0F; --surface:#1A1A1A; --surface-2:#242427;
+  --ink:#F5F5F5; --gray-600:#B0B0B8; --gray-400:#6E6E76;
+  --hairline:rgba(255,255,255,.09);
+  --accent:#F97316; --accent-soft:rgba(249,115,22,.14); --on-accent:#FFFFFF;
+  --green:#10B981; --red:#F87171; --amber:#F59E0B; --blue-dot:#F5F5F5;
+  --bubble-sent:#F5F5F5; --bubble-sent-ink:#111113;
+  --shadow-card:0 1px 2px rgba(0,0,0,.4);
+}
+[data-font="playfair"]{ --font-display:'Playfair Display',serif; }
+[data-font="fraunces"]{ --font-display:'Fraunces',serif; }
+[data-motion="off"] *{ animation:none !important; transition:none !important; }
+
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:var(--font-ui);background:var(--canvas);color:var(--ink);transition:background var(--t-state) var(--ease);}
+
+/* ---------- page chrome (not part of the design system) ---------- */
+.topbar{position:sticky;top:0;z-index:50;background:var(--surface);border-bottom:1px solid var(--hairline);
+  padding:14px 28px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
+.topbar h1{font-family:var(--font-display);font-size:20px;font-weight:600;margin-right:auto;}
+.topbar h1 em{font-style:normal;color:var(--accent);}
+.ctrl{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--gray-600);}
+.ctrl .seg{display:flex;border:1px solid var(--hairline);border-radius:10px;overflow:hidden;}
+.ctrl button{font-family:var(--font-ui);font-size:12px;font-weight:600;border:none;background:transparent;
+  color:var(--gray-600);padding:7px 14px;cursor:pointer;transition:all var(--t-state) var(--ease);}
+.ctrl button.on{background:var(--ink);color:var(--canvas);}
+.section{max-width:1400px;margin:0 auto;padding:48px 28px 8px;}
+.section>h2{font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gray-400);margin-bottom:6px;}
+.section>p{font-size:14px;color:var(--gray-600);max-width:640px;margin-bottom:28px;}
+.grid{display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start;}
+.cell{display:flex;flex-direction:column;gap:12px;}
+.cell .cap{width:390px;font-size:13px;color:var(--gray-600);line-height:1.5;padding:0 6px;}
+.cell .cap b{color:var(--ink);font-weight:600;display:block;margin-bottom:2px;}
+.replay{align-self:flex-start;margin-left:6px;font-size:12px;font-weight:600;color:var(--accent);background:none;
+  border:1px solid var(--hairline);border-radius:8px;padding:6px 12px;cursor:pointer;font-family:var(--font-ui);}
+
+/* ---------- phone frame ---------- */
+.phone{width:390px;height:844px;background:var(--canvas);border-radius:44px;overflow:hidden;position:relative;
+  border:7px solid #1C1C1F;box-shadow:0 24px 60px rgba(0,0,0,.14);display:flex;flex-direction:column;
+  transition:background var(--t-state) var(--ease);}
+.statusbar{height:44px;flex:none;display:flex;align-items:center;justify-content:space-between;
+  padding:0 28px;font-size:14px;font-weight:600;}
+.statusbar .right{display:flex;gap:5px;font-size:12px;letter-spacing:-1px;}
+.screen{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative;}
+.scroll{flex:1;overflow:hidden;padding:0 20px;}
+
+/* ---------- shared primitives ---------- */
+.btn{font-family:var(--font-ui);border:none;cursor:pointer;border-radius:14px;font-weight:700;font-size:15px;
+  padding:15px 20px;transition:transform var(--t-press) var(--ease),opacity var(--t-state);}
+.btn:active{transform:scale(.97);}
+.btn-primary{background:var(--accent);color:var(--on-accent);width:100%;}
+.btn-secondary{background:var(--surface-2);color:var(--ink);}
+.btn-ghost{background:none;color:var(--accent);padding:8px 10px;font-size:13px;}
+.btn-danger{background:none;color:var(--red);font-size:13px;padding:8px 10px;}
+.iconbtn{width:50px;height:50px;flex:none;border-radius:14px;background:var(--surface-2);border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:19px;color:var(--ink);}
+.field{width:100%;background:var(--surface);border:1px solid var(--hairline);border-radius:14px;
+  padding:15px 16px;font-size:15px;font-family:var(--font-ui);color:var(--ink);}
+.field::placeholder{color:var(--gray-400);}
+.field:focus{outline:none;border-color:var(--accent);}
+.pill{display:inline-flex;align-items:center;gap:6px;background:var(--surface-2);border-radius:999px;
+  padding:5px 12px;font-size:12px;font-weight:600;color:var(--gray-600);}
+.pill .dot{width:6px;height:6px;border-radius:50%;flex:none;}
+.dot-gray{background:var(--gray-400);} .dot-green{background:var(--green);} .dot-red{background:var(--red);}
+.dot-amber{background:var(--amber);} .dot-ink{background:var(--blue-dot);}
+.tag{display:inline-block;background:var(--surface-2);color:var(--gray-600);border-radius:8px;
+  padding:4px 10px;font-size:12px;font-weight:500;}
+.hr{height:1px;background:var(--hairline);margin:4px 0;}
+.avatar{width:44px;height:44px;border-radius:12px;background:var(--surface-2);display:flex;align-items:center;
+  justify-content:center;font-weight:700;font-size:16px;color:var(--gray-600);flex:none;}
+.avatar.round{border-radius:50%;}
+
+/* ---------- bottom nav ---------- */
+.nav{flex:none;background:var(--surface);border-top:1px solid var(--hairline);display:flex;
+  padding:10px 8px 26px;transition:background var(--t-state) var(--ease);}
+.nav a{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;text-decoration:none;
+  color:var(--gray-400);font-size:10.5px;font-weight:600;transition:color var(--t-state) var(--ease);}
+.nav a .ic{font-size:21px;line-height:1;}
+.nav a.active{color:var(--accent);}
+
+/* ---------- app header ---------- */
+.appheader{padding:14px 20px 10px;display:flex;align-items:center;gap:12px;}
+.appheader .grow{flex:1;}
+.kicker{font-size:12px;font-weight:600;color:var(--gray-400);letter-spacing:.04em;text-transform:uppercase;}
+.hero-title{font-family:var(--font-display);font-size:27px;font-weight:600;line-height:1.2;margin-top:2px;}
+.page-title{font-size:24px;font-weight:800;letter-spacing:-.02em;}
+.bell{position:relative;width:42px;height:42px;border-radius:50%;background:var(--surface-2);border:none;
+  font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--ink);}
+.bell::after{content:"";position:absolute;top:9px;right:10px;width:8px;height:8px;border-radius:50%;
+  background:var(--accent);border:2px solid var(--surface-2);}
+
+/* ---------- cards ---------- */
+.card{background:var(--surface);border:1px solid var(--hairline);border-radius:18px;padding:16px;
+  box-shadow:var(--shadow-card);transition:transform var(--t-press) var(--ease),background var(--t-state);}
+.card:active{transform:scale(.985);}
+.jobcard .row1{display:flex;gap:12px;align-items:flex-start;}
+.jobcard h3{font-size:16.5px;font-weight:700;line-height:1.3;letter-spacing:-.01em;}
+.jobcard .meta{font-size:13px;color:var(--gray-600);margin-top:3px;}
+.jobcard .meta b{color:var(--ink);font-weight:600;}
+.jobcard .salary{font-size:13.5px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;}
+.jobcard .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:11px;}
+.jobcard .foot{display:flex;align-items:center;margin-top:12px;font-size:12px;color:var(--gray-400);}
+.bm{margin-left:auto;background:none;border:none;font-size:19px;color:var(--gray-400);cursor:pointer;flex:none;}
+.bm.on{color:var(--accent);}
+.match{font-size:12.5px;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums;}
+
+/* ---------- signature: loop logo ---------- */
+.loop-svg .track{fill:none;stroke:var(--hairline);stroke-width:7;}
+.loop-svg .draw{fill:none;stroke:var(--accent);stroke-width:7;stroke-linecap:round;
+  stroke-dasharray:330;stroke-dashoffset:330;}
+.loop-svg .node{fill:var(--accent);transform-origin:center;transform-box:fill-box;opacity:0;}
+.play .loop-svg .draw{animation:loopdraw 750ms var(--ease) forwards;}
+.play .loop-svg .node1{animation:nodepop 350ms 600ms var(--ease) forwards;}
+.play .loop-svg .node2{animation:nodepop 350ms 750ms var(--ease) forwards;}
+@keyframes loopdraw{to{stroke-dashoffset:0;}}
+@keyframes nodepop{0%{opacity:0;transform:scale(0);}70%{opacity:1;transform:scale(1.25);}100%{opacity:1;transform:scale(1);}}
+.launch{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;}
+.launch .wordmark{font-family:var(--font-display);font-size:38px;font-weight:600;letter-spacing:-.01em;
+  opacity:0;transform:translateY(10px);}
+.play .launch .wordmark{animation:fadeup 500ms 850ms var(--ease) forwards;}
+.launch .from{position:absolute;bottom:54px;font-size:12.5px;color:var(--gray-400);font-weight:500;opacity:0;}
+.play .launch .from{animation:fadeup 500ms 1050ms var(--ease) forwards;}
+@keyframes fadeup{to{opacity:1;transform:translateY(0);}}
+
+/* ---------- signature: match ring ---------- */
+.ring-wrap{display:flex;align-items:center;gap:16px;}
+.ring{position:relative;width:84px;height:84px;flex:none;}
+.ring svg{transform:rotate(-90deg);}
+.ring .bg{fill:none;stroke:var(--surface-2);stroke-width:7;}
+.ring .fg{fill:none;stroke:var(--accent);stroke-width:7;stroke-linecap:round;
+  stroke-dasharray:226;stroke-dashoffset:226;}
+.play .ring .fg{animation:ringdraw 1100ms 200ms var(--ease) forwards;}
+@keyframes ringdraw{to{stroke-dashoffset:18.1;}} /* 226 × (1 − .92) */
+.ring .num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:21px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em;}
+
+/* ---------- signature: success ---------- */
+.success{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:0 36px;text-align:center;}
+.success h2{font-family:var(--font-display);font-size:28px;font-weight:600;opacity:0;transform:translateY(10px);}
+.success p{font-size:14.5px;color:var(--gray-600);line-height:1.55;opacity:0;transform:translateY(10px);}
+.play .success h2{animation:fadeup 450ms 800ms var(--ease) forwards;}
+.play .success p{animation:fadeup 450ms 950ms var(--ease) forwards;}
+.success .actions{margin-top:22px;display:flex;flex-direction:column;gap:6px;width:100%;opacity:0;}
+.play .success .actions{animation:fadeup 450ms 1100ms var(--ease) forwards;}
+
+/* ---------- signature: pull to refresh ---------- */
+.ptr{display:flex;justify-content:center;padding:10px 0 2px;}
+.ptr svg{animation:spin 1.2s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ---------- chat ---------- */
+.bubble{max-width:75%;padding:11px 14px;border-radius:18px;font-size:14.5px;line-height:1.45;margin-bottom:8px;}
+.bubble.them{background:var(--surface-2);color:var(--ink);border-bottom-left-radius:6px;align-self:flex-start;}
+.bubble.me{background:var(--bubble-sent);color:var(--bubble-sent-ink);border-bottom-right-radius:6px;align-self:flex-end;}
+.bubble .t{display:block;font-size:10.5px;opacity:.55;margin-top:3px;}
+
+/* ---------- lists/rows ---------- */
+.lrow{display:flex;gap:12px;align-items:center;padding:13px 0;border-bottom:1px solid var(--hairline);}
+.lrow:last-child{border-bottom:none;}
+.lrow .grow{flex:1;min-width:0;}
+.lrow h4{font-size:14.5px;font-weight:600;}
+.lrow .sub{font-size:12.5px;color:var(--gray-600);margin-top:2px;}
+.lrow .time{font-size:11.5px;color:var(--gray-400);flex:none;}
+.unread-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none;}
+
+/* ---------- stats & table (utility) ---------- */
+.stat{flex:1;background:var(--surface);border:1px solid var(--hairline);border-radius:16px;padding:14px;}
+.stat .n{font-size:25px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em;}
+.stat .l{font-size:11.5px;color:var(--gray-600);font-weight:500;margin-top:2px;}
+.bars{display:flex;align-items:flex-end;gap:7px;height:74px;padding-top:10px;}
+.bars i{flex:1;background:var(--surface-2);border-radius:5px 5px 0 0;}
+.bars i.hot{background:var(--accent);}
+.section-h{display:flex;align-items:baseline;margin:20px 0 6px;}
+.section-h h3{font-size:16px;font-weight:700;}
+.section-h .btn-ghost{margin-left:auto;}
+</style>
+</head>
+<body>
+
+<!-- ======================= control bar ======================= -->
+<div class="topbar">
+  <h1>JobConnect <em>·</em> Light Minimal — bản prototype phê duyệt</h1>
+  <div class="ctrl">Chế độ
+    <div class="seg">
+      <button id="t-light" class="on" onclick="setTheme('light')">Light</button>
+      <button id="t-dark" onclick="setTheme('dark')">Dark</button>
+    </div>
+  </div>
+  <div class="ctrl">Font display
+    <div class="seg">
+      <button id="f-lora" class="on" onclick="setFont('lora')">Lora</button>
+      <button id="f-playfair" onclick="setFont('playfair')">Playfair</button>
+      <button id="f-fraunces" onclick="setFont('fraunces')">Fraunces</button>
+    </div>
+  </div>
+  <div class="ctrl">Motion
+    <div class="seg">
+      <button id="m-on" class="on" onclick="setMotion('on')">Bật</button>
+      <button id="m-off" onclick="setMotion('off')">Tắt</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======================= SIGNATURE TIER ======================= -->
+<div class="section">
+  <h2>Signature — nơi bản sắc sống</h2>
+  <p>Bốn khoảnh khắc được phép “diễn”: launch, match score, apply success, pull-to-refresh. Tất cả đều xây từ cùng một hình — vòng loop kết nối.</p>
+  <div class="grid">
+
+    <!-- 1. LAUNCH -->
+    <div class="cell">
+      <div class="phone play" id="ph-launch">
+        <div class="statusbar"><span>9:41</span><span class="right">●●●●● ⌁ ▮</span></div>
+        <div class="screen">
+          <div class="launch">
+            <svg class="loop-svg" width="96" height="96" viewBox="0 0 120 120">
+              <circle class="track" cx="60" cy="60" r="46"/>
+              <circle class="draw" cx="60" cy="60" r="46"/>
+              <circle class="node node1" cx="60" cy="14" r="9"/>
+              <circle class="node node2" cx="60" cy="106" r="9"/>
+            </svg>
+            <div class="wordmark">JobConnect</div>
+            <div class="from">Kết nối cơ hội của bạn</div>
+          </div>
+        </div>
+      </div>
+      <button class="replay" onclick="replay('ph-launch')">↺ Phát lại</button>
+      <div class="cap"><b>1 · Launch screen</b>Loop vẽ nét cam ~750ms, hai node nảy nhẹ, wordmark serif hiện lên. Tổng ≤1.4s, kiểu Threads. Reduced motion → logo tĩnh + fade.</div>
+    </div>
+
+    <!-- 2. HOME FEED -->
+    <div class="cell">
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span class="right">●●●●● ⌁ ▮</span></div>
+        <div class="screen">
+          <div class="appheader">
+            <div class="grow">
+              <div class="kicker">Thứ năm, 11 tháng 6</div>
+              <div class="hero-title">Chào buổi sáng, Khoa</div>
+            </div>
+            <button class="bell">🔔</button>
+          </div>
+          <div class="scroll">
+            <div class="ptr"><svg width="22" height="22" viewBox="0 0 120 120"><circle cx="60" cy="60" r="46" fill="none" stroke="var(--surface-2)" stroke-width="13"/><path d="M60 14 a46 46 0 0 1 46 46" fill="none" stroke="var(--accent)" stroke-width="13" stroke-linecap="round"/></svg></div>
+            <input class="field" placeholder="🔍  Tìm việc làm, công ty, kỹ năng…" style="margin:6px 0 14px;">
+            <div class="card" style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+              <span style="font-size:18px;color:var(--accent);">✦</span>
+              <div style="flex:1;font-size:13.5px;line-height:1.4;"><b>12 việc làm mới</b> phù hợp với hồ sơ của bạn</div>
+              <button class="btn btn-ghost">Xem</button>
+            </div>
+            <div class="card jobcard" style="margin-bottom:12px;">
+              <div class="row1">
+                <div class="avatar">F</div>
+                <div style="flex:1;min-width:0;">
+                  <h3>Senior Flutter Developer</h3>
+                  <div class="meta"><b>FPT Software</b> · TP. Hồ Chí Minh</div>
+                </div>
+                <button class="bm on">♥</button>
+              </div>
+              <div class="tags"><span class="tag">Full-time</span><span class="tag">Flutter</span><span class="tag">3+ năm</span></div>
+              <div class="foot"><span class="salary" style="color:var(--ink);">25–35 triệu</span>
+                <span style="margin-left:auto;" class="match">✦ 92% phù hợp</span></div>
+            </div>
+            <div class="card jobcard" style="margin-bottom:12px;">
+              <div class="row1">
+                <div class="avatar">M</div>
+                <div style="flex:1;min-width:0;">
+                  <h3>Mobile Engineer (iOS/Android)</h3>
+                  <div class="meta"><b>MoMo</b> · Làm từ xa</div>
+                </div>
+                <button class="bm">♡</button>
+              </div>
+              <div class="tags"><span class="tag">Remote</span><span class="tag">Swift</span><span class="tag">Kotlin</span></div>
+              <div class="foot"><span class="salary" style="color:var(--ink);">30–45 triệu</span><span style="margin-left:auto;">2 giờ trước</span></div>
+            </div>
+            <div class="card jobcard">
+              <div class="row1">
+                <div class="avatar">T</div>
+                <div style="flex:1;min-width:0;">
+                  <h3>Thực tập sinh Frontend</h3>
+                  <div class="meta"><b>Tiki</b> · TP. Hồ Chí Minh</div>
+                </div>
+                <button class="bm">♡</button>
+              </div>
+              <div class="tags"><span class="tag">Intern</span><span class="tag">React</span></div>
+              <div class="foot"><span class="salary" style="color:var(--ink);">5–8 triệu</span><span style="margin-left:auto;">Hôm qua</span></div>
+            </div>
+          </div>
+          <div class="nav">
+            <a class="active"><span class="ic">⌂</span>Trang chủ</a>
+            <a><span class="ic">⌕</span>Tìm việc</a>
+            <a><span class="ic">▤</span>Ứng tuyển</a>
+            <a><span class="ic">✉</span>Tin nhắn</a>
+            <a><span class="ic">◉</span>Hồ sơ</a>
+          </div>
+        </div>
+      </div>
+      <div class="cap"><b>2 · Trang chủ (feed)</b>Lời chào bằng serif là khoảnh khắc hero duy nhất. Card sạch: hairline, không glow. Cam chỉ xuất hiện ở: chuông chưa đọc, AI capsule, bookmark bật, match score, tab active. Loop xoay thay spinner khi pull-to-refresh.</div>
+    </div>
+
+    <!-- 3. JOB DETAIL -->
+    <div class="cell">
+      <div class="phone play" id="ph-detail">
+        <div class="statusbar"><span>9:41</span><span class="right">●●●●● ⌁ ▮</span></div>
+        <div class="screen">
+          <div class="appheader">
+            <button class="iconbtn" style="width:42px;height:42px;">←</button>
+            <div class="grow"></div>
+            <button class="bm on" style="font-size:22px;">♥</button>
+          </div>
+          <div class="scroll">
+            <div class="avatar" style="width:56px;height:56px;font-size:20px;border-radius:16px;">F</div>
+            <h2 style="font-size:23px;font-weight:800;letter-spacing:-.02em;line-height:1.25;margin-top:12px;">Senior Flutter Developer</h2>
+            <div style="font-size:14px;color:var(--gray-600);margin-top:5px;"><b style="color:var(--ink);">FPT Software</b> · TP. Hồ Chí Minh · Full-time</div>
+            <div style="font-size:17px;font-weight:800;font-variant-numeric:tabular-nums;margin-top:8px;">25–35 triệu<span style="font-size:12.5px;color:var(--gray-400);font-weight:500;"> /tháng</span></div>
+            <div class="hr" style="margin:16px 0;"></div>
+            <div class="ring-wrap">
+              <div class="ring">
+                <svg width="84" height="84" viewBox="0 0 84 84">
+                  <circle class="bg" cx="42" cy="42" r="36"/>
+                  <circle class="fg" cx="42" cy="42" r="36"/>
+                </svg>
+                <div class="num"><span id="cnt">0</span>%</div>
+              </div>
+              <div style="flex:1;">
+                <div style="font-size:15px;font-weight:700;">Rất phù hợp với bạn</div>
+                <div style="font-size:13px;color:var(--gray-600);line-height:1.45;margin-top:3px;">Dựa trên hồ sơ và kỹ năng của bạn</div>
+                <button class="btn btn-ghost" style="padding-left:0;">Xem giải thích AI →</button>
+              </div>
+            </div>
+            <div class="hr" style="margin:16px 0;"></div>
+            <div style="font-size:15px;font-weight:700;margin-bottom:10px;">Kỹ năng yêu cầu</div>
+            <div style="display:flex;gap:7px;flex-wrap:wrap;">
+              <span class="pill"><span class="dot dot-green"></span>Flutter</span>
+              <span class="pill"><span class="dot dot-green"></span>Dart</span>
+              <span class="pill"><span class="dot dot-green"></span>Riverpod</span>
+              <span class="pill"><span class="dot dot-amber"></span>CI/CD</span>
+              <span class="pill"><span class="dot dot-amber"></span>GraphQL</span>
+            </div>
+            <div style="font-size:12.5px;color:var(--amber);font-weight:600;margin-top:10px;">2 kỹ năng còn thiếu · Xem gợi ý học</div>
+            <div class="hr" style="margin:16px 0;"></div>
+            <div style="font-size:15px;font-weight:700;">Mô tả công việc</div>
+            <p style="font-size:14px;color:var(--gray-600);line-height:1.6;margin-top:8px;">Tham gia phát triển ứng dụng di động cho khách hàng Nhật Bản, làm việc với đội ngũ 12 kỹ sư. Chịu trách nhiệm kiến trúc module và review code…</p>
+          </div>
+          <div style="flex:none;display:flex;gap:10px;padding:12px 20px 28px;background:var(--surface);border-top:1px solid var(--hairline);">
+            <button class="iconbtn">✉</button>
+            <button class="btn btn-primary">Ứng tuyển ngay</button>
+          </div>
+        </div>
+      </div>
+      <button class="replay" onclick="replay('ph-detail');countUp();">↺ Phát lại</button>
+      <div class="cap"><b>3 · Chi tiết Job Post</b>Signature #2: vòng cam vẽ quanh score, số đếm 0→92 bằng tabular numerals. Skill gap = pill xám + chấm xanh (có) / hổ phách (thiếu) — không icon ✅❌ ồn ào. Thanh apply dính đáy: 1 primary duy nhất + 2 icon phụ.</div>
+    </div>
+
+    <!-- 4a. APPLY SHEET -->
+    <div class="cell">
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span class="right">●●●●● ⌁ ▮</span></div>
+        <div class="screen">
+          <div style="flex:1;background:var(--surface-2);opacity:.5;"></div>
+          <div style="flex:none;background:var(--surface);border-radius:28px 28px 0 0;padding:14px 20px 30px;border-top:1px solid var(--hairline);">
+            <div style="width:36px;height:4px;background:var(--hairline);border-radius:2px;margin:0 auto 16px;"></div>
+            <div style="font-size:19px;font-weight:800;letter-spacing:-.01em;">Ứng tuyển</div>
+            <div style="font-size:13px;color:var(--gray-600);margin:3px 0 16px;">Senior Flutter Developer · FPT Software</div>
+            <div style="font-size:13.5px;font-weight:700;margin-bottom:8px;">Chọn CV</div>
+            <div class="card" style="display:flex;gap:12px;align-items:center;border-color:var(--accent);margin-bottom:8px;">
+              <span style="font-size:18px;">📄</span>
+              <div style="flex:1;">
+                <div style="font-size:14px;font-weight:600;">CV_KhoaDo_Flutter.pdf</div>
+                <div style="font-size:12px;color:var(--gray-400);">Cập nhật 3 ngày trước · Mặc định</div>
+              </div>
+              <span style="color:var(--accent);font-size:17px;">●</span>
+            </div>
+            <div class="card" style="display:flex;gap:12px;align-items:center;margin-bottom:16px;">
+              <span style="font-size:18px;">📄</span>
+              <div style="flex:1;">
+                <div style="font-size:14px;font-weight:600;">CV Builder — bản tiếng Anh</div>
+                <div style="font-size:12px;color:var(--gray-400);">Tạo trong ứng dụng</div>
+              </div>
+              <span style="color:var(--gray-400);font-size:17px;">○</span>
+            </div>
+            <div style="font-size:13.5px;font-weight:700;margin-bottom:8px;">Thư giới thiệu <span style="color:var(--gray-400);font-weight:500;">(không bắt buộc)</span></div>
+            <div class="field" style="height:84px;color:var(--gray-400);font-size:14px;">Em rất quan tâm đến vị trí này vì…</div>
+            <button class="btn btn-primary" style="margin-top:16px;">Gửi đơn ứng tuyển</button>
+          </div>
+        </div>
+      </div>
+      <div class="cap"><b>4a · Apply sheet</b>Bottom sheet trắng phẳng, CV được chọn viền cam mảnh. Một primary duy nhất. Tier utility: không trang trí, không animation thừa.</div>
+    </div>
+
+    <!-- 4b. SUCCESS -->
+    <div class="cell">
+      <div class="phone play" id="ph-success">
+        <div class="statusbar"><span>9:41</span><span class="right">●●●●● ⌁ ▮</span></div>
+        <div class="screen">
+          <div class="success">
+            <svg class="loop-svg" width="84" height="84" viewBox="0 0 120 120">
+              <circle class="track" cx="60" cy="60" r="46"/>
+              <circle class="draw" cx="60" cy="60" r="46"/>
+              <circle class="node node1" cx="60" cy="14" r="9"/>
+              <circle class="node node2" cx="60" cy="106" r="9"/>
+            </svg>
+            <h2>Đã gửi đơn ứng tuyển</h2>
+            <p>Nhà tuyển dụng FPT Software sẽ xem hồ sơ của bạn. Theo dõi trạng thái trong mục Ứng tuyển.</p>
+            <div class="actions">
+              <button class="btn btn-secondary" style="width:100%;">Xem đơn của tôi</button>
+              <button class="btn btn-ghost" style="width:100%;">Về trang chủ</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button class="replay" onclick="replay('ph-success')">↺ Phát lại</button>
+      <div class="cap"><b>4b · Apply success</b>Signature #3: vòng loop tự vẽ và “khép kín” đúng lúc kết nối được tạo ra — logo mang nghĩa ngay trong khoảnh khắc sử dụng. Không confetti, không glow.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================= CORE TIER ======================= -->
+<div class="section">
+  <h2>Core — dùng hằng ngày, điềm tĩnh</h2>
+  <p>Mọi thứ chia sẻ một ngôn ngữ: hairline, pill xám + chấm trạng thái, cam chỉ cho hành động chính.</p>
+  <div class="grid">
+
+    <!-- 5. SEARCH -->
+    <div class="cell">
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span class="right">●●●●● ⌁ ▮</span></div>
+        <div class="screen">
+          <div class="appheader"><div class="grow"><div class="page-title">Tìm việc</div></div></div>
+          <div class="scroll">
+            <input class="field" style="border-color:var(--accent);" value="flutter" >
+            <div style="display:flex;gap:7px;margin:12px 0 14px;overflow:hidden;">
+              <span class="pill" style="background:var(--ink);color:var(--canvas);">Lương ▾</span>
+              <span class="pill">Địa điểm ▾</span>
+              <span class="pill">Loại hình ▾</span>
+              <span class="pill">Ngành ▾</span>
+            </div>
+            <div style="font-size:12.5px;color:var(--gray-400);margin-bottom:10px;">128 kết quả · <span style="color:var(--accent);font-weight:600;">Lưu bộ lọc này</span></div>
+            <div class="card jobcard" style="margin-bottom:12px;">
+              <div class="row1">
+                <div class="avatar">V</div>
+                <div style="flex:1;min-width:0;">
+                  <h3>Flutter Developer (Middle)</h3>
+                  <div class="meta"><b>VNG Corporation</b> · TP. Hồ Chí Minh</div>
+                </div>
+                <button class="bm">♡</button>
+              </div>
+              <div class="foot"><span class="salary" style="color:var(--ink);">20–28 triệu</span><span style="margin-left:auto;">1 giờ trước</span></div>
+            </div>
+            <div class="card jobcard" style="margin-bottom:12px;">
+              <div class="row1">
+                <div class="avatar">Z</div>
+                <div style="flex:1;min-width:0;">
+                  <h3>Mobile Lead — Flutter</h3>
+                  <div class="meta"><b>Zalopay</b> · Hà Nội · Hybrid</div>
+                </div>
+                <button class="bm on">♥</button>
+              </div>
+              <div class="foot"><span class="salary" style="color:var(--ink);">40–55 triệu</span><span style="margin-left:auto;" class="match">✦ 87%</span></div>
+            </div>
+            <div class="card jobcard">
+              <div class="row1">
+                <div class="avatar">S</div>
+                <div style="flex:1;min-width:0;">
+                  <h3>Junior Flutter Developer</h3>
+                  <div class="meta"><b>Sapo</b> · Làm từ xa</div>
+                </div>
+                <button class="bm">♡</button>
+              </div>
+              <div class="foot"><span class="salary" style="color:var(--ink);">12–18 triệu</span><span style="margin-left:auto;">Hôm qua</span></div>
+            </div>
+          </div>
+          <div class="nav">
+            <a><span class="ic">⌂</span>Trang chủ</a>
+            <a class="active"><span class="ic">⌕</span>Tìm việc</a>
+            <a><span class="ic">▤</span>Ứng tuyển</a>
+            <a><span class="ic">✉</span>Tin nhắn</a>
+            <a><span class="ic">◉</span>Hồ sơ</a>
+          </div>
+        </div>
+      </div>
+      <div class="cap"><b>5 · Tìm kiếm + bộ lọc</b>Filter chip đang mở = nền ink (không phải cam — cam để dành cho hành động). Ô tìm kiếm focus viền cam 1px, không glow.</div>
+    </div>
+
+    <!-- 6. MY APPLICATIONS -->
+    <div class="cell">
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span class="right">●●●●● ⌁ ▮</span></div>
+        <div class="screen">
+          <div class="appheader"><div class="grow"><div class="page-title">Ứng tuyển</div></div></div>
+          <div class="scroll">
+            <div style="display:flex;gap:7px;margin-bottom:14px;">
+              <span class="pill" style="background:var(--ink);color:var(--canvas);">Tất cả 6</span>
+              <span class="pill">Đang chờ</span>
+              <span class="pill">Phỏng vấn</span>
+            </div>
+            <div class="card" style="margin-bottom:12px;">
+              <div style="display:flex;gap:12px;align-items:center;">
+                <div class="avatar">F</div>
+                <div style="flex:1;min-width:0;">
+                  <h4 style="font-size:15px;font-weight:700;">Senior Flutter Developer</h4>
+                  <div style="font-size:12.5px;color:var(--gray-600);margin-top:2px;">FPT Software · Nộp 11/6</div>
+                </div>
+                <span class="pill"><span class="dot dot-gray"></span>Đang chờ</span>
+              </div>
+              <div style="display:flex;margin-top:10px;"><button class="btn btn-danger" style="margin-left:auto;">Rút đơn</button></div>
+            </div>
+            <div class="card" style="margin-bottom:12px;">
+              <div style="display:flex;gap:12px;align-items:center;">
+                <div class="avatar">Z</div>
+                <div style="flex:1;min-width:0;">
+                  <h4 style="font-size:15px;font-weight:700;">Mobile Lead — Flutter</h4>
+                  <div style="font-size:12.5px;color:var(--gray-600);margin-top:2px;">Zalopay · Nộp 8/6</div>
+                </div>
+                <span class="pill"><span class="dot dot-ink"></span>Phỏng vấn</span>
+              </div>
+              <div style="margin-top:10px;padding:10px 12px;background:var(--surface-2);border-radius:12px;font-size:12.5px;line-height:1.5;">
+                📅 <b>Lịch phỏng vấn:</b> 14/6, 14:00 · Online qua Google Meet
+              </div>
+            </div>
+            <div class="card" style="margin-bottom:12px;">
+              <div style="display:flex;gap:12px;align-items:center;">
+                <div class="avatar">M</div>
+                <div style="flex:1;min-width:0;">
+                  <h4 style="font-size:15px;font-weight:700;">Mobile Engineer</h4>
+                  <div style="font-size:12.5px;color:var(--gray-600);margin-top:2px;">MoMo · Nộp 2/6</div>
+                </div>
+                <span class="pill"><span class="dot dot-amber"></span>Đang xem xét</span>
+              </div>
+            </div>
+            <div class="card">
+              <div style="display:flex;gap:12px;align-items:center;">
+                <div class="avatar">T</div>
+                <div style="flex:1;min-width:0;">
+                  <h4 style="font-size:15px;font-weight:700;">Frontend Developer</h4>
+                  <div style="font-size:12.5px;color:var(--gray-600);margin-top:2px;">Tiki · Nộp 28/5</div>
+                </div>
+                <span class="pill"><span class="dot dot-red"></span>Từ chối</span>
+              </div>
+            </div>
+          </div>
+          <div class="nav">
+            <a><span class="ic">⌂</span>Trang chủ</a>
+            <a><span class="ic">⌕</span>Tìm việc</a>
+            <a class="active"><span class="ic">▤</span>Ứng tuyển</a>
+            <a><span class="ic">✉</span>Tin nhắn</a>
+            <a><span class="ic">◉</span>Hồ sơ</a>
+          </div>
+        </div>
+      </div>
+      <div class="cap"><b>6 · Đơn của tôi</b>Hệ trạng thái: chấm xám = đang chờ, ink = phỏng vấn, hổ phách = đang xem xét, đỏ = từ chối, xanh = trúng tuyển. Không chip màu đặc. “Rút đơn” = chữ đỏ, chỉ hiện khi còn pending.</div>
+    </div>
+
+    <!-- 7. CHAT -->
+    <div class="cell">
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span class="right">●●●●● ⌁ ▮</span></div>
+        <div class="screen">
+          <div class="appheader" style="border-bottom:1px solid var(--hairline);padding-bottom:12px;">
+            <button class="iconbtn" style="width:42px;height:42px;">←</button>
+            <div class="avatar round" style="width:40px;height:40px;font-size:14px;">L</div>
+            <div class="grow">
+              <div style="font-size:15px;font-weight:700;">Chị Lan — HR FPT</div>
+              <div style="font-size:12px;color:var(--gray-400);">Senior Flutter Developer</div>
+            </div>
+          </div>
+          <div class="scroll" style="display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:12px;">
+            <div style="text-align:center;font-size:11px;color:var(--gray-400);margin:14px 0;">Hôm nay</div>
+            <div class="bubble them">Chào Khoa, chị đã xem hồ sơ của em. CV Flutter của em khá ấn tượng đó!</div>
+            <div class="bubble me">Em cảm ơn chị ạ! Em rất mong có cơ hội trao đổi thêm về vị trí này.</div>
+            <div class="bubble them">Em rảnh thứ Bảy này để phỏng vấn online không?</div>
+            <div class="bubble me">Dạ được ạ, 14h chiều thứ Bảy em sắp xếp được.<span class="t">14:02 · Đã xem</span></div>
+          </div>
+          <div style="flex:none;display:flex;gap:10px;padding:10px 20px 28px;border-top:1px solid var(--hairline);background:var(--surface);">
+            <input class="field" style="flex:1;border-radius:999px;" placeholder="Nhắn tin…">
+            <button class="iconbtn" style="border-radius:50%;background:var(--accent);color:var(--on-accent);">↑</button>
+          </div>
+        </div>
+      </div>
+      <div class="cap"><b>7 · Chat</b>Bong bóng gửi = ink (đảo màu ở dark mode), nhận = xám nhạt — kiểu Threads, không bubble màu cam (cam là hành động, không phải nội dung). Nút gửi tròn cam là primary duy nhất.</div>
+    </div>
+
+    <!-- 8. PROFILE -->
+    <div class="cell">
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span class="right">●●●●● ⌁ ▮</span></div>
+        <div class="screen">
+          <div class="scroll" style="padding-top:14px;">
+            <div style="display:flex;gap:16px;align-items:center;">
+              <div class="avatar round" style="width:72px;height:72px;font-size:26px;">K</div>
+              <div style="flex:1;">
+                <div style="font-family:var(--font-display);font-size:23px;font-weight:600;">Đỗ Khoa</div>
+                <div style="font-size:13.5px;color:var(--gray-600);margin-top:2px;">Flutter Developer · TP. Hồ Chí Minh</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;margin:16px 0;">
+              <button class="btn btn-secondary" style="flex:1;font-size:13.5px;padding:11px;">Chỉnh sửa hồ sơ</button>
+              <button class="btn btn-secondary" style="flex:1;font-size:13.5px;padding:11px;">CV của tôi</button>
+            </div>
+            <div class="card" style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">
+              <div style="flex:1;font-size:13px;line-height:1.45;"><b>Hồ sơ hoàn thiện 80%</b><br><span style="color:var(--gray-600);">Thêm chứng chỉ để tăng độ phù hợp AI</span></div>
+              <div style="font-size:19px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums;">80%</div>
+            </div>
+            <div class="section-h"><h3>Kinh nghiệm làm việc</h3><button class="btn btn-ghost">+ Thêm</button></div>
+            <div class="lrow">
+              <div class="avatar" style="width:38px;height:38px;font-size:13px;">N</div>
+              <div class="grow">
+                <h4>Flutter Developer</h4>
+                <div class="sub">NashTech · 2024 — hiện tại</div>
+              </div>
+            </div>
+            <div class="lrow">
+              <div class="avatar" style="width:38px;height:38px;font-size:13px;">G</div>
+              <div class="grow">
+                <h4>Mobile Intern</h4>
+                <div class="sub">GEEK Up · 2023 — 2024</div>
+              </div>
+            </div>
+            <div class="section-h"><h3>Kỹ năng</h3><button class="btn btn-ghost">+ Thêm</button></div>
+            <div style="display:flex;gap:7px;flex-wrap:wrap;">
+              <span class="tag">Flutter · Nâng cao</span><span class="tag">Dart · Nâng cao</span>
+              <span class="tag">Riverpod · Trung cấp</span><span class="tag">Supabase · Trung cấp</span>
+              <span class="tag">Figma · Cơ bản</span>
+            </div>
+            <div class="section-h"><h3>Học vấn</h3><button class="btn btn-ghost">+ Thêm</button></div>
+            <div class="lrow">
+              <div class="avatar" style="width:38px;height:38px;font-size:13px;">U</div>
+              <div class="grow">
+                <h4>ĐH Công nghệ Thông tin — UIT</h4>
+                <div class="sub">Kỹ thuật phần mềm · 2022 — 2026</div>
+              </div>
+            </div>
+          </div>
+          <div class="nav">
+            <a><span class="ic">⌂</span>Trang chủ</a>
+            <a><span class="ic">⌕</span>Tìm việc</a>
+            <a><span class="ic">▤</span>Ứng tuyển</a>
+            <a><span class="ic">✉</span>Tin nhắn</a>
+            <a class="active"><span class="ic">◉</span>Hồ sơ</a>
+          </div>
+        </div>
+      </div>
+      <div class="cap"><b>8 · Hồ sơ</b>Tên người dùng dùng serif — khoảnh khắc hero thứ hai và cuối cùng trong app. Mọi section: tiêu đề Inter đậm + ghost “+ Thêm”. Số 80% là điểm cam duy nhất.</div>
+    </div>
+
+    <!-- 9. NOTIFICATIONS -->
+    <div class="cell">
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span class="right">●●●●● ⌁ ▮</span></div>
+        <div class="screen">
+          <div class="appheader">
+            <div class="grow"><div class="page-title">Thông báo</div></div>
+            <button class="btn btn-ghost">Đã đọc tất cả</button>
+          </div>
+          <div class="scroll">
+            <div class="lrow">
+              <span class="unread-dot"></span>
+              <div class="avatar round" style="width:40px;height:40px;font-size:15px;">Z</div>
+              <div class="grow">
+                <h4>Bạn được mời phỏng vấn</h4>
+                <div class="sub">Zalopay đã đặt lịch phỏng vấn vị trí Mobile Lead — 14/6, 14:00</div>
+              </div>
+              <span class="time">5 phút</span>
+            </div>
+            <div class="lrow">
+              <span class="unread-dot"></span>
+              <div class="avatar round" style="width:40px;height:40px;font-size:15px;color:var(--accent);background:var(--accent-soft);">✦</div>
+              <div class="grow">
+                <h4>12 việc làm mới phù hợp</h4>
+                <div class="sub">AI tìm thấy việc làm khớp với kỹ năng Flutter của bạn</div>
+              </div>
+              <span class="time">1 giờ</span>
+            </div>
+            <div class="lrow" style="opacity:.62;">
+              <span style="width:8px;flex:none;"></span>
+              <div class="avatar round" style="width:40px;height:40px;font-size:15px;">M</div>
+              <div class="grow">
+                <h4>Đơn ứng tuyển được xem xét</h4>
+                <div class="sub">MoMo chuyển đơn Mobile Engineer của bạn sang “Đang xem xét”</div>
+              </div>
+              <span class="time">Hôm qua</span>
+            </div>
+            <div class="lrow" style="opacity:.62;">
+              <span style="width:8px;flex:none;"></span>
+              <div class="avatar round" style="width:40px;height:40px;font-size:15px;">L</div>
+              <div class="grow">
+                <h4>Tin nhắn mới từ Chị Lan — HR FPT</h4>
+                <div class="sub">“Em rảnh thứ Bảy này để phỏng vấn online không?”</div>
+              </div>
+              <span class="time">Hôm qua</span>
+            </div>
+          </div>
+          <div class="nav">
+            <a class="active"><span class="ic">⌂</span>Trang chủ</a>
+            <a><span class="ic">⌕</span>Tìm việc</a>
+            <a><span class="ic">▤</span>Ứng tuyển</a>
+            <a><span class="ic">✉</span>Tin nhắn</a>
+            <a><span class="ic">◉</span>Hồ sơ</a>
+          </div>
+        </div>
+      </div>
+      <div class="cap"><b>9 · Thông báo</b>Chưa đọc = chấm cam + chữ đậm; đã đọc mờ nhẹ. Thông báo AI có icon ✦ nền cam nhạt — nhận diện được nhưng không la hét. Không nền màu cho cả hàng.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================= UTILITY TIER ======================= -->
+<div class="section" style="padding-bottom:80px;">
+  <h2>Utility — chứng minh sự kiềm chế có hệ thống</h2>
+  <p>Auth, recruiter, admin: cùng token, ít điểm nhấn hơn. Hành động phá hủy luôn là chữ đỏ, không bao giờ nền đỏ.</p>
+  <div class="grid">
+
+    <!-- 10. LOGIN -->
+    <div class="cell">
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span class="right">●●●●● ⌁ ▮</span></div>
+        <div class="screen">
+          <div class="scroll" style="display:flex;flex-direction:column;justify-content:center;">
+            <svg class="loop-svg" width="52" height="52" viewBox="0 0 120 120" style="margin-bottom:22px;">
+              <circle cx="60" cy="60" r="46" fill="none" stroke="var(--accent)" stroke-width="7"/>
+              <circle cx="60" cy="14" r="9" fill="var(--accent)"/>
+              <circle cx="60" cy="106" r="9" fill="var(--accent)"/>
+            </svg>
+            <div style="font-family:var(--font-display);font-size:31px;font-weight:600;line-height:1.2;">Đăng nhập</div>
+            <div style="font-size:14px;color:var(--gray-600);margin:6px 0 26px;">Chào mừng trở lại JobConnect</div>
+            <input class="field" placeholder="Email" style="margin-bottom:10px;">
+            <input class="field" type="password" placeholder="Mật khẩu" style="margin-bottom:6px;">
+            <button class="btn btn-ghost" style="align-self:flex-end;margin-left:auto;display:block;">Quên mật khẩu?</button>
+            <button class="btn btn-primary" style="margin-top:14px;">Đăng nhập</button>
+            <button class="btn btn-secondary" style="width:100%;margin-top:10px;">Tiếp tục với Google</button>
+            <div style="text-align:center;font-size:13.5px;color:var(--gray-600);margin-top:22px;">
+              Chưa có tài khoản? <b style="color:var(--accent);">Đăng ký</b>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="cap"><b>10 · Đăng nhập</b>Tier utility chuẩn mực: nhiều khoảng trắng, serif chỉ ở tiêu đề, input hairline, 1 primary + 1 secondary. Không hình nền, không gradient.</div>
+    </div>
+
+    <!-- 11. RECRUITER HOME -->
+    <div class="cell">
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span class="right">●●●●● ⌁ ▮</span></div>
+        <div class="screen">
+          <div class="appheader">
+            <div class="grow">
+              <div class="kicker">FPT Software</div>
+              <div class="page-title">Tuyển dụng</div>
+            </div>
+            <button class="bell">🔔</button>
+          </div>
+          <div class="scroll">
+            <div style="display:flex;gap:9px;margin-bottom:16px;">
+              <div class="stat"><div class="n">4</div><div class="l">Tin đang tuyển</div></div>
+              <div class="stat"><div class="n" style="color:var(--accent);">23</div><div class="l">Đơn chờ xử lý</div></div>
+              <div class="stat"><div class="n">12</div><div class="l">Ứng viên mới</div></div>
+            </div>
+            <button class="btn btn-primary" style="margin-bottom:18px;">+ Đăng tin tuyển dụng</button>
+            <div class="section-h" style="margin-top:0;"><h3>Ứng viên mới nhất</h3><button class="btn btn-ghost">Tất cả</button></div>
+            <div class="card" style="margin-bottom:10px;">
+              <div style="display:flex;gap:12px;align-items:center;">
+                <div class="avatar round">K</div>
+                <div style="flex:1;min-width:0;">
+                  <h4 style="font-size:14.5px;font-weight:700;">Đỗ Khoa</h4>
+                  <div style="font-size:12.5px;color:var(--gray-600);">Senior Flutter Developer · <span class="match">✦ 92%</span></div>
+                </div>
+                <span class="pill"><span class="dot dot-gray"></span>Mới</span>
+              </div>
+              <div style="display:flex;gap:8px;margin-top:12px;">
+                <button class="btn btn-secondary" style="flex:1;font-size:13px;padding:10px;">Xem CV</button>
+                <button class="btn btn-secondary" style="flex:1;font-size:13px;padding:10px;">Shortlist</button>
+                <button class="btn btn-danger">Từ chối</button>
+              </div>
+            </div>
+            <div class="card">
+              <div style="display:flex;gap:12px;align-items:center;">
+                <div class="avatar round">H</div>
+                <div style="flex:1;min-width:0;">
+                  <h4 style="font-size:14.5px;font-weight:700;">Trần Minh Hùng</h4>
+                  <div style="font-size:12.5px;color:var(--gray-600);">Mobile Engineer · <span class="match">✦ 78%</span></div>
+                </div>
+                <span class="pill"><span class="dot dot-amber"></span>Đang xem xét</span>
+              </div>
+              <div style="display:flex;gap:8px;margin-top:12px;">
+                <button class="btn btn-secondary" style="flex:1;font-size:13px;padding:10px;">Xem CV</button>
+                <button class="btn btn-secondary" style="flex:1;font-size:13px;padding:10px;">Mời PV</button>
+                <button class="btn btn-danger">Từ chối</button>
+              </div>
+            </div>
+          </div>
+          <div class="nav">
+            <a class="active"><span class="ic">⌂</span>Trang chủ</a>
+            <a><span class="ic">▤</span>Tin đã đăng</a>
+            <a><span class="ic">✉</span>Tin nhắn</a>
+            <a><span class="ic">◉</span>Hồ sơ</a>
+          </div>
+        </div>
+      </div>
+      <div class="cap"><b>11 · Recruiter home</b>Stat số to tabular, chỉ số cần chú ý nhuộm cam. Hàng hành động ứng viên: secondary + secondary + chữ đỏ — đúng trật tự Shortlist → Invite → Reject của domain.</div>
+    </div>
+
+    <!-- 12. ADMIN -->
+    <div class="cell">
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span class="right">●●●●● ⌁ ▮</span></div>
+        <div class="screen">
+          <div class="appheader"><div class="grow"><div class="page-title">Thống kê</div></div></div>
+          <div class="scroll">
+            <div style="display:flex;gap:9px;margin-bottom:12px;">
+              <div class="stat"><div class="n">1.248</div><div class="l">Người dùng</div></div>
+              <div class="stat"><div class="n">312</div><div class="l">Job Posts</div></div>
+              <div class="stat"><div class="n">2.067</div><div class="l">Lượt ứng tuyển</div></div>
+            </div>
+            <div class="card" style="margin-bottom:16px;">
+              <div style="font-size:13.5px;font-weight:700;">Lượt ứng tuyển · 7 ngày</div>
+              <div class="bars">
+                <i style="height:34%;"></i><i style="height:48%;"></i><i style="height:40%;"></i>
+                <i style="height:62%;"></i><i style="height:55%;"></i><i style="height:78%;"></i>
+                <i class="hot" style="height:100%;"></i>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--gray-400);margin-top:6px;">
+                <span>T5</span><span>T6</span><span>T7</span><span>CN</span><span>T2</span><span>T3</span><span>T4</span>
+              </div>
+            </div>
+            <div class="section-h" style="margin-top:0;"><h3>Người dùng gần đây</h3><button class="btn btn-ghost">Quản lý</button></div>
+            <div class="lrow">
+              <div class="avatar round" style="width:38px;height:38px;font-size:13px;">K</div>
+              <div class="grow">
+                <h4>Đỗ Khoa</h4>
+                <div class="sub">Seeker · tham gia 11/6</div>
+              </div>
+              <span class="pill"><span class="dot dot-green"></span>Hoạt động</span>
+              <button class="btn btn-danger">Khóa</button>
+            </div>
+            <div class="lrow">
+              <div class="avatar round" style="width:38px;height:38px;font-size:13px;">L</div>
+              <div class="grow">
+                <h4>Nguyễn Lan</h4>
+                <div class="sub">Recruiter · FPT Software</div>
+              </div>
+              <span class="pill"><span class="dot dot-green"></span>Hoạt động</span>
+              <button class="btn btn-danger">Khóa</button>
+            </div>
+            <div class="lrow">
+              <div class="avatar round" style="width:38px;height:38px;font-size:13px;">B</div>
+              <div class="grow">
+                <h4>spam_account_99</h4>
+                <div class="sub">Seeker · 3 báo cáo</div>
+              </div>
+              <span class="pill"><span class="dot dot-red"></span>Đã khóa</span>
+              <button class="btn btn-ghost" style="color:var(--gray-600);">Mở</button>
+            </div>
+          </div>
+          <div class="nav">
+            <a class="active"><span class="ic">▦</span>Thống kê</a>
+            <a><span class="ic">◉</span>Quản lý</a>
+            <a><span class="ic">⚑</span>Báo cáo</a>
+            <a><span class="ic">◉</span>Hồ sơ</a>
+          </div>
+        </div>
+      </div>
+      <div class="cap"><b>12 · Admin dashboard</b>Đây cũng là lời giải cho UI-10: chart cột xám + 1 cột cam (hôm nay), bảng user = hàng hairline + pill trạng thái + hành động chữ. Không màu mè — admin là utility thuần.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+function setTheme(v){document.documentElement.dataset.theme=v;
+  document.getElementById('t-light').classList.toggle('on',v==='light');
+  document.getElementById('t-dark').classList.toggle('on',v==='dark');}
+function setFont(v){document.documentElement.dataset.font=v;
+  ['lora','playfair','fraunces'].forEach(f=>document.getElementById('f-'+f).classList.toggle('on',f===v));}
+function setMotion(v){document.documentElement.dataset.motion=v;
+  document.getElementById('m-on').classList.toggle('on',v==='on');
+  document.getElementById('m-off').classList.toggle('on',v==='off');}
+function replay(id){const el=document.getElementById(id);el.classList.remove('play');void el.offsetWidth;el.classList.add('play');}
+function countUp(){
+  const el=document.getElementById('cnt');let start=null;
+  function step(ts){if(!start)start=ts;const p=Math.min((ts-start)/1100,1);
+    el.textContent=Math.round(92*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(step);}
+  requestAnimationFrame(step);}
+window.addEventListener('load',()=>{setTimeout(countUp,300);});
+</script>
+</body>
+</html>

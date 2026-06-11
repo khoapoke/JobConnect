@@ -105,11 +105,11 @@ class _DashboardContent extends ConsumerWidget {
                     ],
                   ),
                   const SizedBox(height: 24),
-                  Text('Ứng tuyển 7 ngày qua', style: AppTextStyles.sectionTitle),
+                  const Text('Ứng tuyển 7 ngày qua', style: AppTextStyles.sectionTitle),
                   const SizedBox(height: 12),
                   _ApplicationsChart(data: s.applicationsPerDay),
                   const SizedBox(height: 24),
-                  Text('Tin theo ngành nghề', style: AppTextStyles.sectionTitle),
+                  const Text('Tin theo ngành nghề', style: AppTextStyles.sectionTitle),
                   const SizedBox(height: 12),
                   _CategoryChart(data: s.postsByCategory),
                   const SizedBox(height: 24),
@@ -138,19 +138,20 @@ class _ApplicationsChart extends StatelessWidget {
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(16),
         ),
-        child: Text(
+        child: const Text(
           'Chưa có dữ liệu',
           style: TextStyle(color: AppColors.textSecondary),
         ),
       );
     }
 
-    final spots = <FlSpot>[];
-    for (int i = 0; i < data.length; i++) {
-      spots.add(FlSpot(i.toDouble(), (data[i].count as int).toDouble()));
-    }
-
-    final maxY = spots.map((s) => s.y).reduce((a, b) => a > b ? a : b);
+    final maxY = data
+        .map((d) => d.count as int)
+        .reduce((a, b) => a > b ? a : b)
+        .toDouble();
+    // Last bucket is "today" — the single orange bar; the rest stay gray
+    // (§ data viz: gray bars + one accent).
+    final lastIndex = data.length - 1;
 
     return Container(
       height: 220,
@@ -159,8 +160,8 @@ class _ApplicationsChart extends StatelessWidget {
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
       ),
-      child: LineChart(
-        LineChartData(
+      child: BarChart(
+        BarChartData(
           gridData: FlGridData(
             show: true,
             drawVerticalLine: false,
@@ -206,26 +207,23 @@ class _ApplicationsChart extends StatelessWidget {
             topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
           ),
           borderData: FlBorderData(show: false),
-          lineBarsData: [
-            LineChartBarData(
-              spots: spots,
-              isCurved: true,
-              color: AppColors.primary,
-              barWidth: 3,
-              belowBarData: BarAreaData(
-                show: true,
-                color: AppColors.primary.withValues(alpha: 0.15),
+          barGroups: [
+            for (int i = 0; i < data.length; i++)
+              BarChartGroupData(
+                x: i,
+                barRods: [
+                  BarChartRodData(
+                    toY: (data[i].count as int).toDouble(),
+                    color: i == lastIndex
+                        ? AppColors.primary
+                        : AppColors.surfaceVariant,
+                    width: 18,
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(5),
+                    ),
+                  ),
+                ],
               ),
-              dotData: FlDotData(
-                show: true,
-                getDotPainter: (spot, percent, bar, idx) => FlDotCirclePainter(
-                  radius: 4,
-                  color: AppColors.primary,
-                  strokeWidth: 2,
-                  strokeColor: AppColors.surface,
-                ),
-              ),
-            ),
           ],
           minY: 0,
           maxY: maxY < 5 ? 5 : maxY * 1.2,
@@ -250,7 +248,7 @@ class _CategoryChart extends StatelessWidget {
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(16),
         ),
-        child: Text(
+        child: const Text(
           'Chưa có dữ liệu',
           style: TextStyle(color: AppColors.textSecondary),
         ),
@@ -258,6 +256,15 @@ class _CategoryChart extends StatelessWidget {
     }
 
     final maxY = data.map((d) => d.count as int).reduce((a, b) => a > b ? a : b);
+    // Only the leading category gets the accent; the rest stay gray
+    // (§ data viz: gray bars + one accent).
+    final topIndex = () {
+      var top = 0;
+      for (int i = 1; i < data.length; i++) {
+        if ((data[i].count as int) > (data[top].count as int)) top = i;
+      }
+      return top;
+    }();
 
     return Container(
       height: 220,
@@ -321,7 +328,9 @@ class _CategoryChart extends StatelessWidget {
                 barRods: [
                   BarChartRodData(
                     toY: (data[i].count as int).toDouble(),
-                    color: AppColors.aiAccent,
+                    color: i == topIndex
+                        ? AppColors.primary
+                        : AppColors.surfaceVariant,
                     width: 20,
                     borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(6),

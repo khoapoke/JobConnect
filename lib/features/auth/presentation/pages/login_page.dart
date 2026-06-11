@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_strings.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/validators.dart';
+import '../../../../shared/presentation/widgets/connection_loop_logo.dart';
+import '../../../../shared/presentation/widgets/premium_button.dart';
 import '../providers/auth_deps.dart';
 import '../providers/auth_provider.dart';
 import '../providers/login_state.dart';
@@ -91,65 +95,95 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text(AppStrings.login)),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              AuthTextField(
-                label: 'Email',
-                controller: _emailController,
-                keyboardType: TextInputType.emailAddress,
-                validator: Validators.email,
-              ),
-              const SizedBox(height: 16),
-              AuthTextField(
-                label: 'Mật khẩu',
-                controller: _passwordController,
-                obscureText: true,
-                validator: Validators.password,
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: isLoading ? null : _submit,
-                child: isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Text(AppStrings.login),
-              ),
-              const SizedBox(height: 16),
-              const Row(
+      backgroundColor: AppColors.canvas,
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Expanded(child: Divider()),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: Text('HOẶC'),
+                  // Loop mark + serif title — the utility-tier hero moment.
+                  const ConnectionLoopLogo(size: 52, showWordmark: false),
+                  const SizedBox(height: 24),
+                  const Text(AppStrings.login, style: AppTextStyles.display),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Chào mừng trở lại JobConnect',
+                    style: AppTextStyles.body.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
                   ),
-                  Expanded(child: Divider()),
+                  const SizedBox(height: 28),
+                  AuthTextField(
+                    label: 'Email',
+                    controller: _emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    validator: Validators.email,
+                  ),
+                  const SizedBox(height: 12),
+                  AuthTextField(
+                    label: 'Mật khẩu',
+                    controller: _passwordController,
+                    obscureText: true,
+                    validator: Validators.password,
+                  ),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () => context.push('/forgot-password'),
+                      child: Text(
+                        'Quên mật khẩu?',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.accent,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  PremiumButton(
+                    label: AppStrings.login,
+                    isLoading: isLoading,
+                    onPressed: isLoading ? null : _submit,
+                  ),
+                  const SizedBox(height: 12),
+                  SocialLoginButton(
+                    text: 'Tiếp tục với Google',
+                    iconUrl: 'assets/icons/google.png',
+                    onPressed: isLoading ? () {} : _loginWithGoogle,
+                  ),
+                  const SizedBox(height: 28),
+                  Center(
+                    child: Text.rich(
+                      TextSpan(
+                        text: 'Chưa có tài khoản? ',
+                        style: AppTextStyles.body.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                        children: [
+                          WidgetSpan(
+                            alignment: PlaceholderAlignment.middle,
+                            child: GestureDetector(
+                              onTap: () => context.push('/register'),
+                              child: Text(
+                                'Đăng ký',
+                                style: AppTextStyles.body.copyWith(
+                                  color: AppColors.accent,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ),
-              const SizedBox(height: 16),
-              SocialLoginButton(
-                text: 'Đăng nhập bằng Google',
-                iconUrl: 'assets/icons/google.png',
-                onPressed: isLoading ? () {} : _loginWithGoogle,
-              ),
-              const SizedBox(height: 24),
-              TextButton(
-                onPressed: () => context.push('/register'),
-                child: const Text('Chưa có tài khoản? Đăng ký ngay'),
-              ),
-              TextButton(
-                onPressed: () => context.push('/forgot-password'),
-                child: const Text('Quên mật khẩu?'),
-              ),
-            ],
+            ),
           ),
         ),
       ),

@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../shared/presentation/widgets/premium_button.dart';
 import '../../../chat/presentation/providers/chat_provider.dart';
 import '../providers/application_provider.dart';
 import '../widgets/application_status_chip.dart';
@@ -211,11 +212,19 @@ class _ApplicantDetailPageState extends ConsumerState<ApplicantDetailPage> {
                 ),
               ],
               const SizedBox(height: 20),
+              // Action hierarchy (§6): the forward move (Shortlist → Invite)
+              // is the single bold primary; Chat is the quiet secondary; Reject
+              // is destructive red text — never a competing filled button.
               Wrap(
                 spacing: 12,
                 runSpacing: 12,
                 children: [
-                  OutlinedButton.icon(
+                  PremiumButton(
+                    label: AppStrings.chat,
+                    variant: PremiumButtonVariant.secondary,
+                    expand: false,
+                    icon: const Icon(Icons.chat_bubble_outline_rounded),
+                    isLoading: actionState.isLoading,
                     onPressed: actionState.isLoading
                         ? null
                         : () async {
@@ -238,11 +247,11 @@ class _ApplicantDetailPageState extends ConsumerState<ApplicantDetailPage> {
                               ),
                             );
                           },
-                    icon: const Icon(Icons.chat_bubble_outline_rounded),
-                    label: const Text(AppStrings.chat),
                   ),
                   if (application.canShortlist)
-                    FilledButton(
+                    PremiumButton(
+                      label: AppStrings.shortlist,
+                      expand: false,
                       onPressed: actionState.isLoading
                           ? null
                           : () => _updateStatus(
@@ -251,20 +260,23 @@ class _ApplicantDetailPageState extends ConsumerState<ApplicantDetailPage> {
                               application.jobId,
                               AppStrings.statusReviewing,
                             ),
-                      child: const Text(AppStrings.shortlist),
                     ),
                   if (application.canInvite)
-                    FilledButton(
+                    PremiumButton(
+                      label: AppStrings.invite,
+                      expand: false,
                       onPressed: actionState.isLoading
                           ? null
                           : () => context.push(
                               '/recruiter/applications/${application.id}/schedule',
                               extra: application.jobId,
                             ),
-                      child: const Text(AppStrings.invite),
                     ),
                   if (application.canReject)
-                    OutlinedButton(
+                    PremiumButton(
+                      label: AppStrings.reject,
+                      variant: PremiumButtonVariant.destructive,
+                      expand: false,
                       onPressed: actionState.isLoading
                           ? null
                           : () => _updateStatus(
@@ -273,7 +285,6 @@ class _ApplicantDetailPageState extends ConsumerState<ApplicantDetailPage> {
                               application.jobId,
                               AppStrings.statusRejectedApplication,
                             ),
-                      child: const Text(AppStrings.reject),
                     ),
                 ],
               ),

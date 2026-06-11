@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_strings.dart';
-import '../../../../core/theme/app_gradients.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -22,25 +22,37 @@ class AiInsightPlaceholderCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final brightness = Theme.of(context).brightness;
     return Container(
-      decoration: const BoxDecoration(
-        gradient: AppGradients.ai,
+      decoration: BoxDecoration(
+        color: AppColors.accentSoftFor(brightness),
         borderRadius: AppRadii.xl,
+        border: Border.all(
+          color: AppColors.accent.withValues(alpha: 0.16),
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.space5),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'AI Match sắp mở',
-              style: AppTextStyles.sectionTitle.copyWith(color: Colors.white),
+            Row(
+              children: [
+                const Icon(Icons.auto_awesome, size: 16, color: AppColors.accent),
+                const SizedBox(width: AppSpacing.space2),
+                Text(
+                  'AI Match sắp mở',
+                  style: AppTextStyles.sectionTitle.copyWith(
+                    color: AppColors.inkFor(brightness),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: AppSpacing.space2),
             Text(
               'Hiện có $jobCount cơ hội đang chờ bạn. Ở Phase 6, JobConnect sẽ giải thích vì sao từng job phù hợp và gợi ý kỹ năng còn thiếu.',
               style: AppTextStyles.body.copyWith(
-                color: Colors.white.withValues(alpha: 0.82),
+                color: AppColors.gray600For(brightness),
               ),
             ),
             const SizedBox(height: AppSpacing.space4),
@@ -70,10 +82,12 @@ class _RefreshAiMatchButton extends ConsumerStatefulWidget {
   final ValueChanged<String> onResult;
 
   @override
-  ConsumerState<_RefreshAiMatchButton> createState() => _RefreshAiMatchButtonState();
+  ConsumerState<_RefreshAiMatchButton> createState() =>
+      _RefreshAiMatchButtonState();
 }
 
-class _RefreshAiMatchButtonState extends ConsumerState<_RefreshAiMatchButton> {
+class _RefreshAiMatchButtonState
+    extends ConsumerState<_RefreshAiMatchButton> {
   bool _isLoading = false;
 
   @override
@@ -99,10 +113,12 @@ class _RefreshAiMatchButtonState extends ConsumerState<_RefreshAiMatchButton> {
                 final message = switch (result.status) {
                   AiEmbeddingStatus.generated => AppStrings.aiMatchUpdated,
                   AiEmbeddingStatus.unchanged => AppStrings.aiMatchReady,
-                  AiEmbeddingStatus.rateLimited => AppStrings.aiMatchRateLimited,
-                  AiEmbeddingStatus.missingData => AppStrings.aiMatchMissingData,
+                  AiEmbeddingStatus.rateLimited =>
+                    AppStrings.aiMatchRateLimited,
+                  AiEmbeddingStatus.missingData =>
+                    AppStrings.aiMatchMissingData,
                   AiEmbeddingStatus.noJobEmbeddings =>
-                      AppStrings.aiMatchMissingData,
+                    AppStrings.aiMatchMissingData,
                   AiEmbeddingStatus.success => AppStrings.aiMatchUpdated,
                   AiEmbeddingStatus.error => result.message.isNotEmpty
                       ? result.message

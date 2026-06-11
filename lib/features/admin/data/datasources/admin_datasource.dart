@@ -102,21 +102,23 @@ class AdminDatasource {
     String? action,
     String? resolvedBy,
   }) async {
-    await _supabase.from('reports').update({
+    final updated = await _supabase.from('reports').update({
       'status': status,
       'action': action,
       'resolved_by': resolvedBy,
       'resolved_at': DateTime.now().toIso8601String(),
-    }).eq('id', reportId);
+    }).eq('id', reportId).select('id');
+    _ensureUpdated(updated, 'cập nhật báo cáo');
   }
 
   Future<void> banUser({
     required String userId,
     required DateTime bannedUntil,
   }) async {
-    await _supabase.from('profiles').update({
+    final updated = await _supabase.from('profiles').update({
       'banned_until': bannedUntil.toIso8601String(),
-    }).eq('id', userId);
+    }).eq('id', userId).select('id');
+    _ensureUpdated(updated, 'cập nhật trạng thái khóa');
   }
 
   Future<void> sendWarning(String userId, String message) async {
@@ -130,9 +132,20 @@ class AdminDatasource {
   }
 
   Future<void> closeJobPost(String jobPostId) async {
-    await _supabase.from('job_posts').update({
+    final updated = await _supabase.from('job_posts').update({
       'status': 'closed',
-    }).eq('id', jobPostId);
+    }).eq('id', jobPostId).select('id');
+    _ensureUpdated(updated, 'đóng tin tuyển dụng');
+  }
+
+  /// Supabase Dart KHÔNG throw khi UPDATE ảnh hưởng 0 dòng (thường do RLS chặn).
+  /// Check kết quả .select() để báo lỗi thay vì im lặng bỏ qua.
+  void _ensureUpdated(List<Map<String, dynamic>> updated, String action) {
+    if (updated.isEmpty) {
+      throw PostgrestException(
+        message: 'Không thể $action — không có dòng nào được cập nhật.',
+      );
+    }
   }
 
   Future<void> changeUserRole({

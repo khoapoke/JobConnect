@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_durations.dart';
-import '../../../core/theme/app_gradients.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
 
@@ -34,14 +33,15 @@ class _ConnectionLoopLogoState extends State<ConnectionLoopLogo>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: AppDurations.splash,
+      duration: AppDurations.launch,
     );
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final reducedMotion = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final reducedMotion =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
     if (widget.animated && !reducedMotion) {
       _controller.forward();
     } else {
@@ -72,7 +72,7 @@ class _ConnectionLoopLogoState extends State<ConnectionLoopLogo>
   @override
   Widget build(BuildContext context) {
     final brightness = Theme.of(context).brightness;
-    final wordmarkColor = AppColors.textPrimaryFor(brightness);
+    final wordmarkColor = AppColors.inkFor(brightness);
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -86,7 +86,6 @@ class _ConnectionLoopLogoState extends State<ConnectionLoopLogo>
               return CustomPaint(
                 painter: _ConnectionLoopPainter(
                   progress: _controller.value,
-                  brightness: brightness,
                 ),
               );
             },
@@ -97,14 +96,13 @@ class _ConnectionLoopLogoState extends State<ConnectionLoopLogo>
           FadeTransition(
             opacity: CurvedAnimation(
               parent: _controller,
-              curve: const Interval(0.45, 1, curve: Curves.easeOut),
+              curve: const Interval(0.5, 1, curve: Curves.easeOut),
             ),
             child: Text(
               AppConstants.appName,
-              style: AppTextStyles.title.copyWith(
+              style: AppTextStyles.display.copyWith(
                 color: wordmarkColor,
-                fontFamily: AppTextStyles.spaceGrotesk,
-                fontWeight: FontWeight.w700,
+                fontFamily: AppTextStyles.lora,
               ),
             ),
           ),
@@ -114,78 +112,115 @@ class _ConnectionLoopLogoState extends State<ConnectionLoopLogo>
   }
 }
 
+/// Pull-to-refresh spinner (§9 signature animation #4): the loop spins in
+/// place of the stock spinner. A full orange ring rotating continuously.
+class ConnectionLoopSpinner extends StatefulWidget {
+  const ConnectionLoopSpinner({super.key, this.size = 32});
+
+  final double size;
+
+  @override
+  State<ConnectionLoopSpinner> createState() => _ConnectionLoopSpinnerState();
+}
+
+class _ConnectionLoopSpinnerState extends State<ConnectionLoopSpinner>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final reducedMotion =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    if (reducedMotion) {
+      _controller.value = 0;
+    } else if (!_controller.isAnimating) {
+      _controller.repeat();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: widget.size,
+      height: widget.size,
+      child: RotationTransition(
+        turns: _controller,
+        child: const CustomPaint(
+          painter: _ConnectionLoopPainter(progress: 1),
+        ),
+      ),
+    );
+  }
+}
+
 class _ConnectionLoopPainter extends CustomPainter {
-  const _ConnectionLoopPainter({
-    required this.progress,
-    required this.brightness,
-  });
+  const _ConnectionLoopPainter({required this.progress});
 
   final double progress;
-  final Brightness brightness;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final strokeWidth = size.width * 0.11;
-    final rect = Rect.fromLTWH(
-      strokeWidth,
-      strokeWidth,
-      size.width - strokeWidth * 2,
-      size.height - strokeWidth * 2,
-    );
-    final loopPath = Path()
-      ..addArc(rect, -math.pi * 0.15, math.pi * 1.7)
-      ..quadraticBezierTo(
-        size.width * 0.82,
-        size.height * 0.78,
-        size.width * 0.58,
-        size.height * 0.88,
-      )
-      ..quadraticBezierTo(
-        size.width * 0.34,
-        size.height * 0.98,
-        size.width * 0.2,
-        size.height * 0.7,
+    final strokeWidth = size.width * 0.1;
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = (size.width - strokeWidth * 2) / 2;
+
+    // Draw arc from top (−π/2) sweeping full circle * progress
+    final circlePath = Path()
+      ..addArc(
+        Rect.fromCircle(center: center, radius: radius),
+        -math.pi / 2,
+        2 * math.pi,
       );
+    final metric = circlePath.computeMetrics().first;
+    final arcPath = metric.extractPath(
+      0,
+      metric.length * progress.clamp(0.0, 1.0),
+    );
 
-    final metric = loopPath.computeMetrics().first;
-    final drawPath = metric.extractPath(0, metric.length * progress.clamp(0.0, 1.0));
-
-    final gradientRect = Offset.zero & size;
     final strokePaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round
       ..strokeWidth = strokeWidth
-      ..shader = AppGradients.connectionLoop.createShader(gradientRect);
+      ..color = AppColors.accent;
 
-    final glowPaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round
-      ..strokeWidth = strokeWidth * 1.35
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10)
-      ..color = (brightness == Brightness.dark
-              ? AppColors.primarySoft
-              : AppColors.primaryLight)
-          .withValues(alpha: 0.22);
+    canvas.drawPath(arcPath, strokePaint);
 
-    canvas.drawPath(drawPath, glowPaint);
-    canvas.drawPath(drawPath, strokePaint);
+    // Nodes at top-right (~315°) and bottom-left (~135°)
+    final node1 = Offset(
+      center.dx + radius * math.cos(-math.pi / 4),
+      center.dy + radius * math.sin(-math.pi / 4),
+    );
+    final node2 = Offset(
+      center.dx + radius * math.cos(3 * math.pi / 4),
+      center.dy + radius * math.sin(3 * math.pi / 4),
+    );
+    final nodePaint = Paint()..color = AppColors.accent;
 
-    final startNode = Offset(size.width * 0.78, size.height * 0.2);
-    final endNode = Offset(size.width * 0.24, size.height * 0.7);
-    final pulse = 1 + (math.sin(progress * math.pi * 3) * 0.08);
-    final nodePaint = Paint()
-      ..color = brightness == Brightness.dark
-          ? AppColors.aiAccent
-          : AppColors.aiAccentLight;
-
-    canvas.drawCircle(startNode, strokeWidth * 0.58, nodePaint);
-    canvas.drawCircle(endNode, strokeWidth * 0.52 * pulse, nodePaint);
+    if (progress > 0.1) {
+      canvas.drawCircle(node1, strokeWidth * 0.65, nodePaint);
+    }
+    if (progress > 0.6) {
+      canvas.drawCircle(node2, strokeWidth * 0.65, nodePaint);
+    }
   }
 
   @override
-  bool shouldRepaint(covariant _ConnectionLoopPainter oldDelegate) {
-    return oldDelegate.progress != progress ||
-        oldDelegate.brightness != brightness;
-  }
+  bool shouldRepaint(covariant _ConnectionLoopPainter oldDelegate) =>
+      oldDelegate.progress != progress;
 }

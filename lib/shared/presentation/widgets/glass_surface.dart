@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
@@ -7,6 +5,9 @@ import '../../../core/theme/app_radii.dart';
 import '../../../core/theme/app_shadows.dart';
 import '../../../core/theme/app_spacing.dart';
 
+/// Retired glass/blur card — now renders as a plain bordered `surface` card
+/// per §5 of the Light Minimal system. API is kept unchanged so call sites
+/// compile without modification. `blurSigma` is accepted but ignored.
 class GlassSurface extends StatelessWidget {
   const GlassSurface({
     super.key,
@@ -15,7 +16,7 @@ class GlassSurface extends StatelessWidget {
     this.borderRadius = AppRadii.lg,
     this.borderColor,
     this.backgroundColor,
-    this.blurSigma = 16,
+    this.blurSigma = 16, // ignored
     this.shadows,
   });
 
@@ -29,29 +30,19 @@ class GlassSurface extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return ClipRRect(
-      borderRadius: borderRadius,
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: backgroundColor ??
-                (isDark
-                    ? AppColors.surfaceGlass
-                    : AppColors.surfaceLight.withValues(alpha: 0.82)),
-            borderRadius: borderRadius,
-            border: Border.all(
-              color: borderColor ??
-                  (isDark ? AppColors.outline : AppColors.outlineLight),
-            ),
-            boxShadow: shadows ?? (isDark ? AppShadows.card : const []),
-          ),
-          child: Padding(
-            padding: padding,
-            child: child,
-          ),
+    final brightness = Theme.of(context).brightness;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: backgroundColor ?? AppColors.surfaceFor(brightness),
+        borderRadius: borderRadius,
+        border: Border.all(
+          color: borderColor ?? AppColors.hairlineFor(brightness),
         ),
+        boxShadow: shadows ?? AppShadows.card,
+      ),
+      child: Padding(
+        padding: padding,
+        child: child,
       ),
     );
   }

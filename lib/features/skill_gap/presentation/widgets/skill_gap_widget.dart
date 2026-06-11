@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/router/user_role.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_gradients.dart';
+
 import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -433,59 +433,56 @@ class _AdviceCardState extends State<_AdviceCard>
           ),
         );
       },
-      child: Container(
-        decoration: const BoxDecoration(
-          gradient: AppGradients.ai,
-          borderRadius: AppRadii.lg,
-        ),
-        child: GlassSurface(
-          borderRadius: AppRadii.lg,
-          backgroundColor: Colors.white.withValues(alpha: 0.08),
-          borderColor: Colors.white.withValues(alpha: 0.14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  const Icon(
-                    Icons.auto_awesome,
-                    size: 16,
-                    color: Colors.white,
-                  ),
-                  const SizedBox(width: AppSpacing.space2),
-                  Text(
-                    AppStrings.skillGapAdviceTitle,
-                    style: AppTextStyles.label.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
+      child: Builder(
+        builder: (context) {
+          final brightness = Theme.of(context).brightness;
+          return GlassSurface(
+            borderRadius: AppRadii.lg,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.auto_awesome,
+                      size: 16,
+                      color: AppColors.accent,
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.space2),
-              Text(
-                widget.advice.advice,
-                style: AppTextStyles.body.copyWith(
-                  color: Colors.white.withValues(alpha: 0.92),
-                  height: 1.6,
+                    const SizedBox(width: AppSpacing.space2),
+                    Text(
+                      AppStrings.skillGapAdviceTitle,
+                      style: AppTextStyles.label.copyWith(
+                        color: AppColors.inkFor(brightness),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(height: AppSpacing.space2),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: widget.onHide,
-                  child: Text(
-                    AppStrings.skillGapHideAdvice,
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: Colors.white.withValues(alpha: 0.84),
+                const SizedBox(height: AppSpacing.space2),
+                Text(
+                  widget.advice.advice,
+                  style: AppTextStyles.body.copyWith(
+                    color: AppColors.gray600For(brightness),
+                    height: 1.6,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.space2),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: widget.onHide,
+                    child: Text(
+                      AppStrings.skillGapHideAdvice,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.gray400For(brightness),
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
-        ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }

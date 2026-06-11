@@ -109,8 +109,8 @@ class _ReportBottomSheetState extends ConsumerState<ReportBottomSheet> {
                 ),
               ),
               const SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
                 child: Text(
                   'Báo cáo vi phạm',
                   style: AppTextStyles.sectionTitle,

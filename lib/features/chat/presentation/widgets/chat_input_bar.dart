@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_gradients.dart';
 import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../shared/presentation/widgets/glass_surface.dart';
@@ -46,13 +45,13 @@ class _ChatInputBarState extends State<ChatInputBar> {
 
   @override
   Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
     return SafeArea(
       child: GlassSurface(
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(AppRadii.radiusLg),
           topRight: Radius.circular(AppRadii.radiusLg),
         ),
-        blurSigma: 24,
         padding: const EdgeInsets.fromLTRB(
           AppSpacing.space4,
           AppSpacing.space3,
@@ -69,19 +68,19 @@ class _ChatInputBarState extends State<ChatInputBar> {
                 maxLength: 1000,
                 textInputAction: TextInputAction.send,
                 onSubmitted: (_) => _submit(),
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
+                style: TextStyle(
+                  color: AppColors.inkFor(brightness),
                   fontSize: 15,
                 ),
                 decoration: InputDecoration(
                   hintText: AppStrings.chatInputHint,
-                  hintStyle: const TextStyle(
-                    color: AppColors.textSecondary,
+                  hintStyle: TextStyle(
+                    color: AppColors.gray400For(brightness),
                     fontSize: 15,
                   ),
                   counterText: '',
                   filled: true,
-                  fillColor: AppColors.background.withAlpha(140),
+                  fillColor: AppColors.surfaceVariantFor(brightness),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: AppSpacing.space4,
                     vertical: AppSpacing.space3,
@@ -93,13 +92,13 @@ class _ChatInputBarState extends State<ChatInputBar> {
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(AppRadii.radiusLg),
                     borderSide: BorderSide(
-                      color: AppColors.divider.withAlpha(60),
+                      color: AppColors.hairlineFor(brightness),
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(AppRadii.radiusLg),
                     borderSide: const BorderSide(
-                      color: AppColors.primary,
+                      color: AppColors.accent,
                       width: 1.2,
                     ),
                   ),
@@ -108,7 +107,7 @@ class _ChatInputBarState extends State<ChatInputBar> {
             ),
             const SizedBox(width: AppSpacing.space3),
             AnimatedContainer(
-              duration: const Duration(milliseconds: 220),
+              duration: const Duration(milliseconds: 180),
               curve: Curves.easeOutCubic,
               child: _SendButton(
                 canSend: _canSend,
@@ -130,8 +129,9 @@ class _SendButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final mediaQuery = MediaQuery.maybeOf(context);
-    final reducedMotion = mediaQuery?.disableAnimations ?? false;
+    final brightness = Theme.of(context).brightness;
+    final reducedMotion =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
 
     return AnimatedScale(
       duration: reducedMotion ? Duration.zero : const Duration(milliseconds: 180),
@@ -139,18 +139,8 @@ class _SendButton extends StatelessWidget {
       scale: canSend ? 1.0 : 0.88,
       child: Container(
         decoration: BoxDecoration(
-          gradient: canSend ? AppGradients.primary : null,
-          color: canSend ? null : AppColors.surfaceVariant,
+          color: canSend ? AppColors.accent : AppColors.surfaceVariantFor(brightness),
           shape: BoxShape.circle,
-          boxShadow: canSend
-              ? [
-                  BoxShadow(
-                    color: AppColors.primary.withAlpha(100),
-                    blurRadius: 16,
-                    spreadRadius: 1,
-                  ),
-                ]
-              : null,
         ),
         child: Material(
           color: Colors.transparent,
@@ -158,11 +148,13 @@ class _SendButton extends StatelessWidget {
           child: InkWell(
             customBorder: const CircleBorder(),
             onTap: onTap,
-            child: Container(
+            child: Padding(
               padding: const EdgeInsets.all(AppSpacing.space3),
               child: Icon(
                 Icons.send_rounded,
-                color: canSend ? Colors.white : AppColors.textSecondary,
+                color: canSend
+                    ? AppColors.onAccent
+                    : AppColors.gray400For(brightness),
                 size: 22,
               ),
             ),
