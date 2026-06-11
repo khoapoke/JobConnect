@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../shared/presentation/widgets/premium_button.dart';
 import '../../../auth/domain/entities/auth_state.dart';
 import '../../../../features/auth/presentation/providers/auth_provider.dart';
 import '../providers/admin_dashboard_provider.dart';
@@ -201,7 +202,7 @@ class _ReportDetailContent extends ConsumerWidget {
           ),
           if (details != null && details.isNotEmpty) ...[
             const SizedBox(height: 16),
-            Text('Chi tiết thêm', style: AppTextStyles.sectionTitle),
+            const Text('Chi tiết thêm', style: AppTextStyles.sectionTitle),
             const SizedBox(height: 8),
             Container(
               width: double.infinity,
@@ -214,7 +215,7 @@ class _ReportDetailContent extends ConsumerWidget {
             ),
           ],
           const SizedBox(height: 20),
-          Text('Mục tiêu', style: AppTextStyles.sectionTitle),
+          const Text('Mục tiêu', style: AppTextStyles.sectionTitle),
           const SizedBox(height: 8),
           _InfoRow(label: 'Loại', value: _targetLabel(targetType)),
           if (snapshot != null) ...[
@@ -244,61 +245,47 @@ class _ReportDetailContent extends ConsumerWidget {
           ],
           const SizedBox(height: 20),
           if (reporter != null) ...[
-            Text('Người báo cáo', style: AppTextStyles.sectionTitle),
+            const Text('Người báo cáo', style: AppTextStyles.sectionTitle),
             const SizedBox(height: 8),
             _UserMiniCard(user: reporter),
           ],
           if (targetUser != null) ...[
             const SizedBox(height: 16),
-            Text('Người bị báo cáo', style: AppTextStyles.sectionTitle),
+            const Text('Người bị báo cáo', style: AppTextStyles.sectionTitle),
             const SizedBox(height: 8),
             _UserMiniCard(user: targetUser),
           ],
           if (status == 'pending') ...[
             const SizedBox(height: 32),
-            if (targetType == 'job_post')
-              ElevatedButton.icon(
-                onPressed: () => _closeJobPost(context, ref),
+            // One-color action stack (§6): a single accent primary (resolve),
+            // quiet secondaries, and red text for the destructive close.
+            if (targetType == 'job_post') ...[
+              PremiumButton(
+                label: 'Đóng tin tuyển dụng',
+                variant: PremiumButtonVariant.destructive,
                 icon: const Icon(Icons.close),
-                label: const Text('Đóng tin tuyển dụng'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.warning,
-                  foregroundColor: AppColors.onPrimary,
-                  minimumSize: const Size(double.infinity, 48),
-                ),
+                onPressed: () => _closeJobPost(context, ref),
               ),
-            if (targetType == 'job_post') const SizedBox(height: 12),
-            ElevatedButton.icon(
-              onPressed: () => _resolve(context, ref, 'resolved', action: 'warning'),
+              const SizedBox(height: 12),
+            ],
+            PremiumButton(
+              label: 'Cảnh cáo & Xử lý',
+              variant: PremiumButtonVariant.secondary,
               icon: const Icon(Icons.warning_amber),
-              label: const Text('Cảnh cáo & Xử lý'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.aiAccent,
-                foregroundColor: AppColors.onPrimary,
-                minimumSize: const Size(double.infinity, 48),
-              ),
+              onPressed: () => _resolve(context, ref, 'resolved', action: 'warning'),
             ),
             const SizedBox(height: 12),
-            ElevatedButton.icon(
-              onPressed: () => _resolve(context, ref, 'resolved'),
+            PremiumButton(
+              label: 'Xử lý (không cảnh cáo)',
               icon: const Icon(Icons.check),
-              label: const Text('Xử lý (không cảnh cáo)'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.success,
-                foregroundColor: AppColors.onPrimary,
-                minimumSize: const Size(double.infinity, 48),
-              ),
+              onPressed: () => _resolve(context, ref, 'resolved'),
             ),
             const SizedBox(height: 12),
-            OutlinedButton.icon(
+            PremiumButton(
+              label: 'Bỏ qua báo cáo',
+              variant: PremiumButtonVariant.ghost,
+              icon: const Icon(Icons.close),
               onPressed: () => _resolve(context, ref, 'dismissed'),
-              icon: const Icon(Icons.close, color: AppColors.textSecondary),
-              label: const Text('Bỏ qua báo cáo'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.textSecondary,
-                minimumSize: const Size(double.infinity, 48),
-                side: const BorderSide(color: AppColors.outline),
-              ),
             ),
           ],
         ],

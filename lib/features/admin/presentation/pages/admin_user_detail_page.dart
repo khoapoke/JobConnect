@@ -65,15 +65,17 @@ class _UserDetailContent extends ConsumerWidget {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: const Text('Xóa tài khoản?'),
           content: Text('Tài khoản ${user['full_name'] ?? 'này'} sẽ bị khóa vĩnh viễn (xóa mềm). Bạn có chắc?'),
+          // §6: destructive choice = red text; the safe action (Hủy) is the
+          // bolder default — never a filled red button.
           actions: [
             TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: TextButton.styleFrom(foregroundColor: AppColors.error),
+              child: const Text('Xóa'),
+            ),
+            FilledButton(
               onPressed: () => Navigator.pop(context, false),
               child: const Text('Hủy'),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context, true),
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
-              child: const Text('Xóa'),
             ),
           ],
         ),
@@ -92,7 +94,7 @@ class _UserDetailContent extends ConsumerWidget {
           backgroundColor: AppColors.surface,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: const Text('Tạm khóa'),
-          content: Column(
+          content: const Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               _DurationOption(label: '1 giờ', hours: 1),
@@ -236,7 +238,7 @@ class _UserDetailContent extends ConsumerWidget {
           const SizedBox(height: 32),
           const Divider(color: AppColors.outline),
           const SizedBox(height: 16),
-          Text('Hành động', style: AppTextStyles.sectionTitle),
+          const Text('Hành động', style: AppTextStyles.sectionTitle),
           const SizedBox(height: 12),
           _ActionButton(
             icon: Icons.warning_amber,

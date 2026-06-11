@@ -41,9 +41,11 @@ class StatCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
+          // Stat figures are a Lora moment (§ typography), unified with the
+          // recruiter dashboard.
           Text(
             value.toString(),
-            style: AppTextStyles.headline.copyWith(fontSize: 28),
+            style: AppTextStyles.display.copyWith(fontSize: 28),
           ),
           const SizedBox(height: 4),
           Text(

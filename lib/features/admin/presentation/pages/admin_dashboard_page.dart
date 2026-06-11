@@ -321,7 +321,8 @@ class _CategoryChart extends StatelessWidget {
                 barRods: [
                   BarChartRodData(
                     toY: (data[i].count as int).toDouble(),
-                    color: AppColors.aiAccent,
+                    // One-orange charts (§ data viz): bars use the single accent.
+                    color: AppColors.primary,
                     width: 20,
                     borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(6),

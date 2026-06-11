@@ -11,6 +11,7 @@ import '../../../auth/domain/entities/auth_state.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../chat/presentation/providers/chat_provider.dart';
 
+import '../../domain/entities/recruiter_stats.dart';
 import '../../presentation/providers/company_provider.dart';
 import '../../presentation/providers/recruiter_stats_provider.dart';
 
@@ -115,7 +116,7 @@ class RecruiterHomePage extends ConsumerWidget {
                             Expanded(
                               child: _StatCard(
                                 label: 'Tin đang tuyển',
-                                value: stats['active_posts'] ?? 0,
+                                value: stats.activePosts,
                                 icon: Icons.article_outlined,
                                 color: AppColors.primary,
                               ),
@@ -124,7 +125,7 @@ class RecruiterHomePage extends ConsumerWidget {
                             Expanded(
                               child: _StatCard(
                                 label: 'Ứng viên mới',
-                                value: stats['pending_applications'] ?? 0,
+                                value: stats.pendingApplications,
                                 icon: Icons.people_outline,
                                 color: AppColors.warning,
                               ),
@@ -133,7 +134,7 @@ class RecruiterHomePage extends ConsumerWidget {
                             Expanded(
                               child: _StatCard(
                                 label: 'Phỏng vấn',
-                                value: stats['upcoming_interviews'] ?? 0,
+                                value: stats.upcomingInterviews,
                                 icon: Icons.calendar_today_outlined,
                                 color: AppColors.success,
                               ),
@@ -156,7 +157,8 @@ class RecruiterHomePage extends ConsumerWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('Ứng viên gần đây', style: AppTextStyles.sectionTitle),
+                          const Text('Ứng viên gần đây',
+                              style: AppTextStyles.sectionTitle),
                           TextButton(
                             onPressed: () => context.go('/recruiter/posts'),
                             child: const Text('Xem tất cả'),
@@ -171,7 +173,7 @@ class RecruiterHomePage extends ConsumerWidget {
               // Recent applicants list
               statsAsync.when(
                 data: (stats) {
-                  final applicants = (stats['recent_applicants'] as List<dynamic>?) ?? [];
+                  final applicants = stats.recentApplicants;
                   if (applicants.isEmpty) {
                     return const SliverToBoxAdapter(
                       child: Padding(
@@ -188,10 +190,10 @@ class RecruiterHomePage extends ConsumerWidget {
                     itemBuilder: (context, index) {
                       final a = applicants[index];
                       return _ApplicantTile(
-                        applicant: a as Map<String, dynamic>,
+                        applicant: a,
                         onTap: () => context.push(
-                          '/recruiter/applications/${a['id']}',
-                          extra: a['job_id'],
+                          '/recruiter/applications/${a.id}',
+                          extra: a.jobId,
                         ),
                       );
                     },
@@ -204,21 +206,21 @@ class RecruiterHomePage extends ConsumerWidget {
                 error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
               ),
               // Active posts
-              SliverToBoxAdapter(
+              const SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.all(20),
+                  padding: EdgeInsets.all(20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('Tin tuyển dụng', style: AppTextStyles.sectionTitle),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12),
                     ],
                   ),
                 ),
               ),
               statsAsync.when(
                 data: (stats) {
-                  final posts = (stats['active_job_posts'] as List<dynamic>?) ?? [];
+                  final posts = stats.activeJobPosts;
                   if (posts.isEmpty) {
                     return const SliverToBoxAdapter(
                       child: Padding(
@@ -235,9 +237,9 @@ class RecruiterHomePage extends ConsumerWidget {
                     itemBuilder: (context, index) {
                       final p = posts[index];
                       return _JobPostTile(
-                        post: p as Map<String, dynamic>,
+                        post: p,
                         onTap: () => context.push(
-                          '/recruiter/posts/${p['id']}/applicants',
+                          '/recruiter/posts/${p.id}/applicants',
                         ),
                       );
                     },
@@ -333,9 +335,10 @@ class _StatCard extends StatelessWidget {
         children: [
           Icon(icon, color: color, size: 20),
           const SizedBox(height: 10),
+          // Stat figures are a Lora moment — quiet display serif (§ typography).
           Text(
             value.toString(),
-            style: AppTextStyles.sectionTitle.copyWith(fontSize: 22),
+            style: AppTextStyles.display.copyWith(fontSize: 26),
           ),
           const SizedBox(height: 4),
           Text(
@@ -368,14 +371,13 @@ class _StatSkeleton extends StatelessWidget {
 class _ApplicantTile extends StatelessWidget {
   const _ApplicantTile({required this.applicant, required this.onTap});
 
-  final Map<String, dynamic> applicant;
+  final RecentApplicant applicant;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final createdAt = applicant['created_at'] != null
-        ? DateTime.tryParse(applicant['created_at'].toString())
-        : null;
+    final createdAt = applicant.createdAt;
+    final avatarUrl = applicant.avatarUrl;
 
     return GestureDetector(
       onTap: onTap,
@@ -392,10 +394,9 @@ class _ApplicantTile extends StatelessWidget {
             CircleAvatar(
               radius: 22,
               backgroundColor: AppColors.surfaceVariant,
-              backgroundImage: applicant['avatar_url'] != null
-                  ? NetworkImage(applicant['avatar_url'] as String)
-                  : null,
-              child: applicant['avatar_url'] == null
+              backgroundImage:
+                  avatarUrl != null ? NetworkImage(avatarUrl) : null,
+              child: avatarUrl == null
                   ? const Icon(Icons.person, size: 20, color: AppColors.textSecondary)
                   : null,
             ),
@@ -405,12 +406,12 @@ class _ApplicantTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    applicant['full_name'] ?? 'Ứng viên',
+                    applicant.fullName,
                     style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    applicant['job_title'] ?? '',
+                    applicant.jobTitle,
                     style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -449,12 +450,12 @@ class _ApplicantSkeleton extends StatelessWidget {
 class _JobPostTile extends StatelessWidget {
   const _JobPostTile({required this.post, required this.onTap});
 
-  final Map<String, dynamic> post;
+  final ActiveJobPostSummary post;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final applicantCount = post['applicant_count'] as int? ?? 0;
+    final applicantCount = post.applicantCount;
 
     return GestureDetector(
       onTap: onTap,
@@ -473,7 +474,7 @@ class _JobPostTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    post['title'] ?? 'Tin tuyển dụng',
+                    post.title.isEmpty ? 'Tin tuyển dụng' : post.title,
                     style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -481,7 +482,7 @@ class _JobPostTile extends StatelessWidget {
                   const SizedBox(height: 6),
                   Row(
                     children: [
-                      Icon(Icons.people, size: 14, color: AppColors.textTertiary),
+                      const Icon(Icons.people, size: 14, color: AppColors.textTertiary),
                       const SizedBox(width: 6),
                       Text(
                         '$applicantCount ứng viên',

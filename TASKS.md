@@ -246,7 +246,7 @@
 - [x] **UI-13: Core screens sweep**
   Search/filters, My Applications (status dot-pills + Rút đơn destructive text), Chat (ink/gray bubbles), Profile (Lora name hero), Notifications, Bookmarks — harmonized motion, no leftover glass/gradient usages.
 
-- [ ] **UI-14: Utility sweep (absorbs old UI-10)**
+- [x] **UI-14: Utility sweep (absorbs old UI-10)**
   Auth, CV builder, forms, recruiter screens (stat numbers, applicant action rows Shortlist → Invite → Reject), admin screens (hairline tables, gray+one-orange charts, destructive text actions, dialog/sheet styling per new system).
 
 ---
