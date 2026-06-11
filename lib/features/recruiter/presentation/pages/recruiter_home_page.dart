@@ -118,16 +118,17 @@ class RecruiterHomePage extends ConsumerWidget {
                                 label: 'Tin đang tuyển',
                                 value: stats.activePosts,
                                 icon: Icons.article_outlined,
-                                color: AppColors.primary,
                               ),
                             ),
                             const SizedBox(width: 10),
+                            // Only the stat that needs attention is orange
+                            // (§ one-color rule); the rest stay ink/gray.
                             Expanded(
                               child: _StatCard(
                                 label: 'Ứng viên mới',
                                 value: stats.pendingApplications,
                                 icon: Icons.people_outline,
-                                color: AppColors.warning,
+                                highlight: true,
                               ),
                             ),
                             const SizedBox(width: 10),
@@ -136,7 +137,6 @@ class RecruiterHomePage extends ConsumerWidget {
                                 label: 'Phỏng vấn',
                                 value: stats.upcomingInterviews,
                                 icon: Icons.calendar_today_outlined,
-                                color: AppColors.success,
                               ),
                             ),
                           ],
@@ -313,16 +313,17 @@ class _StatCard extends StatelessWidget {
     required this.label,
     required this.value,
     required this.icon,
-    required this.color,
+    this.highlight = false,
   });
 
   final String label;
   final int value;
   final IconData icon;
-  final Color color;
+  final bool highlight;
 
   @override
   Widget build(BuildContext context) {
+    final accent = highlight ? AppColors.primary : AppColors.textSecondary;
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -333,12 +334,16 @@ class _StatCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: color, size: 20),
+          Icon(icon, color: accent, size: 20),
           const SizedBox(height: 10),
           // Stat figures are a Lora moment — quiet display serif (§ typography).
+          // The attention stat tints its number orange; the rest stay ink.
           Text(
             value.toString(),
-            style: AppTextStyles.display.copyWith(fontSize: 26),
+            style: AppTextStyles.display.copyWith(
+              fontSize: 26,
+              color: highlight ? AppColors.primary : AppColors.textPrimary,
+            ),
           ),
           const SizedBox(height: 4),
           Text(

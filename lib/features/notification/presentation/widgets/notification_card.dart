@@ -15,6 +15,13 @@ class NotificationCard extends StatelessWidget {
   final Notification notification;
   final VoidCallback onTap;
 
+  /// AI-sourced notifications (job matches, suggestions) earn the one
+  /// recognised accent treatment — ✦ glyph on an accent-soft bubble (§9).
+  bool get _isAi => switch (notification.type) {
+        'ai_suggestion' || 'ai_match' || 'ai' => true,
+        _ => false,
+      };
+
   IconData _iconForType(String type) => switch (type) {
         'application_status' => Icons.assignment_outlined,
         'new_applicant' => Icons.person_add_outlined,
@@ -22,6 +29,7 @@ class NotificationCard extends StatelessWidget {
         'interview' => Icons.event_available_outlined,
         'message' => Icons.chat_bubble_outline_rounded,
         'system' => Icons.info_outline_rounded,
+        'ai_suggestion' || 'ai_match' || 'ai' => Icons.auto_awesome,
         _ => Icons.notifications_outlined,
       };
 
@@ -57,18 +65,19 @@ class NotificationCard extends StatelessWidget {
           children: [
             // Quiet type icon — one-color system (§1): gray icon on a
             // surfaceVariant bubble; orange is reserved for the unread dot.
+            // The single exception: AI notifications get ✦ on accent-soft.
             Container(
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: AppColors.surfaceVariant,
+                color: _isAi ? AppColors.accentSoft : AppColors.surfaceVariant,
                 borderRadius: BorderRadius.circular(
                   AppConstants.cardBorderRadius,
                 ),
               ),
               child: Icon(
                 _iconForType(notification.type),
-                color: AppColors.textSecondary,
+                color: _isAi ? AppColors.accent : AppColors.textSecondary,
                 size: 20,
               ),
             ),
