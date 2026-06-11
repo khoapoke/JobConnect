@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../providers/admin_dashboard_provider.dart';
 import '../providers/admin_users_provider.dart';
@@ -243,28 +244,26 @@ class _UserDetailContent extends ConsumerWidget {
           _ActionButton(
             icon: Icons.warning_amber,
             label: 'Cảnh cáo',
-            color: AppColors.warning,
             onTap: () => _sendWarning(context, ref),
           ),
           const SizedBox(height: 8),
           _ActionButton(
             icon: Icons.timer_off,
             label: 'Tạm khóa',
-            color: AppColors.aiAccent,
+            destructive: true,
             onTap: () => _showBanDialog(context, ref),
           ),
           const SizedBox(height: 8),
           _ActionButton(
             icon: Icons.delete_forever,
             label: 'Xóa tài khoản',
-            color: AppColors.error,
+            destructive: true,
             onTap: () => _showBanDialog(context, ref, permanent: true),
           ),
           const SizedBox(height: 8),
           _ActionButton(
             icon: Icons.switch_account,
             label: 'Thay đổi vai trò',
-            color: AppColors.aiAccent,
             onTap: () async {
               final currentRole = user['role'] as String? ?? 'seeker';
               final newRole = await showDialog<String>(
@@ -308,7 +307,6 @@ class _UserDetailContent extends ConsumerWidget {
             _ActionButton(
               icon: Icons.lock_open,
               label: 'Mở khóa',
-              color: AppColors.success,
               onTap: () async {
                 final repo = ref.read(adminRepositoryProvider);
                 await repo.banUser(
@@ -329,32 +327,57 @@ class _UserDetailContent extends ConsumerWidget {
   }
 }
 
+/// Admin action row (§6, utility tier): a quiet hairline-bordered row where
+/// the color lives in the text/icon, never the fill. Destructive actions are
+/// red text; everything else is neutral ink.
 class _ActionButton extends StatelessWidget {
   const _ActionButton({
     required this.icon,
     required this.label,
-    required this.color,
     required this.onTap,
+    this.destructive = false,
   });
 
   final IconData icon;
   final String label;
-  final Color color;
   final VoidCallback onTap;
+  final bool destructive;
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton.icon(
-      onPressed: onTap,
-      icon: Icon(icon, color: color),
-      label: Text(label, style: TextStyle(color: color)),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: color.withValues(alpha: 0.1),
-        foregroundColor: color,
-        elevation: 0,
-        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
-        alignment: Alignment.centerLeft,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    final brightness = Theme.of(context).brightness;
+    final fg = destructive
+        ? AppColors.errorFor(brightness)
+        : AppColors.inkFor(brightness);
+    final iconColor =
+        destructive ? fg : AppColors.gray600For(brightness);
+
+    return Material(
+      color: AppColors.surfaceFor(brightness),
+      borderRadius: AppRadii.button,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AppRadii.button,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+          decoration: BoxDecoration(
+            borderRadius: AppRadii.button,
+            border: Border.all(color: AppColors.hairlineFor(brightness)),
+          ),
+          child: Row(
+            children: [
+              Icon(icon, color: iconColor, size: 20),
+              const SizedBox(width: 12),
+              Text(label, style: AppTextStyles.label.copyWith(color: fg)),
+              const Spacer(),
+              Icon(
+                Icons.chevron_right,
+                size: 18,
+                color: AppColors.gray400For(brightness),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
