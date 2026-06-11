@@ -40,15 +40,17 @@ class ProfilePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final profileAsync = ref.watch(currentProfileProvider);
+    final brightness = Theme.of(context).brightness;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
           AppStrings.profile,
-          style: AppTextStyles.headline.copyWith(color: AppColors.textPrimary),
+          style: AppTextStyles.headline
+              .copyWith(color: AppColors.textPrimaryFor(brightness)),
         ),
         centerTitle: true,
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.backgroundFor(brightness),
         elevation: 0,
         scrolledUnderElevation: 0,
         actions: const [_ThemeModeAction()],
@@ -71,7 +73,7 @@ class ProfilePage extends ConsumerWidget {
               Text(
                 error.toString(),
                 style: AppTextStyles.body.copyWith(
-                  color: AppColors.textSecondary,
+                  color: AppColors.textSecondaryFor(brightness),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -100,6 +102,7 @@ class _ProfileContent extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final brightness = Theme.of(context).brightness;
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Column(
@@ -107,13 +110,13 @@ class _ProfileContent extends ConsumerWidget {
           // Avatar
           CircleAvatar(
             radius: 56,
-            backgroundColor: AppColors.surfaceVariant,
+            backgroundColor: AppColors.surfaceVariantFor(brightness),
             backgroundImage: _avatarImage(),
             child: _avatarImage() == null
-                ? const Icon(
+                ? Icon(
                     Icons.person,
                     size: 56,
-                    color: AppColors.textSecondary,
+                    color: AppColors.textSecondaryFor(brightness),
                   )
                 : null,
           ),
@@ -124,7 +127,7 @@ class _ProfileContent extends ConsumerWidget {
             profile.fullName,
             style: AppTextStyles.display.copyWith(
               fontFamily: AppTextStyles.lora,
-              color: AppColors.textPrimary,
+              color: AppColors.textPrimaryFor(brightness),
             ),
             textAlign: TextAlign.center,
           ),
@@ -135,7 +138,7 @@ class _ProfileContent extends ConsumerWidget {
             Text(
               profile.headline!,
               style: AppTextStyles.body.copyWith(
-                color: AppColors.textSecondary,
+                color: AppColors.textSecondaryFor(brightness),
               ),
               textAlign: TextAlign.center,
             ),
@@ -147,16 +150,16 @@ class _ProfileContent extends ConsumerWidget {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(
+                Icon(
                   Icons.location_on_outlined,
                   size: 16,
-                  color: AppColors.textSecondary,
+                  color: AppColors.textSecondaryFor(brightness),
                 ),
                 const SizedBox(width: 4),
                 Text(
                   profile.location!,
                   style: AppTextStyles.label.copyWith(
-                    color: AppColors.textSecondary,
+                    color: AppColors.textSecondaryFor(brightness),
                   ),
                 ),
               ],
@@ -171,14 +174,14 @@ class _ProfileContent extends ConsumerWidget {
               child: Text(
                 profile.bio!,
                 style: AppTextStyles.body.copyWith(
-                  color: AppColors.textPrimary,
+                  color: AppColors.textPrimaryFor(brightness),
                 ),
               ),
             ),
           ],
 
           const SizedBox(height: 24),
-          const Divider(color: AppColors.divider),
+          Divider(color: AppColors.outlineFor(brightness)),
           const SizedBox(height: 24),
 
           // Edit profile CTA (primary teal)
@@ -210,13 +213,13 @@ class _ProfileContent extends ConsumerWidget {
             child: TextButton(
               onPressed: () => _handleLogout(context, ref),
               style: TextButton.styleFrom(
-                foregroundColor: AppColors.textSecondary,
+                foregroundColor: AppColors.textSecondaryFor(brightness),
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
               child: Text(
                 AppStrings.logout,
                 style: AppTextStyles.label.copyWith(
-                  color: AppColors.textSecondary,
+                  color: AppColors.textSecondaryFor(brightness),
                 ),
               ),
             ),
@@ -227,28 +230,28 @@ class _ProfileContent extends ConsumerWidget {
           // ─── T-13: Company Link (role-gated) ────────────────────
           _CompanyLinkSection(),
 
-          const Divider(color: AppColors.divider),
+          Divider(color: AppColors.outlineFor(brightness)),
           const SizedBox(height: 16),
 
           // ─── T-11: Work Experiences Section ─────────────────────
           _WorkExperiencesSection(userId: profile.id),
 
           const SizedBox(height: 16),
-          const Divider(color: AppColors.divider),
+          Divider(color: AppColors.outlineFor(brightness)),
           const SizedBox(height: 16),
 
           // ─── T-11: Educations Section ───────────────────────────
           _EducationsSection(userId: profile.id),
 
           const SizedBox(height: 16),
-          const Divider(color: AppColors.divider),
+          Divider(color: AppColors.outlineFor(brightness)),
           const SizedBox(height: 16),
 
           // ─── T-11: Certificates Section ─────────────────────
           _CertificatesSection(userId: profile.id),
 
           const SizedBox(height: 16),
-          const Divider(color: AppColors.divider),
+          Divider(color: AppColors.outlineFor(brightness)),
           const SizedBox(height: 16),
 
           // ─── T-12: Skills Section ───────────────────────────
@@ -298,11 +301,12 @@ class _CompanyLinkSection extends ConsumerWidget {
     if (auth is! AuthAuthenticated) return const SizedBox.shrink();
     if (auth.role != UserRole.recruiter) return const SizedBox.shrink();
 
+    final brightness = Theme.of(context).brightness;
     return Column(
       children: [
         Container(
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: AppColors.surfaceFor(brightness),
             borderRadius: BorderRadius.circular(12),
           ),
           child: InkWell(
@@ -325,14 +329,14 @@ class _CompanyLinkSection extends ConsumerWidget {
                     child: Text(
                       AppStrings.companyProfile,
                       style: AppTextStyles.body.copyWith(
-                        color: AppColors.textPrimary,
+                        color: AppColors.textPrimaryFor(brightness),
                       ),
                     ),
                   ),
-                  const Icon(
+                  Icon(
                     Icons.chevron_right,
                     size: 20,
-                    color: AppColors.textSecondary,
+                    color: AppColors.textSecondaryFor(brightness),
                   ),
                 ],
               ),
@@ -355,6 +359,7 @@ class _WorkExperiencesSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final experiencesAsync = ref.watch(workExperiencesProvider);
+    final brightness = Theme.of(context).brightness;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -374,7 +379,7 @@ class _WorkExperiencesSection extends ConsumerWidget {
                   child: Text(
                     AppStrings.noData,
                     style: AppTextStyles.body.copyWith(
-                      color: AppColors.textSecondary,
+                      color: AppColors.textSecondaryFor(brightness),
                     ),
                   ),
                 )
@@ -425,6 +430,7 @@ class _EducationsSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final educationsAsync = ref.watch(educationsProvider);
+    final brightness = Theme.of(context).brightness;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -444,7 +450,7 @@ class _EducationsSection extends ConsumerWidget {
                   child: Text(
                     AppStrings.noData,
                     style: AppTextStyles.body.copyWith(
-                      color: AppColors.textSecondary,
+                      color: AppColors.textSecondaryFor(brightness),
                     ),
                   ),
                 )
@@ -495,6 +501,7 @@ class _CertificatesSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final certificatesAsync = ref.watch(certificatesProvider);
+    final brightness = Theme.of(context).brightness;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -514,7 +521,7 @@ class _CertificatesSection extends ConsumerWidget {
                   child: Text(
                     AppStrings.noData,
                     style: AppTextStyles.body.copyWith(
-                      color: AppColors.textSecondary,
+                      color: AppColors.textSecondaryFor(brightness),
                     ),
                   ),
                 )
@@ -565,6 +572,7 @@ class _SkillsSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userSkillsAsync = ref.watch(userSkillsProvider);
+    final brightness = Theme.of(context).brightness;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -584,7 +592,7 @@ class _SkillsSection extends ConsumerWidget {
                   child: Text(
                     AppStrings.noData,
                     style: AppTextStyles.body.copyWith(
-                      color: AppColors.textSecondary,
+                      color: AppColors.textSecondaryFor(brightness),
                     ),
                   ),
                 )
@@ -604,17 +612,19 @@ class _SkillsSection extends ConsumerWidget {
                             label: Text(
                               '${skill.skillName} \u00b7 ${skill.levelLabel}',
                               style: AppTextStyles.label.copyWith(
-                                color: AppColors.textPrimary,
+                                color: AppColors.textPrimaryFor(brightness),
                               ),
                             ),
-                            backgroundColor: _chipColor(skill.level),
+                            backgroundColor: _chipColor(skill.level, brightness),
                             deleteIcon: const Icon(Icons.close, size: 16),
                             onDeleted: () => _confirmDeleteSkill(
                               context,
                               ref,
                               skill,
                             ),
-                            side: const BorderSide(color: AppColors.divider),
+                            side: BorderSide(
+                              color: AppColors.outlineFor(brightness),
+                            ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(
                                 AppConstants.cardBorderRadius,
@@ -643,11 +653,11 @@ class _SkillsSection extends ConsumerWidget {
     );
   }
 
-  Color _chipColor(String level) => switch (level) {
-        'beginner' => AppColors.surface,
+  Color _chipColor(String level, Brightness brightness) => switch (level) {
+        'beginner' => AppColors.surfaceVariantFor(brightness),
         'intermediate' => AppColors.primary.withAlpha(30),
         'advanced' => AppColors.primary.withAlpha(64),
-        _ => AppColors.surface,
+        _ => AppColors.surfaceVariantFor(brightness),
       };
 
   void _confirmDeleteSkill(
@@ -655,12 +665,13 @@ class _SkillsSection extends ConsumerWidget {
     WidgetRef ref,
     UserSkill skill,
   ) {
+    final brightness = Theme.of(context).brightness;
     showDialog(
       context: context,
       builder: (dialogContext) => Theme(
         data: Theme.of(context).copyWith(
           dialogTheme: DialogThemeData(
-            backgroundColor: AppColors.surface,
+            backgroundColor: AppColors.surfaceFor(brightness),
             shape: RoundedRectangleBorder(
               borderRadius:
                   BorderRadius.circular(AppConstants.cardBorderRadius),
@@ -668,10 +679,15 @@ class _SkillsSection extends ConsumerWidget {
           ),
         ),
         child: AlertDialog(
-          title: const Text(AppStrings.confirmDelete, style: AppTextStyles.title),
-          content: const Text(
+          title: Text(
+            AppStrings.confirmDelete,
+            style: AppTextStyles.title
+                .copyWith(color: AppColors.textPrimaryFor(brightness)),
+          ),
+          content: Text(
             AppStrings.deleteSkillMessage,
-            style: AppTextStyles.body,
+            style: AppTextStyles.body
+                .copyWith(color: AppColors.textSecondaryFor(brightness)),
           ),
           actions: [
             TextButton(
@@ -679,7 +695,7 @@ class _SkillsSection extends ConsumerWidget {
               child: Text(
                 AppStrings.cancel,
                 style: AppTextStyles.label.copyWith(
-                  color: AppColors.textSecondary,
+                  color: AppColors.textSecondaryFor(brightness),
                 ),
               ),
             ),
@@ -730,19 +746,23 @@ class _ThemeModeAction extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final mode = ref.watch(themeModeControllerProvider);
     final controller = ref.read(themeModeControllerProvider.notifier);
+    final brightness = Theme.of(context).brightness;
 
     return PopupMenuButton<ThemeMode>(
       tooltip: AppStrings.themeAppearance,
-      icon: Icon(_iconFor(mode), color: AppColors.textPrimary),
-      color: AppColors.surface,
+      icon: Icon(
+        _iconFor(mode),
+        color: AppColors.textPrimaryFor(brightness),
+      ),
+      color: AppColors.surfaceFor(brightness),
       onSelected: controller.setMode,
       itemBuilder: (context) => [
         _item(ThemeMode.system, AppStrings.themeSystem,
-            Icons.brightness_auto_outlined, mode),
+            Icons.brightness_auto_outlined, mode, brightness),
         _item(ThemeMode.light, AppStrings.themeLight,
-            Icons.light_mode_outlined, mode),
+            Icons.light_mode_outlined, mode, brightness),
         _item(ThemeMode.dark, AppStrings.themeDark,
-            Icons.dark_mode_outlined, mode),
+            Icons.dark_mode_outlined, mode, brightness),
       ],
     );
   }
@@ -752,6 +772,7 @@ class _ThemeModeAction extends ConsumerWidget {
     String label,
     IconData icon,
     ThemeMode current,
+    Brightness brightness,
   ) {
     final selected = value == current;
     return PopupMenuItem<ThemeMode>(
@@ -761,13 +782,17 @@ class _ThemeModeAction extends ConsumerWidget {
           Icon(
             icon,
             size: 20,
-            color: selected ? AppColors.accent : AppColors.textSecondary,
+            color: selected
+                ? AppColors.accent
+                : AppColors.textSecondaryFor(brightness),
           ),
           const SizedBox(width: 12),
           Text(
             label,
             style: AppTextStyles.bodyMedium.copyWith(
-              color: selected ? AppColors.accent : AppColors.textPrimary,
+              color: selected
+                  ? AppColors.accent
+                  : AppColors.textPrimaryFor(brightness),
               fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
             ),
           ),

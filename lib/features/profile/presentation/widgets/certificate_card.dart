@@ -22,6 +22,7 @@ class CertificateCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
     final dateStr = certificate.issuedAt != null
         ? DateFormat('MM/yyyy').format(certificate.issuedAt!)
         : '';
@@ -33,9 +34,9 @@ class CertificateCard extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: AppColors.surfaceFor(brightness),
           borderRadius: BorderRadius.circular(AppConstants.cardBorderRadius),
-          border: Border.all(color: AppColors.divider),
+          border: Border.all(color: AppColors.outlineFor(brightness)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -47,7 +48,7 @@ class CertificateCard extends StatelessWidget {
                   child: Text(
                     certificate.name,
                     style: AppTextStyles.title.copyWith(
-                      color: AppColors.textPrimary,
+                      color: AppColors.textPrimaryFor(brightness),
                     ),
                   ),
                 ),
@@ -55,7 +56,7 @@ class CertificateCard extends StatelessWidget {
                   Text(
                     dateStr,
                     style: AppTextStyles.label.copyWith(
-                      color: AppColors.textSecondary,
+                      color: AppColors.textSecondaryFor(brightness),
                     ),
                   ),
               ],
@@ -66,7 +67,7 @@ class CertificateCard extends StatelessWidget {
               Text(
                 certificate.issuer!,
                 style: AppTextStyles.body.copyWith(
-                  color: AppColors.textSecondary,
+                  color: AppColors.textSecondaryFor(brightness),
                 ),
               ),
             ],
