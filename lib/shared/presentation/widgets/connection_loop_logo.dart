@@ -112,6 +112,63 @@ class _ConnectionLoopLogoState extends State<ConnectionLoopLogo>
   }
 }
 
+/// Pull-to-refresh spinner (§9 signature animation #4): the loop spins in
+/// place of the stock spinner. A full orange ring rotating continuously.
+class ConnectionLoopSpinner extends StatefulWidget {
+  const ConnectionLoopSpinner({super.key, this.size = 32});
+
+  final double size;
+
+  @override
+  State<ConnectionLoopSpinner> createState() => _ConnectionLoopSpinnerState();
+}
+
+class _ConnectionLoopSpinnerState extends State<ConnectionLoopSpinner>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final reducedMotion =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    if (reducedMotion) {
+      _controller.value = 0;
+    } else if (!_controller.isAnimating) {
+      _controller.repeat();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: widget.size,
+      height: widget.size,
+      child: RotationTransition(
+        turns: _controller,
+        child: const CustomPaint(
+          painter: _ConnectionLoopPainter(progress: 1),
+        ),
+      ),
+    );
+  }
+}
+
 class _ConnectionLoopPainter extends CustomPainter {
   const _ConnectionLoopPainter({required this.progress});
 

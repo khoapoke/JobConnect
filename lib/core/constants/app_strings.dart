@@ -315,6 +315,7 @@ class AppStrings {
       'Hãy thử lại để tiếp tục khám phá cơ hội phù hợp.';
   static const latestJobs = 'Việc mới nhất';
   static const noJobPostsYet = 'Chưa có tin tuyển dụng nào.';
+  static const splashTagline = 'Kết nối cơ hội của bạn';
   static const matchVeryRelevant = 'Rất phù hợp';
   static const matchRelevant = 'Phù hợp';
   static const matchPotential = 'Có tiềm năng';

@@ -10,6 +10,7 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../shared/presentation/widgets/animated_pressable.dart';
 import '../../../../shared/presentation/widgets/app_gradient_background.dart';
+import '../../../../shared/presentation/widgets/connection_loop_logo.dart';
 import '../../../../shared/presentation/widgets/glass_surface.dart';
 import '../../../../shared/presentation/widgets/premium_button.dart';
 import '../../../auth/domain/entities/auth_state.dart';
@@ -466,18 +467,10 @@ class _ApplySuccessDialog extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 64,
-              height: 64,
-              decoration: BoxDecoration(
-                color: AppColors.success.withValues(alpha: 0.14),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.check_circle_rounded,
-                color: AppColors.success,
-                size: 36,
-              ),
+            const ConnectionLoopLogo(
+              size: 56,
+              animated: true,
+              showWordmark: false,
             ),
             const SizedBox(height: AppSpacing.space4),
             Text(

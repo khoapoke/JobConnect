@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_durations.dart';
 import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -33,6 +34,23 @@ enum _FeedTab { forYou, remote, internship, recent }
 
 class _JobFeedPageState extends ConsumerState<JobFeedPage> {
   _FeedTab _selectedTab = _FeedTab.forYou;
+  bool _isRefreshing = false;
+
+  Future<void> _onRefresh() async {
+    setState(() => _isRefreshing = true);
+    ref.invalidate(jobFeedProvider);
+    final futures = <Future<void>>[ref.read(jobFeedProvider.future)];
+    if (_selectedTab == _FeedTab.forYou) {
+      ref.invalidate(aiSuggestionsProvider);
+      futures.add(ref.read(aiSuggestionsProvider.future));
+    }
+    try {
+      await Future.wait(futures);
+    } catch (_) {
+      // Errors surface through the AsyncValue states below.
+    }
+    if (mounted) setState(() => _isRefreshing = false);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,46 +62,57 @@ class _JobFeedPageState extends ConsumerState<JobFeedPage> {
       backgroundColor: Colors.transparent,
       body: AppGradientBackground(
         child: SafeArea(
-          child: RefreshIndicator(
-            onRefresh: () async {
-              ref.invalidate(jobFeedProvider);
-              if (_selectedTab == _FeedTab.forYou) {
-                ref.invalidate(aiSuggestionsProvider);
-              }
-            },
-            child: ListView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.space4,
-                AppSpacing.space3,
-                AppSpacing.space4,
-                AppSpacing.space8,
+          child: Stack(
+            children: [
+              // Stock indicator is transparent — the loop spinner overlay
+              // below is the signature pull-to-refresh moment (§9 #4).
+              RefreshIndicator(
+                color: Colors.transparent,
+                backgroundColor: Colors.transparent,
+                onRefresh: _onRefresh,
+                child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.space4,
+                    AppSpacing.space3,
+                    AppSpacing.space4,
+                    AppSpacing.space8,
+                  ),
+                  children: [
+                    _FeedHeader(profileAsync: profileAsync),
+                    const SizedBox(height: AppSpacing.space5),
+                    SpotlightSearchBar(
+                      hintText: 'Spotlight tìm việc, kỹ năng, công ty...',
+                      onTap: () => context.go('/search'),
+                    ),
+                    const SizedBox(height: AppSpacing.space4),
+                    _FeedTabs(
+                      selectedTab: _selectedTab,
+                      onTabChanged: (tab) =>
+                          setState(() => _selectedTab = tab),
+                    ),
+                    const SizedBox(height: AppSpacing.space4),
+                    jobsAsync.when(
+                      data: (jobs) => _FeedContent(
+                        allJobs: jobs,
+                        selectedTab: _selectedTab,
+                      ),
+                      loading: () => const _FeedLoadingState(),
+                      error: (error, _) => _FeedErrorState(
+                        onRetry: () => ref.invalidate(jobFeedProvider),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              children: [
-                _FeedHeader(profileAsync: profileAsync),
-                const SizedBox(height: AppSpacing.space5),
-                SpotlightSearchBar(
-                  hintText: 'Spotlight tìm việc, kỹ năng, công ty...',
-                  onTap: () => context.go('/search'),
+              if (_isRefreshing)
+                const Positioned(
+                  top: AppSpacing.space3,
+                  left: 0,
+                  right: 0,
+                  child: Center(child: ConnectionLoopSpinner(size: 32)),
                 ),
-                const SizedBox(height: AppSpacing.space4),
-                _FeedTabs(
-                  selectedTab: _selectedTab,
-                  onTabChanged: (tab) => setState(() => _selectedTab = tab),
-                ),
-                const SizedBox(height: AppSpacing.space4),
-                jobsAsync.when(
-                  data: (jobs) => _FeedContent(
-                    allJobs: jobs,
-                    selectedTab: _selectedTab,
-                  ),
-                  loading: () => const _FeedLoadingState(),
-                  error: (error, _) => _FeedErrorState(
-                    onRetry: () => ref.invalidate(jobFeedProvider),
-                  ),
-                ),
-              ],
-            ),
+            ],
           ),
         ),
       ),
@@ -98,32 +127,30 @@ class _FeedHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
     final greetingName =
         profileAsync.valueOrNull?.fullName.split(' ').last ?? 'bạn';
 
-    return GlassSurface(
-      borderRadius: AppRadii.xl,
-      padding: const EdgeInsets.all(AppSpacing.space5),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const ConnectionLoopLogo(size: 42, animated: true),
-          const SizedBox(height: AppSpacing.space5),
-          Text(
-            'Chào $greetingName',
-            style: AppTextStyles.sectionTitle.copyWith(
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const ConnectionLoopLogo(size: 36, animated: true),
+        const SizedBox(height: AppSpacing.space5),
+        Text(
+          'Chào $greetingName,',
+          style: AppTextStyles.displayHero.copyWith(
+            fontFamily: AppTextStyles.lora,
+            color: AppColors.inkFor(brightness),
           ),
-          const SizedBox(height: AppSpacing.space2),
-          Text(
-            'Hôm nay có nhiều cơ hội đáng chú ý hơn cho hành trình nghề nghiệp của bạn.',
-            style: AppTextStyles.body.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
+        ),
+        const SizedBox(height: AppSpacing.space2),
+        Text(
+          'Hôm nay có nhiều cơ hội đáng chú ý hơn cho hành trình nghề nghiệp của bạn.',
+          style: AppTextStyles.body.copyWith(
+            color: AppColors.gray600For(brightness),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -243,9 +270,12 @@ class _FeedContent extends StatelessWidget {
         const SizedBox(height: AppSpacing.space4),
         ...List.generate(rest.length, (index) {
           final job = rest[index];
-          return Padding(
-            padding: const EdgeInsets.only(bottom: AppSpacing.space4),
-            child: JobCard(result: job),
+          return _StaggeredFadeIn(
+            index: index,
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.space4),
+              child: JobCard(result: job),
+            ),
           );
         }),
       ],
@@ -361,6 +391,39 @@ class _FeedEmptyState extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+/// First-load stagger (§9): each feed card fades and slides up by a
+/// 30ms-per-index delay. Skipped under reduced motion.
+class _StaggeredFadeIn extends StatelessWidget {
+  const _StaggeredFadeIn({required this.index, required this.child});
+
+  final int index;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final reducedMotion =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    if (reducedMotion) return child;
+
+    final delayMs = (index * AppDurations.stagger.inMilliseconds)
+        .clamp(0, 300)
+        .toInt();
+
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: 1),
+      duration: Duration(milliseconds: 300 + delayMs),
+      curve: AppDurations.easing,
+      builder: (context, value, child) => Opacity(
+        opacity: value,
+        child: Transform.translate(
+          offset: Offset(0, 12 * (1 - value)),
+          child: child,
+        ),
+      ),
+      child: child,
     );
   }
 }

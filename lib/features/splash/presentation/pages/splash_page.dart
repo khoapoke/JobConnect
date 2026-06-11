@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/constants/app_strings.dart';
 import '../../../../core/router/user_role.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_durations.dart';
+import '../../../../core/theme/app_text_styles.dart';
 import '../../../../shared/presentation/widgets/app_gradient_background.dart';
 import '../../../../shared/presentation/widgets/connection_loop_logo.dart';
 import '../../../auth/domain/entities/auth_state.dart';
@@ -60,14 +63,42 @@ class _SplashPageState extends ConsumerState<SplashPage> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    final brightness = Theme.of(context).brightness;
+    final reducedMotion = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+
+    return Scaffold(
       body: AppGradientBackground(
-        child: Center(
-          child: ConnectionLoopLogo(
-            size: 88,
-            animated: true,
-            showWordmark: true,
-          ),
+        child: Stack(
+          children: [
+            const Center(
+              child: ConnectionLoopLogo(
+                size: 88,
+                animated: true,
+                showWordmark: true,
+              ),
+            ),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 48,
+              child: TweenAnimationBuilder<double>(
+                tween: Tween(begin: reducedMotion ? 1.0 : 0.0, end: 1.0),
+                duration: reducedMotion
+                    ? Duration.zero
+                    : const Duration(milliseconds: 600),
+                curve: const Interval(0.6, 1, curve: Curves.easeOut),
+                builder: (context, value, child) =>
+                    Opacity(opacity: value, child: child),
+                child: Text(
+                  AppStrings.splashTagline,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.body.copyWith(
+                    color: AppColors.gray400For(brightness),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

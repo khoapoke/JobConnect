@@ -240,7 +240,7 @@
 - [x] **UI-11: Shared primitives restyle**
   Rework `lib/shared/presentation/widgets/`: 4-tier button set (from `PremiumButton`), dot-pill `StatusChip`, plain bordered cards (retire `GlassSurface`, `AppGradients`, glow shadows), simplified search bar, pinned bottom nav (retire scroll-hide), `ConnectionLoopLogo` redrawn as single orange stroke.
 
-- [ ] **UI-12: Signature screens + 4 signature animations**
+- [x] **UI-12: Signature screens + 4 signature animations**
   Launch draw-in (≤1.4s, reduced-motion fallback), Home feed (Lora greeting, quiet cards), Job detail (match ring + count-up, dot-pill skill gap, sticky apply bar), Apply success loop-close, pull-to-refresh loop spin.
 
 - [ ] **UI-13: Core screens sweep**
