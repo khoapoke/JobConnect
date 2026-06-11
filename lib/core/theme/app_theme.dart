@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 
 import 'app_colors.dart';
-import 'app_durations.dart';
-import 'app_gradients.dart';
 import 'app_radii.dart';
-import 'app_shadows.dart';
 import 'app_spacing.dart';
 import 'app_text_styles.dart';
 
+/// Light Minimal Material theme (ratified 2026-06-11).
+///
+/// Light-first, monochrome surfaces with a single orange accent. Dark mode is a
+/// pure derivation of the same tokens (§2). Most of the look arrives here and in
+/// the shared primitives; feature screens are swept in UI-11 → UI-14.
 class AppTheme {
   const AppTheme._();
 
@@ -17,53 +19,63 @@ class AppTheme {
 
   static ThemeData _buildTheme(Brightness brightness) {
     final isDark = brightness == Brightness.dark;
-    final background = AppColors.backgroundFor(brightness);
+    final canvas = AppColors.canvasFor(brightness);
     final surface = AppColors.surfaceFor(brightness);
     final surfaceVariant = AppColors.surfaceVariantFor(brightness);
-    final outline = AppColors.outlineFor(brightness);
-    final onSurface = AppColors.textPrimaryFor(brightness);
-    final onSurfaceVariant = AppColors.textSecondaryFor(brightness);
-    final primary = isDark ? AppColors.primary : AppColors.primaryLight;
-    final secondary = isDark ? AppColors.aiAccent : AppColors.aiAccentLight;
+    final hairline = AppColors.hairlineFor(brightness);
+    final ink = AppColors.inkFor(brightness);
+    final gray600 = AppColors.gray600For(brightness);
+    final gray400 = AppColors.gray400For(brightness);
+    final error = AppColors.errorFor(brightness);
+    const accent = AppColors.accent; // identical in both modes (§2)
 
     final colorScheme = ColorScheme(
       brightness: brightness,
-      primary: primary,
-      onPrimary: AppColors.onPrimary,
-      secondary: secondary,
-      onSecondary: Colors.white,
-      error: AppColors.error,
-      onError: Colors.white,
+      primary: accent,
+      onPrimary: AppColors.onAccent,
+      // The system is monochrome + one accent; secondary stays neutral ink so
+      // stray Material widgets never introduce a second color.
+      secondary: ink,
+      onSecondary: surface,
+      error: error,
+      onError: AppColors.onAccent,
       surface: surface,
-      onSurface: onSurface,
-      onSurfaceVariant: onSurfaceVariant,
-      outline: outline,
-      outlineVariant: outline,
-      shadow: Colors.black,
-      scrim: Colors.black.withValues(alpha: 0.5),
-      inverseSurface: isDark ? AppColors.surfaceLight : AppColors.surface,
-      onInverseSurface: isDark ? AppColors.textPrimaryLight : AppColors.textPrimary,
-      inversePrimary: isDark ? AppColors.primaryLight : AppColors.primary,
+      onSurface: ink,
+      surfaceContainerHighest: surfaceVariant,
+      onSurfaceVariant: gray600,
+      outline: hairline,
+      outlineVariant: hairline,
+      shadow: AppColors.ink,
+      scrim: AppColors.ink.withValues(alpha: 0.5),
+      inverseSurface: isDark ? AppColors.surface : AppColors.surfaceDark,
+      onInverseSurface: isDark ? AppColors.ink : AppColors.inkDark,
+      inversePrimary: accent,
     );
 
     return ThemeData(
       useMaterial3: true,
       brightness: brightness,
       colorScheme: colorScheme,
-      scaffoldBackgroundColor: background,
-      canvasColor: background,
+      scaffoldBackgroundColor: canvas,
+      canvasColor: canvas,
       splashFactory: NoSplash.splashFactory,
       fontFamily: AppTextStyles.inter,
       textTheme: AppTextStyles.textTheme(brightness),
-      dividerColor: outline,
+      dividerColor: hairline,
+      dividerTheme: DividerThemeData(
+        color: hairline,
+        thickness: 1,
+        space: 1,
+      ),
       cardColor: surface,
       appBarTheme: AppBarTheme(
-        backgroundColor: Colors.transparent,
-        foregroundColor: onSurface,
+        backgroundColor: canvas,
+        foregroundColor: ink,
         elevation: 0,
         scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
         centerTitle: false,
-        titleTextStyle: AppTextStyles.title.copyWith(color: onSurface),
+        titleTextStyle: AppTextStyles.headline.copyWith(color: ink),
       ),
       cardTheme: CardThemeData(
         color: surface,
@@ -72,41 +84,45 @@ class AppTheme {
         surfaceTintColor: Colors.transparent,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
-          borderRadius: AppRadii.lg,
-          side: BorderSide(color: outline),
+          borderRadius: AppRadii.card,
+          side: BorderSide(color: hairline),
         ),
       ),
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: isDark ? AppColors.surface : AppColors.surfaceLight,
-        height: 76,
-        labelTextStyle: WidgetStatePropertyAll(
-          AppTextStyles.bodySmall.copyWith(
+        backgroundColor: surface,
+        surfaceTintColor: Colors.transparent,
+        indicatorColor: Colors.transparent, // no pill — active = orange (§8)
+        height: 64,
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          final selected = states.contains(WidgetState.selected);
+          return AppTextStyles.caption.copyWith(
             fontWeight: FontWeight.w600,
             fontSize: 11,
-            height: 1.05,
-          ),
-        ),
-        indicatorColor: primary.withValues(alpha: isDark ? 0.18 : 0.12),
+            height: 1.1,
+            color: selected ? accent : gray400,
+          );
+        }),
         iconTheme: WidgetStateProperty.resolveWith((states) {
           final selected = states.contains(WidgetState.selected);
           return IconThemeData(
-            color: selected ? primary : onSurfaceVariant,
-            size: 22,
+            color: selected ? accent : gray400,
+            size: 24,
           );
         }),
       ),
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: isDark ? AppColors.surface : AppColors.surfaceLight,
-        selectedItemColor: primary,
-        unselectedItemColor: onSurfaceVariant,
-        selectedLabelStyle: AppTextStyles.bodySmall.copyWith(
+        backgroundColor: surface,
+        selectedItemColor: accent,
+        unselectedItemColor: gray400,
+        selectedLabelStyle: AppTextStyles.caption.copyWith(
           fontWeight: FontWeight.w600,
           fontSize: 11,
-          height: 1.05,
+          height: 1.1,
         ),
-        unselectedLabelStyle: AppTextStyles.bodySmall.copyWith(
+        unselectedLabelStyle: AppTextStyles.caption.copyWith(
           fontSize: 11,
-          height: 1.05,
+          height: 1.1,
         ),
         type: BottomNavigationBarType.fixed,
         elevation: 0,
@@ -114,21 +130,39 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           minimumSize: const Size.fromHeight(AppSpacing.buttonHeight),
-          backgroundColor: primary,
-          foregroundColor: Colors.white,
+          backgroundColor: accent,
+          foregroundColor: AppColors.onAccent,
+          disabledBackgroundColor: surfaceVariant,
+          disabledForegroundColor: gray400,
           textStyle: AppTextStyles.label,
-          shape: const RoundedRectangleBorder(borderRadius: AppRadii.md),
+          shape: const RoundedRectangleBorder(borderRadius: AppRadii.button),
           elevation: 0,
           shadowColor: Colors.transparent,
+        ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          minimumSize: const Size.fromHeight(AppSpacing.buttonHeight),
+          backgroundColor: accent,
+          foregroundColor: AppColors.onAccent,
+          textStyle: AppTextStyles.label,
+          shape: const RoundedRectangleBorder(borderRadius: AppRadii.button),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: accent,
+          textStyle: AppTextStyles.label,
+          shape: const RoundedRectangleBorder(borderRadius: AppRadii.button),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           minimumSize: const Size.fromHeight(AppSpacing.buttonHeight),
-          foregroundColor: onSurface,
+          foregroundColor: ink,
           textStyle: AppTextStyles.label,
-          side: BorderSide(color: outline),
-          shape: const RoundedRectangleBorder(borderRadius: AppRadii.md),
+          side: BorderSide(color: hairline),
+          shape: const RoundedRectangleBorder(borderRadius: AppRadii.button),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
@@ -138,102 +172,70 @@ class AppTheme {
           horizontal: AppSpacing.space4,
           vertical: AppSpacing.space4,
         ),
-        hintStyle: AppTextStyles.body.copyWith(color: onSurfaceVariant),
-        border: OutlineInputBorder(
-          borderRadius: AppRadii.lg,
-          borderSide: BorderSide(color: outline),
+        hintStyle: AppTextStyles.body.copyWith(color: gray400),
+        border: const OutlineInputBorder(
+          borderRadius: AppRadii.input,
+          borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: AppRadii.lg,
-          borderSide: BorderSide(color: outline),
+          borderRadius: AppRadii.input,
+          borderSide: BorderSide(color: hairline),
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: AppRadii.lg,
-          borderSide: BorderSide(color: primary, width: 1.4),
+        focusedBorder: const OutlineInputBorder(
+          borderRadius: AppRadii.input,
+          borderSide: BorderSide(color: accent, width: 1.6),
         ),
-        errorBorder: const OutlineInputBorder(
-          borderRadius: AppRadii.lg,
-          borderSide: BorderSide(color: AppColors.error),
+        errorBorder: OutlineInputBorder(
+          borderRadius: AppRadii.input,
+          borderSide: BorderSide(color: error),
         ),
-        focusedErrorBorder: const OutlineInputBorder(
-          borderRadius: AppRadii.lg,
-          borderSide: BorderSide(color: AppColors.error, width: 1.4),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: AppRadii.input,
+          borderSide: BorderSide(color: error, width: 1.6),
         ),
       ),
       chipTheme: ChipThemeData(
         backgroundColor: surfaceVariant,
-        selectedColor: primary.withValues(alpha: isDark ? 0.18 : 0.12),
+        selectedColor: ink,
         disabledColor: surfaceVariant,
-        side: BorderSide(color: outline),
-        labelStyle: AppTextStyles.bodySmall.copyWith(color: onSurface),
-        shape: const RoundedRectangleBorder(borderRadius: AppRadii.md),
+        side: BorderSide(color: hairline),
+        labelStyle: AppTextStyles.bodySmall.copyWith(color: ink),
+        secondaryLabelStyle: AppTextStyles.bodySmall.copyWith(color: surface),
+        shape: const RoundedRectangleBorder(borderRadius: AppRadii.pill),
       ),
       dialogTheme: DialogThemeData(
         backgroundColor: surface,
-        shape: const RoundedRectangleBorder(borderRadius: AppRadii.xl),
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: AppRadii.card,
+          side: BorderSide(color: hairline),
+        ),
         elevation: 0,
         shadowColor: Colors.transparent,
+        titleTextStyle: AppTextStyles.title.copyWith(color: ink),
+        contentTextStyle: AppTextStyles.body.copyWith(color: gray600),
       ),
       bottomSheetTheme: BottomSheetThemeData(
-        backgroundColor: surfaceVariant,
+        backgroundColor: surface,
         surfaceTintColor: Colors.transparent,
-        shape: const RoundedRectangleBorder(borderRadius: AppRadii.xl),
+        modalBackgroundColor: surface,
+        elevation: 0,
+        shape: const RoundedRectangleBorder(borderRadius: AppRadii.sheet),
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
-        backgroundColor: surface,
-        contentTextStyle: AppTextStyles.bodyMedium.copyWith(color: onSurface),
-        shape: const RoundedRectangleBorder(borderRadius: AppRadii.md),
+        backgroundColor: ink,
+        contentTextStyle: AppTextStyles.bodyMedium.copyWith(color: surface),
+        actionTextColor: accent,
+        elevation: 0,
+        shape: const RoundedRectangleBorder(borderRadius: AppRadii.button),
       ),
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
-          TargetPlatform.android: ZoomPageTransitionsBuilder(),
-          TargetPlatform.iOS: ZoomPageTransitionsBuilder(),
+          TargetPlatform.android: FadeForwardsPageTransitionsBuilder(),
+          TargetPlatform.iOS: FadeForwardsPageTransitionsBuilder(),
         },
       ),
-      extensions: [
-        _AppThemeExtras(
-          backgroundGradient:
-              isDark ? AppGradients.darkBackground : AppGradients.lightBackground,
-          surfaceShadow: isDark ? AppShadows.card : const [],
-          animationDuration: AppDurations.base,
-        ),
-      ],
     );
-  }
-}
-
-@immutable
-class _AppThemeExtras extends ThemeExtension<_AppThemeExtras> {
-  const _AppThemeExtras({
-    required this.backgroundGradient,
-    required this.surfaceShadow,
-    required this.animationDuration,
-  });
-
-  final Gradient backgroundGradient;
-  final List<BoxShadow> surfaceShadow;
-  final Duration animationDuration;
-
-  @override
-  ThemeExtension<_AppThemeExtras> copyWith({
-    Gradient? backgroundGradient,
-    List<BoxShadow>? surfaceShadow,
-    Duration? animationDuration,
-  }) {
-    return _AppThemeExtras(
-      backgroundGradient: backgroundGradient ?? this.backgroundGradient,
-      surfaceShadow: surfaceShadow ?? this.surfaceShadow,
-      animationDuration: animationDuration ?? this.animationDuration,
-    );
-  }
-
-  @override
-  ThemeExtension<_AppThemeExtras> lerp(
-    covariant ThemeExtension<_AppThemeExtras>? other,
-    double t,
-  ) {
-    if (other is! _AppThemeExtras) return this;
-    return t < 0.5 ? this : other;
   }
 }

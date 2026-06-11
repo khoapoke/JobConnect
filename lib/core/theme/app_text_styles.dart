@@ -2,42 +2,57 @@ import 'package:flutter/material.dart';
 
 import 'app_colors.dart';
 
+/// Light Minimal type system (§3). Inter for all UI/body, Lora (serif) reserved
+/// for exactly two hero moments — launch/auth titles and hero greetings /
+/// identity names. Never use Lora for body, buttons, or nav.
+///
+/// Numbers are a typographic feature: salary, stats and match % use [number]
+/// with tabular figures so digits stay aligned as they animate.
 class AppTextStyles {
   const AppTextStyles._();
 
   static const String inter = 'Inter';
+  static const String lora = 'Lora';
+
+  /// Retired display family — kept only so pre-redesign widgets compile.
+  /// Removed once `connection_loop_logo` is redrawn in UI-11.
   static const String spaceGrotesk = 'SpaceGrotesk';
 
+  // ---------------------------------------------------------------------------
+  // Display / hero — Lora serif, the only two hero moments (§3).
+  // ---------------------------------------------------------------------------
   static const TextStyle displayHero = TextStyle(
-    fontFamily: spaceGrotesk,
-    fontSize: 40,
-    fontWeight: FontWeight.w700,
-    height: 1.05,
-    letterSpacing: -1.2,
+    fontFamily: lora,
+    fontSize: 38,
+    fontWeight: FontWeight.w600,
+    height: 1.1,
+    letterSpacing: -0.4,
   );
 
   static const TextStyle display = TextStyle(
-    fontFamily: spaceGrotesk,
-    fontSize: 32,
-    fontWeight: FontWeight.w700,
-    height: 1.1,
-    letterSpacing: -0.8,
+    fontFamily: lora,
+    fontSize: 28,
+    fontWeight: FontWeight.w600,
+    height: 1.15,
+    letterSpacing: -0.2,
   );
 
+  // ---------------------------------------------------------------------------
+  // Inter UI roles.
+  // ---------------------------------------------------------------------------
   static const TextStyle headline = TextStyle(
     fontFamily: inter,
-    fontSize: 30,
+    fontSize: 24,
     fontWeight: FontWeight.w800,
-    height: 1.15,
-    letterSpacing: -0.6,
+    height: 1.2,
+    letterSpacing: -0.48, // −2%
   );
 
   static const TextStyle sectionTitle = TextStyle(
     fontFamily: inter,
-    fontSize: 22,
-    fontWeight: FontWeight.w800,
-    height: 1.2,
-    letterSpacing: -0.3,
+    fontSize: 16,
+    fontWeight: FontWeight.w700,
+    height: 1.3,
   );
 
   static const TextStyle title = TextStyle(
@@ -51,14 +66,14 @@ class AppTextStyles {
     fontFamily: inter,
     fontSize: 15,
     fontWeight: FontWeight.w400,
-    height: 1.5,
+    height: 1.55,
   );
 
   static const TextStyle bodyMedium = TextStyle(
     fontFamily: inter,
     fontSize: 14,
     fontWeight: FontWeight.w500,
-    height: 1.45,
+    height: 1.5,
   );
 
   static const TextStyle bodySmall = TextStyle(
@@ -70,7 +85,7 @@ class AppTextStyles {
 
   static const TextStyle label = TextStyle(
     fontFamily: inter,
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: FontWeight.w700,
     height: 1.2,
   );
@@ -78,13 +93,19 @@ class AppTextStyles {
   static const TextStyle caption = TextStyle(
     fontFamily: inter,
     fontSize: 12,
-    fontWeight: FontWeight.w600,
+    fontWeight: FontWeight.w500,
     height: 1.3,
   );
 
+  /// Tabular-figure numerals for salary, dashboard stats, and match scores.
+  static const TextStyle number = TextStyle(
+    fontFamily: inter,
+    fontWeight: FontWeight.w800,
+    fontFeatures: [FontFeature.tabularFigures()],
+  );
+
   static TextTheme textTheme(Brightness brightness) {
-    final bodyColor = AppColors.textPrimaryFor(brightness);
-    final displayColor = AppColors.textPrimaryFor(brightness);
+    final color = AppColors.textPrimaryFor(brightness);
 
     return const TextTheme(
       displayLarge: displayHero,
@@ -100,8 +121,8 @@ class AppTextStyles {
       labelMedium: caption,
       labelSmall: bodySmall,
     ).apply(
-      bodyColor: bodyColor,
-      displayColor: displayColor,
+      bodyColor: color,
+      displayColor: color,
     );
   }
 }

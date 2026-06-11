@@ -61,6 +61,23 @@ flutter:
         - asset: assets/fonts/inter/Inter-Italic-Variable.ttf
           style: italic
           weight: 500
+    - family: Lora
+      fonts:
+        - asset: assets/fonts/lora/Lora-Variable.ttf
+          weight: 400
+        - asset: assets/fonts/lora/Lora-Variable.ttf
+          weight: 500
+        - asset: assets/fonts/lora/Lora-Variable.ttf
+          weight: 600
+        - asset: assets/fonts/lora/Lora-Variable.ttf
+          weight: 700
+        - asset: assets/fonts/lora/Lora-Italic-Variable.ttf
+          style: italic
+          weight: 400
+        - asset: assets/fonts/lora/Lora-Italic-Variable.ttf
+          style: italic
+          weight: 600
+    # SpaceGrotesk retained until no references remain (removed in UI-11+).
     - family: SpaceGrotesk
       fonts:
         - asset: assets/fonts/space_grotesk/SpaceGrotesk-Variable.ttf

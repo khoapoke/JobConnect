@@ -13,6 +13,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/constants/app_constants.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/theme_mode_provider.dart';
 import 'features/notification/presentation/providers/notification_setup_provider.dart';
 
 // Android notification channel
@@ -107,13 +108,14 @@ class JobConnectApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(appRouterProvider);
+    final themeMode = ref.watch(themeModeControllerProvider);
     // Side-effect: watch auth state and manage FCM token lifecycle
     ref.watch(notificationSetupProvider);
     return MaterialApp.router(
       title: AppConstants.appName,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
-      themeMode: ThemeMode.dark,
+      themeMode: themeMode,
       routerConfig: router,
     );
   }

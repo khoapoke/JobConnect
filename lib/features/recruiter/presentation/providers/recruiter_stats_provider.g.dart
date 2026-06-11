@@ -6,7 +6,7 @@ part of 'recruiter_stats_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$recruiterStatsHash() => r'faa9c7a1fbac40d5b3fcae41ab026a015ece0ce0';
+String _$recruiterStatsHash() => r'df0c05bdc568343d8c80da90838a62d1c16e6d03';
 
 /// See also [recruiterStats].
 @ProviderFor(recruiterStats)
