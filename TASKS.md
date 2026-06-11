@@ -229,12 +229,25 @@
 
 ---
 
-## Phase 9.5 — Admin + Recruiter Utility UI 🎨
+## Phase 9.5 — Light Minimal Redesign 🎨 (ratified 2026-06-11)
 
-> Dependency: Phase 9 admin logic is working. Utility screens stay restrained, not cinematic.
+> The old "Modern Social Productivity" system was replaced. Contract: `docs/design/jobconnect_light_minimal_prototype.html` + rewritten `docs/design/JOB_CONNECT_UI_SYSTEM.md`.
+> Rollout: tokens → primitives → screens by tier. The old UI-10 (admin/recruiter utility polish) is absorbed into UI-14.
 
-- [ ] **UI-10: Admin/recruiter utility polish**
-  Polish admin dashboards, user management, job review, reports, and recruiter management screens with clean tables/cards, restrained charts, clear destructive actions, accessible status colors, and consistent spacing. Avoid heavy glow and decorative motion.
+- [ ] **UI-10: Theme tokens + font swap**
+  Re-token `core/theme/` to light-first monochrome + orange `#F97316` (dark = pure derivation, not dimmed). Bundle Lora (verify Vietnamese diacritics), move display roles Space Grotesk → Lora, type scale per §3. Theme mode: system-follow + manual override.
+
+- [ ] **UI-11: Shared primitives restyle**
+  Rework `lib/shared/presentation/widgets/`: 4-tier button set (from `PremiumButton`), dot-pill `StatusChip`, plain bordered cards (retire `GlassSurface`, `AppGradients`, glow shadows), simplified search bar, pinned bottom nav (retire scroll-hide), `ConnectionLoopLogo` redrawn as single orange stroke.
+
+- [ ] **UI-12: Signature screens + 4 signature animations**
+  Launch draw-in (≤1.4s, reduced-motion fallback), Home feed (Lora greeting, quiet cards), Job detail (match ring + count-up, dot-pill skill gap, sticky apply bar), Apply success loop-close, pull-to-refresh loop spin.
+
+- [ ] **UI-13: Core screens sweep**
+  Search/filters, My Applications (status dot-pills + Rút đơn destructive text), Chat (ink/gray bubbles), Profile (Lora name hero), Notifications, Bookmarks — harmonized motion, no leftover glass/gradient usages.
+
+- [ ] **UI-14: Utility sweep (absorbs old UI-10)**
+  Auth, CV builder, forms, recruiter screens (stat numbers, applicant action rows Shortlist → Invite → Reject), admin screens (hairline tables, gray+one-orange charts, destructive text actions, dialog/sheet styling per new system).
 
 ---
 
@@ -254,8 +267,8 @@
 
 > Dependency: Phase 10 saved search + alert logic is working.
 
-- [ ] **UI-11: Saved search + alert experience polish**
-  Polish saved search creation/list/detail states, alert match preview, notification opt-in state, and empty states. Use feed/search primitives where possible. Keep the flow lightweight and productivity-focused.
+- [ ] **UI-15: Saved search + alert experience polish**
+  Polish saved search creation/list/detail states, alert match preview, notification opt-in state, and empty states. Use the Light Minimal primitives. Keep the flow lightweight and productivity-focused.
 
 ---
 
@@ -287,8 +300,8 @@
 | 8 — Notification | T-30 → T-32 | FCM, in-app, triggers |
 | 8.5 — Notification UI 🎨 | UI-09 | Notification center polish |
 | 9 — Admin | T-33 → T-35 | Dashboard, user management, reports |
-| 9.5 — Utility UI 🎨 | UI-10 | Admin/recruiter utility polish |
+| 9.5 — Light Minimal Redesign 🎨 | UI-10 → UI-14 | Tokens, primitives, signature/core/utility sweeps |
 | 10 — Job Alert | T-36 → T-37 | Saved search, scheduled Edge Function |
-| 10.5 — Job Alert UI 🎨 | UI-11 | Saved search + alert experience polish |
+| 10.5 — Job Alert UI 🎨 | UI-15 | Saved search + alert experience polish |
 | 11 — Polish | T-38 → T-39 | UI polish, final review |
-| **Total** | **51 tasks** | 40 logic tasks + 11 UI/UX tasks |
+| **Total** | **55 tasks** | 40 logic tasks + 15 UI/UX tasks |
