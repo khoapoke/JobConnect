@@ -7,6 +7,7 @@ import '../../../../core/constants/app_strings.dart';
 import '../../../../core/router/user_role.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/theme/theme_mode_provider.dart';
 import '../../../../core/utils/storage_utils.dart';
 import '../../../../shared/domain/entities/user_profile.dart';
 import '../../../../shared/widgets/section_header.dart';
@@ -50,6 +51,7 @@ class ProfilePage extends ConsumerWidget {
         backgroundColor: AppColors.background,
         elevation: 0,
         scrolledUnderElevation: 0,
+        actions: const [_ThemeModeAction()],
       ),
       body: profileAsync.when(
         data: (profile) => _ProfileContent(profile: profile),
@@ -117,10 +119,11 @@ class _ProfileContent extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
 
-          // Full name
+          // Full name — Lora identity hero (§3).
           Text(
             profile.fullName,
-            style: AppTextStyles.headline.copyWith(
+            style: AppTextStyles.display.copyWith(
+              fontFamily: AppTextStyles.lora,
               color: AppColors.textPrimary,
             ),
             textAlign: TextAlign.center,
@@ -716,4 +719,66 @@ class _SkillsSection extends ConsumerWidget {
       (_) => ref.invalidate(userSkillsProvider),
     );
   }
+}
+
+/// App-bar action to switch theme mode (system / light / dark). Drives
+/// [themeModeControllerProvider] which persists the choice (§2 dark rules).
+class _ThemeModeAction extends ConsumerWidget {
+  const _ThemeModeAction();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final mode = ref.watch(themeModeControllerProvider);
+    final controller = ref.read(themeModeControllerProvider.notifier);
+
+    return PopupMenuButton<ThemeMode>(
+      tooltip: AppStrings.themeAppearance,
+      icon: Icon(_iconFor(mode), color: AppColors.textPrimary),
+      color: AppColors.surface,
+      onSelected: controller.setMode,
+      itemBuilder: (context) => [
+        _item(ThemeMode.system, AppStrings.themeSystem,
+            Icons.brightness_auto_outlined, mode),
+        _item(ThemeMode.light, AppStrings.themeLight,
+            Icons.light_mode_outlined, mode),
+        _item(ThemeMode.dark, AppStrings.themeDark,
+            Icons.dark_mode_outlined, mode),
+      ],
+    );
+  }
+
+  PopupMenuItem<ThemeMode> _item(
+    ThemeMode value,
+    String label,
+    IconData icon,
+    ThemeMode current,
+  ) {
+    final selected = value == current;
+    return PopupMenuItem<ThemeMode>(
+      value: value,
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            size: 20,
+            color: selected ? AppColors.accent : AppColors.textSecondary,
+          ),
+          const SizedBox(width: 12),
+          Text(
+            label,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: selected ? AppColors.accent : AppColors.textPrimary,
+              fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  IconData _iconFor(ThemeMode mode) => switch (mode) {
+        ThemeMode.system => Icons.brightness_auto_outlined,
+        ThemeMode.light => Icons.light_mode_outlined,
+        ThemeMode.dark => Icons.dark_mode_outlined,
+      };
 }

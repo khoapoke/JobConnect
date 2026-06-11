@@ -88,12 +88,18 @@ class _JobSearchPageState extends ConsumerState<JobSearchPage> {
           Row(
             children: [
               Expanded(
-                child: GlassSurface(
-                  borderRadius: AppRadii.lg,
-                  blurSigma: 12,
+                child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppSpacing.space3,
                     vertical: AppSpacing.space1,
+                  ),
+                  decoration: BoxDecoration(
+                    // Input affordance: quiet surfaceVariant fill, no border
+                    // (§5 — fields read as fills, cards read as bordered).
+                    color: AppColors.surfaceVariantFor(
+                      Theme.of(context).brightness,
+                    ),
+                    borderRadius: AppRadii.button,
                   ),
                   child: TextField(
                     controller: _searchController,

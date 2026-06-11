@@ -243,7 +243,7 @@
 - [x] **UI-12: Signature screens + 4 signature animations**
   Launch draw-in (≤1.4s, reduced-motion fallback), Home feed (Lora greeting, quiet cards), Job detail (match ring + count-up, dot-pill skill gap, sticky apply bar), Apply success loop-close, pull-to-refresh loop spin.
 
-- [ ] **UI-13: Core screens sweep**
+- [x] **UI-13: Core screens sweep**
   Search/filters, My Applications (status dot-pills + Rút đơn destructive text), Chat (ink/gray bubbles), Profile (Lora name hero), Notifications, Bookmarks — harmonized motion, no leftover glass/gradient usages.
 
 - [ ] **UI-14: Utility sweep (absorbs old UI-10)**

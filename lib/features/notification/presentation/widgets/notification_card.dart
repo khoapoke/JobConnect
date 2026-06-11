@@ -25,16 +25,6 @@ class NotificationCard extends StatelessWidget {
         _ => Icons.notifications_outlined,
       };
 
-  Color _colorForType(String type) => switch (type) {
-        'application_status' => AppColors.primary,
-        'new_applicant' => AppColors.success,
-        'job_alert' => AppColors.warning,
-        'interview' => AppColors.primarySoft,
-        'message' => AppColors.aiAccent,
-        'system' => AppColors.textSecondary,
-        _ => AppColors.primary,
-      };
-
   String _timeAgo(DateTime date) {
     final diff = DateTime.now().difference(date);
     if (diff.inMinutes < 1) return 'Vừa xong';
@@ -48,7 +38,6 @@ class NotificationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isUnread = !notification.read;
-    final iconColor = _colorForType(notification.type);
 
     return InkWell(
       onTap: onTap,
@@ -66,19 +55,20 @@ class NotificationCard extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Icon
+            // Quiet type icon — one-color system (§1): gray icon on a
+            // surfaceVariant bubble; orange is reserved for the unread dot.
             Container(
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: iconColor.withAlpha(20),
+                color: AppColors.surfaceVariant,
                 borderRadius: BorderRadius.circular(
                   AppConstants.cardBorderRadius,
                 ),
               ),
               child: Icon(
                 _iconForType(notification.type),
-                color: iconColor,
+                color: AppColors.textSecondary,
                 size: 20,
               ),
             ),
