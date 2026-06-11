@@ -22,6 +22,7 @@ Future<Map<String, dynamic>> recruiterStats(Ref ref) async {
       .select('id')
       .eq('recruiter_id', recruiterId);
   final companyIds = (companiesRes as List)
+      .cast<Map<String, dynamic>>()
       .map((c) => c['id'] as String)
       .toList();
 
@@ -46,9 +47,18 @@ Future<Map<String, dynamic>> recruiterStats(Ref ref) async {
   // Get job IDs for pending applications
   final jobIds = activePosts.map((p) => p['id'] as String).toList();
 
-  // Pending applications
+  // Pending applications — count riêng, không bị giới hạn bởi limit(5) bên dưới
+  int pendingCount = 0;
   List<Map<String, dynamic>> pendingApps = [];
   if (jobIds.isNotEmpty) {
+    final pendingCountRes = await client
+        .from('applications')
+        .select('id')
+        .eq('status', 'pending')
+        .inFilter('job_id', jobIds)
+        .count(CountOption.exact);
+    pendingCount = pendingCountRes.count;
+
     final pendingAppsRes = await client
         .from('applications')
         .select(
@@ -82,7 +92,7 @@ Future<Map<String, dynamic>> recruiterStats(Ref ref) async {
   }).toList();
 
   // Applicant counts per post
-  Map<String, int> applicantCounts = {};
+  final applicantCounts = <String, int>{};
   if (jobIds.isNotEmpty) {
     final countsRes = await client
         .from('applications')
@@ -104,7 +114,7 @@ Future<Map<String, dynamic>> recruiterStats(Ref ref) async {
 
   return {
     'active_posts': activePosts.length,
-    'pending_applications': pendingApps.length,
+    'pending_applications': pendingCount,
     'upcoming_interviews': interviews.length,
     'recent_applicants': recentApplicants,
     'active_job_posts': activeJobPosts,
