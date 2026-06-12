@@ -83,9 +83,20 @@ class _ConnectionLoopLogoState extends State<ConnectionLoopLogo>
           child: AnimatedBuilder(
             animation: _controller,
             builder: (context, child) {
+              final t = _controller.value;
+              // Orange loop draws first (~0–0.54), then the two nodes pop in
+              // with an overshoot at the top and bottom — proto §1 launch.
               return CustomPaint(
                 painter: _ConnectionLoopPainter(
-                  progress: _controller.value,
+                  ringProgress: const Interval(0, 0.54, curve: Curves.easeInOut)
+                      .transform(t),
+                  node1Scale: const Interval(0.43, 0.68,
+                          curve: Curves.easeOutBack)
+                      .transform(t),
+                  node2Scale: const Interval(0.54, 0.79,
+                          curve: Curves.easeOutBack)
+                      .transform(t),
+                  trackColor: AppColors.hairlineFor(brightness),
                 ),
               );
             },
@@ -96,7 +107,7 @@ class _ConnectionLoopLogoState extends State<ConnectionLoopLogo>
           FadeTransition(
             opacity: CurvedAnimation(
               parent: _controller,
-              curve: const Interval(0.5, 1, curve: Curves.easeOut),
+              curve: const Interval(0.6, 1, curve: Curves.easeOut),
             ),
             child: Text(
               AppConstants.appName,
@@ -156,13 +167,19 @@ class _ConnectionLoopSpinnerState extends State<ConnectionLoopSpinner>
 
   @override
   Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
     return SizedBox(
       width: widget.size,
       height: widget.size,
       child: RotationTransition(
         turns: _controller,
-        child: const CustomPaint(
-          painter: _ConnectionLoopPainter(progress: 1),
+        child: CustomPaint(
+          painter: _ConnectionLoopPainter(
+            ringProgress: 1,
+            node1Scale: 1,
+            node2Scale: 1,
+            trackColor: AppColors.hairlineFor(brightness),
+          ),
         ),
       ),
     );
@@ -170,9 +187,23 @@ class _ConnectionLoopSpinnerState extends State<ConnectionLoopSpinner>
 }
 
 class _ConnectionLoopPainter extends CustomPainter {
-  const _ConnectionLoopPainter({required this.progress});
+  const _ConnectionLoopPainter({
+    required this.ringProgress,
+    required this.node1Scale,
+    required this.node2Scale,
+    required this.trackColor,
+  });
 
-  final double progress;
+  /// 0→1: how much of the orange loop is drawn.
+  final double ringProgress;
+
+  /// 0→1 (with overshoot): pop scale of the top / bottom nodes.
+  final double node1Scale;
+  final double node2Scale;
+
+  /// Hairline ring that sits under the orange draw — the full loop is
+  /// always implied, even mid-animation.
+  final Color trackColor;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -180,7 +211,14 @@ class _ConnectionLoopPainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = (size.width - strokeWidth * 2) / 2;
 
-    // Draw arc from top (−π/2) sweeping full circle * progress
+    // Gray track ring underneath.
+    final trackPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..color = trackColor;
+    canvas.drawCircle(center, radius, trackPaint);
+
+    // Orange loop draws from the top (−π/2), clockwise.
     final circlePath = Path()
       ..addArc(
         Rect.fromCircle(center: center, radius: radius),
@@ -190,37 +228,35 @@ class _ConnectionLoopPainter extends CustomPainter {
     final metric = circlePath.computeMetrics().first;
     final arcPath = metric.extractPath(
       0,
-      metric.length * progress.clamp(0.0, 1.0),
+      metric.length * ringProgress.clamp(0.0, 1.0),
     );
-
     final strokePaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeWidth = strokeWidth
       ..color = AppColors.accent;
-
     canvas.drawPath(arcPath, strokePaint);
 
-    // Nodes at top-right (~315°) and bottom-left (~135°)
-    final node1 = Offset(
-      center.dx + radius * math.cos(-math.pi / 4),
-      center.dy + radius * math.sin(-math.pi / 4),
-    );
-    final node2 = Offset(
-      center.dx + radius * math.cos(3 * math.pi / 4),
-      center.dy + radius * math.sin(3 * math.pi / 4),
-    );
-    final nodePaint = Paint()..color = AppColors.accent;
+    // Two connection nodes pop in at the top (0°) and bottom (180°).
+    final nodeRadius = strokeWidth * 0.65;
+    _drawNode(canvas, Offset(center.dx, center.dy - radius), nodeRadius,
+        node1Scale);
+    _drawNode(canvas, Offset(center.dx, center.dy + radius), nodeRadius,
+        node2Scale);
+  }
 
-    if (progress > 0.1) {
-      canvas.drawCircle(node1, strokeWidth * 0.65, nodePaint);
-    }
-    if (progress > 0.6) {
-      canvas.drawCircle(node2, strokeWidth * 0.65, nodePaint);
-    }
+  void _drawNode(Canvas canvas, Offset center, double radius, double scale) {
+    if (scale <= 0) return;
+    final opacity = scale.clamp(0.0, 1.0);
+    final paint = Paint()
+      ..color = AppColors.accent.withAlpha((opacity * 255).round());
+    canvas.drawCircle(center, radius * scale, paint);
   }
 
   @override
   bool shouldRepaint(covariant _ConnectionLoopPainter oldDelegate) =>
-      oldDelegate.progress != progress;
+      oldDelegate.ringProgress != ringProgress ||
+      oldDelegate.node1Scale != node1Scale ||
+      oldDelegate.node2Scale != node2Scale ||
+      oldDelegate.trackColor != trackColor;
 }

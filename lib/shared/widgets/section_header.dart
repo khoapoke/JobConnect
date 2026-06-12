@@ -19,12 +19,15 @@ class SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           title,
-          style: AppTextStyles.title.copyWith(color: AppColors.textPrimary),
+          style: AppTextStyles.title.copyWith(
+            color: AppColors.textPrimaryFor(brightness),
+          ),
         ),
         IconButton(
           icon: const Icon(Icons.add, color: AppColors.primary),

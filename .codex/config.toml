@@ -1,9 +1,0 @@
-[mcp_servers.dart]
-command = "/Users/khoado/code/flutter/bin/dart"
-args = [
-    "mcp-server",
-    "--experimental-mcp-server",
-]
-
-[mcp_servers.marionette]
-command = "/Users/khoado/.pub-cache/bin/marionette_mcp"
